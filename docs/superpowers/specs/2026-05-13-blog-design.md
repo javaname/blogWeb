@@ -101,6 +101,11 @@
 | `POST /api/admin/upload` | 图片上传 |
 | `GET /admin/*` | React SPA 入口 | 管理后台前端页面 |
 
+### 业务规则
+
+- **点赞**：同一 IP 对同一文章多次调用 `POST /api/articles/:id/like`，第一次点赞，第二次取消（toggle 模式）
+- **分类删除**：分类下存在关联文章时，禁止删除该分类，返回错误提示
+
 ### 预留路由（后端逻辑就位，前端暂不开放）
 
 | 路由 | 说明 |
@@ -114,7 +119,7 @@
 ### 公开页面（Go 模板 + 原生 JS）
 
 - **首页**：时间倒序卡片网格布局，置顶文章置顶显示。无限滚动通过 IntersectionObserver 监听哨兵元素，fetch `/api/articles` 追加渲染
-- **文章详情页**：goldmark 渲染 Markdown，highlight.js 代码高亮，底部点赞按钮
+- **文章详情页**：goldmark 渲染 Markdown（含代码高亮），底部点赞按钮
 - **分类页面**：与首页类似，按分类过滤
 - **响应式**：桌面 3 列 → 平板 2 列 → 手机 1 列
 - **样式**：引入 Semi Design CSS 变量，自定义样式遵循 Design Tokens 规范
