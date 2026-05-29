@@ -4,7 +4,7 @@
 
 ## 背景
 
-当前 Web 端位于 `client/src`，采用 React 18、Vite、JSX、Semi UI 相关依赖。现有前端主要覆盖后台管理端，包括登录、控制台、文章、分类、评论、文章编辑和系统设置页面，并已有 i18n 上下文、语言切换组件和中英文文案文件。
+当前 Web 端位于 `client/src`，采用 React 18、Vite、JSX，并保留 Semi UI 相关依赖。现有前端主要覆盖后台管理端，包括登录、控制台、文章、分类、评论、文章编辑和系统设置页面，并已有 i18n 上下文、语言切换组件和中英文文案文件。
 
 Stitch 项目 `Full-stack Blog System` 提供了 `Ink & Insight Admin` 后台原型，包含管理员登录、后台控制台、文章管理、分类管理、评论管理、发布文章、系统设置等页面。本次工作按该后台原型调整现有 React 前端，不切换技术栈，不引入 Rust，不接入前台博客访问页。
 
@@ -23,22 +23,34 @@ Stitch 项目 `Full-stack Blog System` 提供了 `Ink & Insight Admin` 后台原
 - 不重构后端 API。
 - 不切换为 TypeScript 或 Rust。
 - 不引入新的大型 UI 框架。
+- 不强制改用 Semi UI 组件；优先沿用现有自定义 JSX 组件和 CSS。若使用 Semi UI，仅限已有依赖内的轻量控件，且不得重写页面数据流。
 - 不重新设计 i18n 数据结构，只补齐新增 UI 文案。
 
 ## 原型映射
 
-本次按 Stitch 后台页面映射到现有路由：
+本次按 Stitch 后台页面映射到现有路由。`client/src/main.jsx` 使用 `BrowserRouter basename="/admin"`，下表中的“内部路由”为 React 路由配置，“实际访问路径”为浏览器访问路径。
 
-| Stitch 页面 | 现有路由 | 现有文件 |
-| --- | --- | --- |
-| 管理员登录 | `/login` | `client/src/pages/Login.jsx` |
-| 后台控制台 | `/dashboard` | `client/src/pages/Dashboard.jsx` |
-| 文章管理 | `/posts` | `client/src/pages/Posts.jsx` |
-| 发布文章 | `/articles/new` | `client/src/pages/ArticleEdit.jsx` |
-| 编辑文章 | `/articles/:id` | `client/src/pages/ArticleEdit.jsx` |
-| 分类管理 | `/categories` | `client/src/pages/Categories.jsx` |
-| 评论管理 | `/comments` | `client/src/pages/Comments.jsx` |
-| 系统设置 | `/settings` | `client/src/pages/Settings.jsx` |
+| Stitch 页面 | Stitch screen | 内部路由 | 实际访问路径 | 现有文件 |
+| --- | --- | --- | --- | --- |
+| 管理员登录 | `161657ce2d24467f96966be13a01dbf5` | `/login` | `/admin/login` | `client/src/pages/Login.jsx` |
+| 后台控制台 | `81a591f4b4cd40d1a456a29e88f48a39` | `/dashboard` | `/admin/dashboard` | `client/src/pages/Dashboard.jsx` |
+| 文章管理 | `57e0ad6915b7480792d4e0f09aa620d5` | `/posts` | `/admin/posts` | `client/src/pages/Posts.jsx` |
+| 发布文章 | `64b92191575849c09a4859799f9221c8` | `/articles/new` | `/admin/articles/new` | `client/src/pages/ArticleEdit.jsx` |
+| 编辑文章 | `64b92191575849c09a4859799f9221c8` | `/articles/:id` | `/admin/articles/:id` | `client/src/pages/ArticleEdit.jsx` |
+| 分类管理 | `ea9ad058647e4d0e9bb69095b0b54c11` | `/categories` | `/admin/categories` | `client/src/pages/Categories.jsx` |
+| 评论管理 | `29148e74563f4fa3baf3a3dbf91f92ae` | `/comments` | `/admin/comments` | `client/src/pages/Comments.jsx` |
+| 系统设置 | `19a417f0f5b74fd0b6626481eb577430` | `/settings` | `/admin/settings` | `client/src/pages/Settings.jsx` |
+
+页面级落地重点：
+
+- 登录页：保留语言切换，新增主题切换；视觉上保留左侧品牌/指标区和右侧登录卡片；登录、注册、验证码状态不回退。
+- 后台壳：固定侧栏、品牌区、导航、新建文章按钮、用户卡片、顶部语言/主题/通知/帮助/账号入口均可见。
+- 控制台：保留统计卡片、趋势/图表区域、近期活动区域和页面尾部信息，强化后台数据扫描体验。
+- 文章管理：保留搜索、状态/分类筛选、文章缩略图、状态标签、编辑/删除操作和分页。
+- 发布/编辑文章：保留主编辑表单、封面预览、分类/状态/置顶等侧栏配置、保存/发布操作。
+- 分类管理：保留分类表单、排序/数量信息、编辑/删除操作和空状态。
+- 评论管理：保留状态筛选、关键词搜索、评论内容、关联文章、审核通过/拒绝/删除操作。
+- 系统设置：保留站点设置表单、系统信息列表和辅助说明区。
 
 ## 视觉设计
 
@@ -71,7 +83,20 @@ CSS 改为以变量驱动主题：
 
 - 在 `:root` 定义浅色主题变量。
 - 在 `[data-theme='dark']` 定义深色主题变量。
-- 页面、按钮、表格、表单、卡片、状态标签逐步从硬编码色值迁移到变量。
+- 页面、按钮、表格、表单、卡片、状态标签、弹层、错误提示、成功提示都必须使用主题变量。
+
+主题验收矩阵：
+
+| 页面 | 浅色主题 | 深色主题 |
+| --- | --- | --- |
+| 登录页 | 语言切换、主题切换、登录卡片、注册/验证码状态可读 | 无浅色硬编码残留，输入框、按钮、错误提示对比度可读 |
+| 后台壳 | 侧栏、顶栏、弹层、用户卡片符合原型 | 侧栏、顶栏、通知/帮助弹层均使用深色变量 |
+| 控制台 | 统计卡片、图表、活动列表清晰 | 卡片、图表线条、状态色和正文可读 |
+| 文章管理 | 筛选、表格、状态标签、分页清晰 | 表格行、缩略图容器、状态标签、操作按钮可读 |
+| 发布/编辑文章 | 表单、封面预览、侧栏配置清晰 | 输入框、textarea、select、预览卡、保存状态可读 |
+| 分类管理 | 表单、列表、操作按钮清晰 | 表单、列表、空状态、危险操作可读 |
+| 评论管理 | 筛选、评论内容、审核操作清晰 | 评论正文、拒绝原因、审核状态和操作按钮可读 |
+| 系统设置 | 设置表单、信息列表、说明区清晰 | 表单、列表、说明区和保存反馈可读 |
 
 ## i18n 保留策略
 
@@ -123,11 +148,19 @@ CSS 改为以变量驱动主题：
 
 实现前建立基线：
 
-- `npm run check:i18n`
-- `npm run check:ui`
-- `npm run build`
+- `npm --prefix client run check:i18n`
+- `npm --prefix client run check:ui`
+- `npm --prefix client run build`
 
-实现后重复运行以上命令。若当前项目没有常规单元测试框架，本次不新增测试框架；以现有检查脚本和构建作为验证闭环。若后续需要更强保障，可单独引入 Vitest/React Testing Library。
+实现后重复运行以上命令。`check:ui` 作为无新增回归检查使用；它可能覆盖前台模板或后端相关约束，因此不能单独证明本次后台原型落地完成。后台专用验收还需要人工或浏览器验证：
+
+- 访问 `/admin/login`、`/admin/dashboard`、`/admin/posts`、`/admin/articles/new`、`/admin/categories`、`/admin/comments`、`/admin/settings`。
+- 在以上页面切换中英文，确认新增和既有文案无缺失 key。
+- 在以上页面切换浅色/深色主题并刷新，确认主题持久化。
+- 在桌面宽度和 960px 以下宽度检查侧栏、顶栏、表格、表单和弹层不遮挡。
+- 检查错误提示、空状态、加载状态、成功提示在浅色和深色主题下均可读。
+
+若当前项目没有常规单元测试框架，本次不新增测试框架；以现有检查脚本、构建和后台专用浏览器验收作为验证闭环。若后续需要更强保障，可单独引入 Vitest/React Testing Library。
 
 ## 风险
 
@@ -142,5 +175,6 @@ CSS 改为以变量驱动主题：
 - 语言切换按钮仍可使用，且新增文案中英文完整。
 - 顶栏和登录页具备界面风格切换按钮。
 - 切换主题后刷新页面仍保持用户选择。
+- 登录页、后台壳、控制台、文章管理、发布/编辑文章、分类管理、评论管理、系统设置均通过主题验收矩阵。
 - 后台路由、鉴权和 API 行为不回退。
-- `check:i18n`、`check:ui`、`build` 通过。
+- `npm --prefix client run check:i18n`、`npm --prefix client run check:ui`、`npm --prefix client run build` 通过，或清楚记录与本次范围无关的既有失败。
