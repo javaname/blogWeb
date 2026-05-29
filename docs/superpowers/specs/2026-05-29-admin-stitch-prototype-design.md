@@ -106,7 +106,7 @@ CSS 改为以变量驱动主题：
 
 - 使用 `t('...')` 获取，不直接硬编码用户可见文案。
 - 同步写入 `zh-CN.js` 与 `en-US.js`。
-- 通过 `npm run check:i18n` 验证 key 一致性。
+- 通过 `npm --prefix client run check:i18n` 验证 key 一致性。
 
 ## 组件边界
 
