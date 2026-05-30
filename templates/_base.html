@@ -1,0 +1,205 @@
+{{ define "head" }}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
+  .reading-progress { position: fixed; top: 0; left: 0; height: 4px; background-color: #0058be; z-index: 100; width: 0%; transition: width 0.1s linear; }
+  .article-html h1, .article-html h2, .article-html h3 { font-family: 'Inter', sans-serif; font-weight: 600; color: #191c1d; margin-top: 2.5rem; margin-bottom: 1rem; line-height: 1.3; }
+  .article-html h1 { font-size: 32px; }
+  .article-html h2 { font-size: 24px; }
+  .article-html h3 { font-size: 20px; }
+  .article-html p { margin-bottom: 1.5rem; }
+  .article-html blockquote { border-left: 4px solid #0058be; padding: 1rem 2rem; margin: 2rem 0; font-style: italic; color: #424754; background-color: #f3f4f5; border-radius: 0 0.5rem 0.5rem 0; }
+  .article-html ul, .article-html ol { padding-left: 1.5rem; margin-bottom: 1.5rem; }
+  .article-html ul { list-style: disc; }
+  .article-html ol { list-style: decimal; }
+  .article-html li { margin-bottom: 0.5rem; }
+  .article-html a { color: #0058be; text-decoration: underline; }
+  .article-html code { background: #edeeef; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-size: 0.95em; }
+  .article-html pre { background: #2e3132; color: #f0f1f2; padding: 1rem 1.25rem; border-radius: 0.5rem; overflow-x: auto; margin-bottom: 1.5rem; }
+  .article-html pre code { background: transparent; padding: 0; color: inherit; }
+  .article-html img { max-width: 100%; border-radius: 0.5rem; margin: 1.5rem 0; }
+  .article-html > p:first-child::first-letter { font-size: 3.25rem; font-weight: 700; line-height: 1; margin-right: 0.75rem; float: left; color: #0058be; }
+</style>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "tertiary-fixed": "#ffdcc6",
+          "surface-container-highest": "#e1e3e4",
+          "inverse-on-surface": "#f0f1f2",
+          "surface-variant": "#e1e3e4",
+          "outline-variant": "#c2c6d6",
+          "on-secondary-container": "#636262",
+          "background": "#f8f9fa",
+          "on-surface-variant": "#424754",
+          "on-background": "#191c1d",
+          "error": "#ba1a1a",
+          "primary-container": "#2170e4",
+          "primary-fixed-dim": "#adc6ff",
+          "on-secondary": "#ffffff",
+          "on-primary-fixed": "#001a42",
+          "tertiary-container": "#b75b00",
+          "surface-container": "#edeeef",
+          "on-tertiary-container": "#fffbff",
+          "surface-container-lowest": "#ffffff",
+          "secondary-container": "#e2dfde",
+          "on-tertiary-fixed": "#311400",
+          "tertiary-fixed-dim": "#ffb786",
+          "on-tertiary": "#ffffff",
+          "surface-dim": "#d9dadb",
+          "secondary-fixed-dim": "#c8c6c5",
+          "tertiary": "#924700",
+          "primary-fixed": "#d8e2ff",
+          "outline": "#727785",
+          "on-primary-container": "#fefcff",
+          "secondary-fixed": "#e5e2e1",
+          "on-secondary-fixed": "#1c1b1b",
+          "on-primary-fixed-variant": "#004395",
+          "on-error-container": "#93000a",
+          "surface-container-high": "#e7e8e9",
+          "on-tertiary-fixed-variant": "#723600",
+          "on-error": "#ffffff",
+          "inverse-primary": "#adc6ff",
+          "inverse-surface": "#2e3132",
+          "secondary": "#5f5e5e",
+          "surface-bright": "#f8f9fa",
+          "surface-container-low": "#f3f4f5",
+          "surface-tint": "#005ac2",
+          "surface": "#f8f9fa",
+          "on-primary": "#ffffff",
+          "on-surface": "#191c1d",
+          "primary": "#0058be",
+          "error-container": "#ffdad6",
+          "on-secondary-fixed-variant": "#474746"
+        },
+        borderRadius: {
+          "DEFAULT": "0.25rem",
+          "lg": "0.5rem",
+          "xl": "0.75rem",
+          "full": "9999px"
+        },
+        spacing: {
+          "container-max": "1200px",
+          "base": "8px",
+          "margin-desktop": "40px",
+          "article-max": "720px",
+          "gutter": "24px",
+          "margin-mobile": "16px"
+        },
+        fontFamily: {
+          "interface-md": ["Inter"],
+          "label-sm": ["Inter"],
+          "article-body-mobile": ["Source Serif 4"],
+          "display-lg": ["Inter"],
+          "caption": ["Inter"],
+          "article-body": ["Source Serif 4"],
+          "headline-md": ["Inter"],
+          "display-lg-mobile": ["Inter"]
+        },
+        fontSize: {
+          "interface-md": ["16px", {"lineHeight": "24px", "fontWeight": "500"}],
+          "label-sm": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+          "article-body-mobile": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+          "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+          "caption": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+          "article-body": ["20px", {"lineHeight": "32px", "fontWeight": "400"}],
+          "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+          "display-lg-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}]
+        }
+      }
+    }
+  }
+</script>
+{{ end }}
+
+{{ define "topnav" }}
+<header class="bg-surface-container-lowest border-b border-outline-variant shadow-sm sticky top-0 z-40">
+  <div class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto">
+    <a href="/" class="font-display-lg font-bold text-on-surface text-2xl md:text-3xl tracking-tight">{{ .site.title }}</a>
+    <nav class="hidden md:flex items-center gap-8">
+      <a class="font-interface-md text-interface-md text-primary font-bold border-b-2 border-primary pb-1" href="/">最新</a>
+      <a class="font-interface-md text-interface-md text-on-surface-variant hover:text-primary transition-colors duration-200" href="#categories">分类</a>
+      <a class="font-interface-md text-interface-md text-on-surface-variant hover:text-primary transition-colors duration-200" href="#about">关于</a>
+    </nav>
+    <div class="flex items-center gap-4">
+      <button type="button" class="hidden md:block text-on-surface-variant hover:text-primary transition-colors p-2" aria-label="搜索" data-search-toggle>
+        <span class="material-symbols-outlined">search</span>
+      </button>
+      <a href="/admin" class="font-interface-md text-interface-md text-on-surface-variant px-4 py-2 hover:text-primary transition-colors">登录</a>
+      <button type="button" class="bg-primary text-on-primary px-6 py-2 rounded-lg font-interface-md text-interface-md hover:bg-opacity-90 transition-all active:scale-95" data-newsletter-focus>订阅</button>
+    </div>
+  </div>
+  <div class="hidden border-t border-outline-variant bg-surface-container-lowest" data-search-panel>
+    <form class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-4 flex flex-col sm:flex-row gap-3" data-search-form>
+      <label class="sr-only" for="site-search">搜索文章</label>
+      <input id="site-search" name="keyword" class="flex-1 rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-3 font-interface-md text-interface-md text-on-surface placeholder:text-on-surface-variant focus:border-primary focus:ring-2 focus:ring-primary/20" placeholder="搜索文章标题或摘要" value="{{ with .keyword }}{{ . }}{{ end }}">
+      <button type="submit" class="bg-primary text-on-primary px-6 py-3 rounded-lg font-interface-md text-interface-md font-bold">搜索</button>
+    </form>
+  </div>
+</header>
+{{ end }}
+
+{{ define "sitefooter" }}
+<footer class="bg-surface-container-lowest border-t border-outline-variant py-12 mt-20">
+  <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop flex flex-col md:flex-row justify-between items-center gap-8">
+    <div class="flex flex-col gap-2 items-center md:items-start">
+      <div class="font-headline-md text-headline-md font-bold text-on-surface">{{ .site.title }}</div>
+      <p class="font-caption text-caption text-on-surface-variant max-w-[320px] text-center md:text-left">{{ .site.description }}</p>
+    </div>
+    <div class="flex flex-col md:flex-row items-center gap-8">
+      <nav class="flex gap-6">
+        <a class="font-caption text-caption text-on-surface-variant hover:text-on-surface transition-colors" href="/">首页</a>
+        <a class="font-caption text-caption text-on-surface-variant hover:text-on-surface transition-colors" href="#categories">分类</a>
+        <a class="font-caption text-caption text-on-surface-variant hover:text-on-surface transition-colors" href="/admin">后台</a>
+      </nav>
+      <div class="flex gap-4">
+        <button type="button" class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center hover:bg-primary hover:text-on-primary transition-all" aria-label="分享" data-share-page><span class="material-symbols-outlined text-[20px]">share</span></button>
+        <button type="button" class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center hover:bg-primary hover:text-on-primary transition-all" aria-label="邮件订阅" data-newsletter-focus><span class="material-symbols-outlined text-[20px]">mail</span></button>
+      </div>
+    </div>
+  </div>
+  <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop mt-8 pt-8 border-t border-outline-variant text-center">
+    <p class="font-caption text-caption text-on-surface-variant">&copy; {{ .site.title }}。保留所有权利。</p>
+  </div>
+</footer>
+{{ end }}
+
+{{ define "sidebar_categories" }}
+<div id="categories" class="p-6 rounded-xl bg-surface-container-low border border-outline-variant">
+  <h3 class="font-interface-md text-interface-md font-bold mb-6 flex items-center gap-2">
+    <span class="material-symbols-outlined text-primary">category</span> 分类
+  </h3>
+  <ul class="space-y-3">
+    <li class="flex justify-between items-center group">
+      <a href="/" class="font-interface-md text-interface-md text-on-surface-variant group-hover:text-primary transition-colors">全部文章</a>
+    </li>
+    {{ $current := "" }}
+    {{ if .category }}{{ $current = .category.Slug }}{{ end }}
+    {{ range .categories }}
+    <li class="flex justify-between items-center group">
+      <a href="/categories/{{ .Slug }}" class="font-interface-md text-interface-md group-hover:text-primary transition-colors {{ if eq .Slug $current }}text-primary font-bold{{ else }}text-on-surface-variant{{ end }}">{{ categoryName .Slug .Name }}</a>
+      <span class="text-caption font-caption bg-surface-container px-2 py-0.5 rounded-full text-on-surface-variant group-hover:bg-primary-container group-hover:text-on-primary-container transition-all">{{ .ArticleCount }}</span>
+    </li>
+    {{ end }}
+  </ul>
+</div>
+{{ end }}
+
+{{ define "sidebar_newsletter" }}
+<div id="newsletter" class="bg-primary-container p-6 rounded-xl text-on-primary-container shadow-sm border border-primary">
+  <h3 class="font-headline-md text-headline-md mb-3">每周洞察</h3>
+  <p class="font-interface-md text-interface-md mb-5 opacity-90">精选设计、技术与有意识生活方式文章，每周送达。</p>
+  <form class="space-y-3" aria-label="订阅邮件" data-newsletter-form>
+    <input class="w-full px-4 py-3 rounded-lg bg-surface-container-lowest text-on-surface border-none focus:ring-2 focus:ring-on-primary-container placeholder:text-outline-variant font-interface-md text-interface-md" placeholder="email@address.com" type="email" name="email">
+    <button type="submit" class="w-full bg-on-primary-container text-primary-container py-3 rounded-lg font-bold font-interface-md text-interface-md">订阅提醒</button>
+    <p class="text-caption font-caption opacity-80" data-newsletter-message role="status"></p>
+  </form>
+</div>
+{{ end }}

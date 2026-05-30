@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>The Future of Digital Curation — Ink &amp; Insight</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed": "#ffdcc6",
+                    "surface-container-highest": "#e1e3e4",
+                    "inverse-on-surface": "#f0f1f2",
+                    "surface-variant": "#e1e3e4",
+                    "outline-variant": "#c2c6d6",
+                    "on-secondary-container": "#636262",
+                    "background": "#f8f9fa",
+                    "on-surface-variant": "#424754",
+                    "on-background": "#191c1d",
+                    "error": "#ba1a1a",
+                    "primary-container": "#2170e4",
+                    "primary-fixed-dim": "#adc6ff",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed": "#001a42",
+                    "tertiary-container": "#b75b00",
+                    "surface-container": "#edeeef",
+                    "on-tertiary-container": "#fffbff",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-container": "#e2dfde",
+                    "on-tertiary-fixed": "#311400",
+                    "tertiary-fixed-dim": "#ffb786",
+                    "on-tertiary": "#ffffff",
+                    "surface-dim": "#d9dadb",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "tertiary": "#924700",
+                    "primary-fixed": "#d8e2ff",
+                    "outline": "#727785",
+                    "on-primary-container": "#fefcff",
+                    "secondary-fixed": "#e5e2e1",
+                    "on-secondary-fixed": "#1c1b1b",
+                    "on-primary-fixed-variant": "#004395",
+                    "on-error-container": "#93000a",
+                    "surface-container-high": "#e7e8e9",
+                    "on-tertiary-fixed-variant": "#723600",
+                    "on-error": "#ffffff",
+                    "inverse-primary": "#adc6ff",
+                    "inverse-surface": "#2e3132",
+                    "secondary": "#5f5e5e",
+                    "surface-bright": "#f8f9fa",
+                    "surface-container-low": "#f3f4f5",
+                    "surface-tint": "#005ac2",
+                    "surface": "#f8f9fa",
+                    "on-primary": "#ffffff",
+                    "on-surface": "#191c1d",
+                    "primary": "#0058be",
+                    "error-container": "#ffdad6",
+                    "on-secondary-fixed-variant": "#474746"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "container-max": "1200px",
+                    "base": "8px",
+                    "margin-desktop": "40px",
+                    "article-max": "720px",
+                    "gutter": "24px",
+                    "margin-mobile": "16px"
+            },
+            "fontFamily": {
+                    "interface-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "article-body-mobile": ["Source Serif 4"],
+                    "display-lg": ["Inter"],
+                    "caption": ["Inter"],
+                    "article-body": ["Source Serif 4"],
+                    "headline-md": ["Inter"],
+                    "display-lg-mobile": ["Inter"]
+            },
+            "fontSize": {
+                    "interface-md": ["16px", {"lineHeight": "24px", "fontWeight": "500"}],
+                    "label-sm": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "article-body-mobile": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "caption": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                    "article-body": ["20px", {"lineHeight": "32px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "display-lg-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .reading-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background-color: #0058be;
+            z-index: 100;
+            width: 35%; /* Simulated progress */
+        }
+    </style>
+</head>
+<body class="bg-surface-container-lowest text-on-surface font-interface-md antialiased">
+<!-- Reading Progress Bar -->
+<div class="reading-progress"></div>
+<!-- TopNavBar (Shared Component) -->
+<nav class="bg-surface-container-lowest dark:bg-inverse-surface border-b border-outline-variant dark:border-outline shadow-sm docked full-width top-0 sticky z-50">
+<div class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto">
+<div class="flex items-center gap-8">
+<span class="font-display-lg text-display-lg font-bold text-on-surface dark:text-inverse-on-surface cursor-pointer">Ink &amp; Insight</span>
+<div class="hidden md:flex gap-6 items-center">
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim transition-colors duration-200 font-interface-md text-interface-md" href="#">Categories</a>
+<a class="text-primary dark:text-primary-fixed-dim font-bold border-b-2 border-primary pb-1 font-interface-md text-interface-md" href="#">Latest</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim transition-colors duration-200 font-interface-md text-interface-md" href="#">About</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden md:block">
+<span class="material-symbols-outlined text-on-surface-variant p-2 hover:bg-surface-container-high rounded-full cursor-pointer transition-all">search</span>
+</div>
+<button class="text-primary dark:text-primary-fixed-dim font-interface-md text-interface-md hover:text-on-surface px-4 py-2">Login</button>
+<button class="bg-primary text-on-primary px-6 py-2 rounded-lg font-interface-md text-interface-md active:scale-95 transition-transform">Subscribe</button>
+</div>
+</div>
+</nav>
+<main class="w-full">
+<!-- Hero Section -->
+<header class="w-full bg-surface-container-low pt-12 md:pt-20 pb-16">
+<div class="max-w-article-max mx-auto px-margin-mobile md:px-0">
+<div class="flex flex-wrap gap-2 mb-6">
+<span class="bg-primary-fixed text-on-primary-fixed px-3 py-1 rounded-full text-caption font-interface-md uppercase tracking-wider">Design Theory</span>
+</div>
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-on-surface mb-8 leading-tight">
+                    The Future of Digital Curation: Balancing Algorithms and Human Intuition
+                </h1>
+<!-- Metadata -->
+<div class="flex items-center gap-4 mb-12">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-outline-variant">
+<img alt="Author Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0rkEJ53tCVljePFrEs7b11fy810ahc-_vMiNsBLfWYSn6CIbqhFuoDTTLsKYy6RFX-QEz-Fe3SpWPZ2X_ha9Ixf85qqghwtaZyFCIa_yX0ye6EdWny7wiQeMpK5p1Z43m0TKRQ-olq2yag3lO2SDt5idRJ-4An55xJSuwPEnNFlZ0WLItHc7STaMThlNHiNQgNmkIsG6SleXsDXUyP0ic_0ZD0HZ6sx8ALul4KmgNkJg1St8XcuvmLRjySAGvrq_IMqzw63klx9o"/>
+</div>
+<div>
+<p class="font-interface-md text-interface-md text-on-surface">Elena Vance</p>
+<p class="font-caption text-caption text-on-surface-variant">May 24, 2024 • 8 min read</p>
+</div>
+<div class="ml-auto flex gap-3">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors">
+<span class="material-symbols-outlined">share</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors">
+<span class="material-symbols-outlined">bookmark</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Immersive Hero Image -->
+<div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
+<div class="aspect-[21/9] w-full rounded-xl overflow-hidden shadow-sm">
+<img class="w-full h-full object-cover" data-alt="A cinematic, high-resolution photograph of a futuristic home office filled with lush green plants and advanced computer equipment. The lighting is soft and warm, casting long ambient shadows in a minimalist light-mode aesthetic. A sleek glass desk holds a glowing monitor displaying complex data visualizations. The overall mood is one of quiet, professional focus and sophisticated intellectual labor." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBToR6DGBPs21BtDc1Tavl13w_sArivt3ZJk08nT7gUbOqpfRQn27WghBEc7pDSAck6Kmwn5ZqFZOfchwv2NjQKjVKS_6xQBmRJkY8r2YNeGjhOeXVlOuOl44g0TdIhr2Zqzr0wUNJu0Qz66-PtvINhF5_oF587DN9W63Z2zLu_xdnAZLDWrieM6bayCtPe0iW6hlpopg7n22ejPausVKYt1HPX3GUjzhwOE5HdByUlGp_odzGcdlRuvZrYqCK-Ys1vwWMTUvUj7e8"/>
+</div>
+</div>
+</header>
+<!-- Article Body -->
+<article class="max-w-article-max mx-auto px-margin-mobile md:px-0 py-16">
+<div class="font-article-body-mobile md:font-article-body text-article-body-mobile md:text-article-body text-on-surface space-y-8">
+<p class="first-letter:text-5xl first-letter:font-bold first-letter:mr-3 first-letter:float-left first-letter:text-primary">In an era</p>
+<p>where information is abundant but attention is scarce, the role of curation has never been more critical. As we navigate the vast digital landscape, we are constantly making choices about what to consume, what to share, and what to ignore. This process of selection and organization is the essence of curation.</p>
+<p>But as algorithms become increasingly sophisticated, the line between human and machine-driven curation is blurring. Large language models and recommendation engines now shape our digital experiences in ways we are only beginning to understand. The question remains: can technology ever truly replicate the nuance of human taste?</p>
+<blockquote class="border-l-4 border-primary pl-8 py-4 my-12 italic text-on-surface-variant bg-surface-container-low rounded-r-lg">
+                    "True curation is not just about filtering; it is about storytelling. It's the ability to find a thread of meaning in a sea of noise and present it in a way that resonates with others."
+                </blockquote>
+<h2 class="font-headline-md text-headline-md text-on-surface mt-12 mb-6">The Algorithmic Echo Chamber</h2>
+<p>Algorithms excel at efficiency. They can process millions of data points in milliseconds to find patterns and predict what we might like based on our past behavior. However, this efficiency comes at a cost. By reinforcing our existing preferences, algorithms can create echo chambers that limit our exposure to new ideas and diverse perspectives.</p>
+<p>Human curators, on the other hand, bring a unique blend of intuition, empathy, and cultural context to the table. They can spot trends before they go viral, identify emerging voices, and make connections that an algorithm might miss.</p>
+<div class="my-12 p-8 border border-outline-variant rounded-xl bg-surface-container-lowest shadow-sm">
+<h3 class="font-interface-md text-interface-md font-bold mb-4">Key Takeaways</h3>
+<ul class="list-disc pl-6 space-y-3 font-interface-md text-interface-md">
+<li>Curation as a form of intellectual rigor and authority.</li>
+<li>The risk of algorithmic stagnation in creative industries.</li>
+<li>Hybrid models: Where technology supports human decision-making.</li>
+</ul>
+</div>
+<p>As we look to the future, the most successful curation models will likely be those that leverage the strengths of both humans and machines. Technology can handle the heavy lifting of data processing, while humans provide the creative spark and ethical oversight needed to ensure a healthy digital ecosystem.</p>
+</div>
+<!-- Author Bio Section -->
+<section class="mt-20 pt-12 border-t border-outline-variant">
+<div class="flex flex-col md:flex-row gap-8 items-center bg-surface-container-low p-8 rounded-xl">
+<img alt="Author" class="w-24 h-24 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKUsbsCZWwB3Y5gHlpgsLxHYQLmo58CcSGq0Mo2DNw2W-xrGvM7GFxtfh_GGSE3uRdNJlc45PDBnUCGrd8hoRu-0HLWgFbQzXMP-ZExVYbgc5-GbcOWXCeNDc1rOGccBZTxaVQsWFhG4z3Qn6AhyQKEfQSMJfJFLPjC7j9hms89tmrF0p2MR1d4ROrs4sfbgcNLw4BIgqlD1TNpUbtuV3FxBviwj_oTar08L4l3zbKkkgArWDpMSO9IPeAS6ebgHWadwlbHVjQq1w"/>
+<div class="text-center md:text-left">
+<h4 class="font-headline-md text-headline-md mb-2">Written by Elena Vance</h4>
+<p class="text-on-surface-variant mb-4">Elena is a design strategist and cultural critic based in Berlin. Her work explores the intersection of technology, philosophy, and modern aesthetics.</p>
+<div class="flex justify-center md:justify-start gap-4">
+<button class="text-primary font-bold hover:underline">Follow Elena</button>
+<button class="text-on-surface-variant font-bold hover:underline">Read more posts</button>
+</div>
+</div>
+</div>
+</section>
+</article>
+<!-- Comments Section -->
+<section class="bg-surface-container-low py-20">
+<div class="max-w-article-max mx-auto px-margin-mobile md:px-0">
+<h3 class="font-headline-md text-headline-md mb-8 flex items-center gap-3">
+                    Comments <span class="bg-primary-container text-on-primary-container px-2 py-0.5 rounded text-caption">12</span>
+</h3>
+<!-- Comment Input -->
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant mb-12">
+<textarea class="w-full bg-surface-container-lowest border-none focus:ring-0 font-interface-md text-interface-md text-on-surface placeholder-on-surface-variant" placeholder="Join the conversation..." rows="3"></textarea>
+<div class="flex justify-end mt-4">
+<button class="bg-primary text-on-primary px-8 py-2 rounded-lg font-interface-md">Post Comment</button>
+</div>
+</div>
+<!-- Comment List -->
+<div class="space-y-8">
+<div class="flex gap-4">
+<img class="w-10 h-10 rounded-full bg-outline-variant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhpHKomsu6tJO4VBl07esgfQDjerFJ_5Ekmlvrfad75dM45JXxDUqxBblqJ4wRF4p7gNCkdMWKMCgol7d15EwM5hVlFN84uYOzv4Y0Rm0loc9ZlS-ZdRNNWFq_fnBtweKZ823EDm2vsqiMAfQCgXFsa6gavqvZ9glk073qCEhox1FQ6iDnOsxvOXz1d8oLtZaD1IFlwL9LEcf0vUwgvJnakZIlj9lIhQz9n7udkOTCqjP3QxurLIyaTjFd6EfGKx5CsIrFzICDPQE"/>
+<div>
+<div class="flex items-center gap-3 mb-1">
+<span class="font-bold text-on-surface">Sarah Jenkins</span>
+<span class="text-caption text-on-surface-variant">2 hours ago</span>
+</div>
+<p class="text-on-surface-variant mb-3">Fascinating read. I've definitely felt the "echo chamber" effect in my own music recommendations recently. It's refreshing to see a call for more human intuition in these systems.</p>
+<button class="text-primary text-caption font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">reply</span> Reply
+                            </button>
+</div>
+</div>
+<div class="flex gap-4">
+<img class="w-10 h-10 rounded-full bg-outline-variant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCV-0FM_BiyxoFWSIvINulwnbGu0KrGJsYMCtvfkRsZNPEpMnxz_MRXNp0eUn1bqsAnJFTaLgmw03rPMmEtEGW1OSNLRdU-k2dhTv8HEj6Ew1nqbrvSM4ZVuKdaClyrRtJEcUVFwmokVMhgjZPemrZ1fw_2ySThUjb_o8VhEexp1PFEYG6xbfPidrZvy-E5CBXoRKhJZQlXOrxF2q6wAtCLBe78ubemWhXphcxL7mFRoYroBYBCPz6CksGhWQCZtgcXPy78_iQo6IM"/>
+<div>
+<div class="flex items-center gap-3 mb-1">
+<span class="font-bold text-on-surface">Marcus Thorne</span>
+<span class="text-caption text-on-surface-variant">5 hours ago</span>
+</div>
+<p class="text-on-surface-variant mb-3">Do you think niche communities are the solution to algorithmic fatigue? Small, curated Discord or Slack groups seem to be where the most interesting discussions are happening now.</p>
+<button class="text-primary text-caption font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">reply</span> Reply
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Related Articles -->
+<section class="py-20 bg-surface-container-lowest">
+<div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
+<h3 class="font-headline-md text-headline-md mb-12">Related Articles</h3>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Related Card 1 -->
+<div class="group cursor-pointer">
+<div class="aspect-[16/10] rounded-xl overflow-hidden mb-6 bg-surface-container-high transition-transform duration-300 group-hover:scale-[1.02]">
+<img class="w-full h-full object-cover" data-alt="A clean top-down flat lay of electronic components, circuit boards, and vintage tech tools on a neutral gray surface. The scene is lit with professional soft-box lighting, emphasizing textures and clean lines in a sophisticated technology-themed editorial style. A restricted color palette of silver, black, and deep grays dominates the composition." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtsfLajyob_uhrDeddI_NB6wXq8I7HUkcuh1onDXITp1JJKUnuG5g2-1IwW0c-Q7rxfP_s73jBq_YavDkDMj50QZRn5Xtc5qQooMNTLMmqZMWaWoG3K8kgMwyfYQv9FW3nr2lR3ly3U3lIGe8KbuMx5tt1ynJQ8JNmXwG1YIqDv110E89aK9Z31I31kIkMNJTRO9RDfZGCMhAL0-T3ALv2RY4XhxHO_FXK9kOjb424ZzzOqZO9_Mqz3z2evULxgpbJm7ylnwiXKQ0"/>
+</div>
+<span class="text-primary font-bold text-caption uppercase tracking-wider mb-2 block">Technology</span>
+<h4 class="font-headline-md text-headline-md mb-4 group-hover:text-primary transition-colors">The Slow Tech Movement: Reclaiming Focus</h4>
+<p class="text-on-surface-variant line-clamp-2">How intentional disconnection is becoming the ultimate luxury in a hyper-connected world.</p>
+</div>
+<!-- Related Card 2 -->
+<div class="group cursor-pointer">
+<div class="aspect-[16/10] rounded-xl overflow-hidden mb-6 bg-surface-container-high transition-transform duration-300 group-hover:scale-[1.02]">
+<img class="w-full h-full object-cover" data-alt="A minimalist architectural interior showing a vast, open-plan workspace with high ceilings and floor-to-ceiling windows. The room is flooded with natural morning light, creating a bright and airy atmosphere. White walls and light wood furniture emphasize a clean, modern aesthetic. The focus is on a single, perfectly arranged desk near the window." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSSDSaEPkQ7Euot3oI0vGESglzB8cRnjqm9TirGY0QidmFUMuMO3tSmaIqzz4rmi8TviXhlgNGqGMAdvREbFGcCuPsslo3W3H4deaP88ExVve_-Qb0IVPV3DNzjkKAExyJFXiFf9KfHA7TDQoIWECiaiSB2iY308_IdGvYX8Z_4i5YkTO1O4TlLH4qW-xDBSfIQ6gNIRtSeESMvt9HoN6kMCYUo7wjPYyWFLx-bqFySxweyt3zIvscAl33RtPLmt-R5cAqHNvvigk"/>
+</div>
+<span class="text-primary font-bold text-caption uppercase tracking-wider mb-2 block">Architecture</span>
+<h4 class="font-headline-md text-headline-md mb-4 group-hover:text-primary transition-colors">Minimalism in the Digital Workplace</h4>
+<p class="text-on-surface-variant line-clamp-2">Designing virtual spaces that promote cognitive clarity and reduce mental load.</p>
+</div>
+<!-- Related Card 3 -->
+<div class="group cursor-pointer">
+<div class="aspect-[16/10] rounded-xl overflow-hidden mb-6 bg-surface-container-high transition-transform duration-300 group-hover:scale-[1.02]">
+<img class="w-full h-full object-cover" data-alt="A high-contrast macro photograph of light reflecting off a dark computer screen displaying lines of elegant, colorful code. The lighting is moody and focused, with deep blacks and vibrant neon blue and purple highlights. The style is professional and crisp, evoking a sense of deep concentration and technical mastery within a modern development environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAgbUXzVUESajmB-5x2z4ChfZh_ue_qKiYJ33KFhroPAVgsC4_4xMyel4bATPbU-ihaX66ZNmqOZulWtI1nF278BYXHojR3RyTdkQ_CVOaX7MwYlYNmYYbp5W5eQhPzOkh3vt1ILyvSo56YfJYTngYYnE_Pjvl-ZofKUE5MapffcMKbGKefIPdcKviAlltnawQ1iOBUwzbqohOX7wtJEVuiomzSorzsLO4pLtQLXEzC97VVG-V9udpobFv5wl1Rw3JE3YoeYAmbD-Q"/>
+</div>
+<span class="text-primary font-bold text-caption uppercase tracking-wider mb-2 block">Engineering</span>
+<h4 class="font-headline-md text-headline-md mb-4 group-hover:text-primary transition-colors">Code as Poetry: The Aesthetics of Programming</h4>
+<p class="text-on-surface-variant line-clamp-2">Exploring the hidden beauty found within logical structures and clean documentation.</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer (Shared Component) -->
+<footer class="bg-surface-container-lowest dark:bg-inverse-surface border-t border-outline-variant full-width py-12 mt-20">
+<div class="max-w-container-max mx-auto px-margin-desktop flex flex-col md:flex-row justify-between items-center gap-4">
+<div class="flex flex-col gap-2">
+<span class="font-headline-md text-headline-md font-bold text-on-surface">Ink &amp; Insight</span>
+<p class="text-on-surface-variant font-caption text-caption">© 2024 Ink &amp; Insight. All rights reserved.</p>
+</div>
+<div class="flex gap-8">
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-caption text-caption" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-caption text-caption" href="#">Terms of Service</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-caption text-caption" href="#">RSS Feed</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-caption text-caption" href="#">Sitemap</a>
+</div>
+</div>
+</footer>
+</body></html>

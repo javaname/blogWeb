@@ -1,0 +1,21 @@
+{
+  "status": 401,
+  "headers": {
+    "Content-Type": [
+      "application/json"
+    ]
+  },
+  "body": {
+    "error": {
+      "code": 401,
+      "data": {
+        "code": "auth_required",
+        "message": "缺少 Bearer Token",
+        "request_id": "1"
+      },
+      "message": "缺少 Bearer Token"
+    },
+    "id": 1,
+    "jsonrpc": "2.0"
+  }
+}

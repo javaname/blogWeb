@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<title>{{ .article.Title }} &mdash; {{ .site.title }}</title>
+<meta name="description" content="{{ .article.Excerpt }}">
+{{ template "head" . }}
+</head>
+<body class="bg-surface-container-lowest text-on-surface antialiased" data-page="article">
+<div class="reading-progress" id="reading-progress"></div>
+{{ template "topnav" . }}
+
+<main class="w-full">
+  <header class="w-full bg-surface-container-low pt-12 md:pt-20 pb-16">
+    <div class="max-w-article-max mx-auto px-margin-mobile md:px-0">
+      <div class="flex flex-wrap gap-2 mb-6">
+        {{ if .article.Category }}
+        <a href="/categories/{{ .article.Category.Slug }}" class="bg-primary-fixed text-on-primary-fixed px-3 py-1 rounded-full text-caption font-interface-md uppercase tracking-wider">{{ categoryName .article.Category.Slug .article.Category.Name }}</a>
+        {{ end }}
+        {{ if .article.IsPinned }}
+        <span class="bg-primary-container text-on-primary-container px-3 py-1 rounded-full text-caption font-interface-md uppercase tracking-wider">精选</span>
+        {{ end }}
+      </div>
+      <h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-on-surface mb-8 leading-tight">{{ .article.Title }}</h1>
+      <div class="flex items-center gap-4 mb-12 flex-wrap">
+        <div class="w-12 h-12 rounded-full overflow-hidden bg-outline-variant">
+          <img class="w-full h-full object-cover" src="{{ if .article.Author }}{{ authorAvatar .article.Author.Username }}{{ else }}{{ authorAvatar "" }}{{ end }}" alt="{{ if .article.Author }}{{ authorName .article.Author.Username }}{{ else }}匿名作者{{ end }}">
+        </div>
+        <div>
+          <p class="font-interface-md text-interface-md text-on-surface">{{ if .article.Author }}{{ authorName .article.Author.Username }}{{ else }}匿名作者{{ end }}</p>
+          <p class="font-caption text-caption text-on-surface-variant">{{ formatDate .article.PublishedAt }} &middot; {{ .article.ReadTimeMin }} 分钟阅读</p>
+        </div>
+        <div class="ml-auto flex gap-3 items-center">
+          <button class="like-button flex items-center gap-1 px-3 py-2 rounded-full text-on-surface-variant hover:text-error hover:bg-surface-container-high transition-colors {{ if .article.UserLiked }}text-error{{ end }}" type="button" data-like-button data-slug="{{ .article.Slug }}" aria-label="喜欢文章">
+            <span class="material-symbols-outlined like-icon">{{ if .article.UserLiked }}favorite{{ else }}favorite_border{{ end }}</span>
+            <span class="like-count font-interface-md text-interface-md">{{ .article.LikeCount }}</span>
+          </button>
+          <button type="button" class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors" aria-label="分享" data-share-page>
+            <span class="material-symbols-outlined">share</span>
+          </button>
+          <button type="button" class="p-2 hover:bg-surface-container-high rounded-full transition-colors {{ if .article.UserBookmarked }}text-primary bookmarked{{ else }}text-on-surface-variant{{ end }}" aria-label="收藏" data-bookmark-button data-slug="{{ .article.Slug }}">
+            <span class="material-symbols-outlined bookmark-icon">{{ if .article.UserBookmarked }}bookmark{{ else }}bookmark_border{{ end }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    {{ if .article.CoverImage }}
+    <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
+      <div class="aspect-[21/9] w-full rounded-xl overflow-hidden shadow-sm bg-surface-container-high">
+        <img class="w-full h-full object-cover" src="{{ .article.CoverImage }}" alt="{{ .article.Title }}">
+      </div>
+    </div>
+    {{ end }}
+  </header>
+
+  <article class="max-w-article-max mx-auto px-margin-mobile md:px-0 py-16">
+    <div class="font-article-body-mobile md:font-article-body text-article-body-mobile md:text-article-body text-on-surface">
+      <div class="article-html">{{ .article.ContentHTML | safeHTML }}</div>
+    </div>
+
+    {{ if .highlights }}
+    <div class="my-12 p-8 border border-outline-variant rounded-xl bg-surface-container-lowest shadow-sm">
+      <h3 class="font-interface-md text-interface-md font-bold mb-4">关键要点</h3>
+      <ul class="list-disc pl-6 space-y-3 font-interface-md text-interface-md">
+        {{ range .highlights }}
+        <li>{{ . }}</li>
+        {{ end }}
+      </ul>
+    </div>
+    {{ end }}
+
+    {{ if .article.Author }}
+    <section class="mt-20 pt-12 border-t border-outline-variant">
+      <div class="flex flex-col md:flex-row gap-8 items-center bg-surface-container-low p-8 rounded-xl">
+        <img class="w-24 h-24 rounded-full shrink-0 object-cover" src="{{ authorAvatar .article.Author.Username }}" alt="{{ authorName .article.Author.Username }}">
+        <div class="text-center md:text-left">
+          <h4 class="font-headline-md text-headline-md mb-2">作者：{{ authorName .article.Author.Username }}</h4>
+          <p class="text-on-surface-variant mb-4">{{ authorBio .article.Author.Username }}</p>
+          <div class="flex justify-center md:justify-start gap-4">
+            <button class="text-primary font-bold hover:underline" type="button" data-follow-author data-author-id="{{ .article.Author.ID }}" data-author-name="{{ authorName .article.Author.Username }}" data-following="{{ if .article.AuthorFollowed }}true{{ else }}false{{ end }}">{{ if .article.AuthorFollowed }}已关注{{ else }}关注{{ end }} {{ authorName .article.Author.Username }}</button>
+          </div>
+        </div>
+      </div>
+    </section>
+    {{ end }}
+  </article>
+
+  <section class="bg-surface-container-low py-20">
+    <div class="max-w-article-max mx-auto px-margin-mobile md:px-0">
+      <h3 class="font-headline-md text-headline-md mb-8 flex items-center gap-3">评论 <span class="bg-primary-container text-on-primary-container px-2 py-0.5 rounded text-caption">{{ len .comments }}</span></h3>
+      <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant mb-12">
+        <form data-comment-form data-slug="{{ .article.Slug }}" aria-label="发表评论">
+          <input type="hidden" name="parent_id" data-comment-parent-id>
+          <div class="hidden mb-4 rounded-lg bg-primary-container px-4 py-3 text-on-primary-container text-caption font-caption" data-reply-target>
+            正在回复 <strong data-reply-author></strong>
+            <button type="button" class="ml-3 font-bold underline" data-reply-cancel>取消</button>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-4">
+            <label class="sr-only" for="comment-author">昵称</label>
+            <input id="comment-author" name="author_name" class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary font-interface-md text-interface-md text-on-surface placeholder-on-surface-variant" placeholder="昵称" maxlength="40">
+            <label class="sr-only" for="comment-content">评论内容</label>
+            <textarea id="comment-content" name="content" class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary font-interface-md text-interface-md text-on-surface placeholder-on-surface-variant" placeholder="加入讨论..." rows="3" maxlength="500" required></textarea>
+          </div>
+          <p class="mt-3 text-caption text-on-surface-variant">评论需保持友善、理性，不得包含政治、暴力、血腥等敏感内容。</p>
+          <p class="mt-2 text-caption text-on-surface-variant" data-comment-message role="status"></p>
+          <div class="flex justify-end mt-4">
+            <button type="submit" class="bg-primary text-on-primary px-8 py-2 rounded-lg font-interface-md">发表评论</button>
+          </div>
+        </form>
+      </div>
+      {{ if .comments }}
+      <div class="space-y-8">
+        {{ range .comments }}
+        <div class="flex gap-4" data-comment-id="{{ .ID }}">
+          <img class="w-10 h-10 rounded-full bg-outline-variant object-cover" src="{{ authorAvatar .AuthorName }}" alt="{{ .AuthorName }}">
+          <div class="flex-1">
+            <div class="flex items-center gap-3 mb-1">
+              <span class="font-bold text-on-surface">{{ .AuthorName }}</span>
+              <span class="text-caption text-on-surface-variant">{{ .RelativeTime }}</span>
+            </div>
+            <p class="text-on-surface-variant mb-3">{{ .Content }}</p>
+            <button class="text-primary text-caption font-bold flex items-center gap-1" type="button" data-comment-reply data-comment-id="{{ .ID }}" data-comment-author="{{ .AuthorName }}">
+              <span class="material-symbols-outlined text-[16px]">reply</span> 回复
+            </button>
+            {{ if .Replies }}
+            <div class="mt-5 space-y-5 border-l border-outline-variant pl-5">
+              {{ range .Replies }}
+              <div class="flex gap-3" data-comment-id="{{ .ID }}">
+                <img class="w-8 h-8 rounded-full bg-outline-variant object-cover" src="{{ authorAvatar .AuthorName }}" alt="{{ .AuthorName }}">
+                <div>
+                  <div class="flex items-center gap-3 mb-1">
+                    <span class="font-bold text-on-surface">{{ .AuthorName }}</span>
+                    <span class="text-caption text-on-surface-variant">{{ .RelativeTime }}</span>
+                  </div>
+                  <p class="text-on-surface-variant">{{ .Content }}</p>
+                </div>
+              </div>
+              {{ end }}
+            </div>
+            {{ end }}
+          </div>
+        </div>
+        {{ end }}
+      </div>
+      {{ else }}
+      <div class="text-center py-8 text-on-surface-variant font-interface-md text-interface-md">成为第一个分享想法的人。</div>
+      {{ end }}
+    </div>
+  </section>
+  {{ if .related }}
+  <section class="py-20 bg-surface-container-lowest">
+    <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
+      <h3 class="font-headline-md text-headline-md mb-12">相关文章</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+        {{ range .related }}
+        <a href="/articles/{{ .Slug }}" class="group cursor-pointer block" data-article-slug="{{ .Slug }}">
+          <div class="aspect-[16/10] rounded-xl overflow-hidden mb-6 bg-surface-container-high transition-transform duration-300 group-hover:scale-[1.02]">
+            {{ if .CoverImage }}
+            <img class="w-full h-full object-cover" src="{{ .CoverImage }}" alt="{{ .Title }}">
+            {{ else }}
+            <div class="w-full h-full flex items-center justify-center text-on-surface-variant">
+              <span class="material-symbols-outlined text-[48px] opacity-40">image</span>
+            </div>
+            {{ end }}
+          </div>
+          {{ if .Category }}
+          <span class="text-primary font-bold text-caption uppercase tracking-wider mb-2 block">{{ categoryName .Category.Slug .Category.Name }}</span>
+          {{ end }}
+          <h4 class="font-headline-md text-headline-md mb-4 group-hover:text-primary transition-colors">{{ .Title }}</h4>
+          <p class="text-on-surface-variant line-clamp-2">{{ .Excerpt }}</p>
+        </a>
+        {{ end }}
+      </div>
+    </div>
+  </section>
+  {{ end }}
+</main>
+
+{{ template "sitefooter" . }}
+<script src="/assets/site.js" defer></script>
+</body>
+</html>
