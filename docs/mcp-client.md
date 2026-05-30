@@ -5,6 +5,16 @@
 - `stdio`
 - HTTP `POST /mcp`
 
+## Rust 启动命令
+
+```powershell
+cargo run -- db migrate --apply -config config.yaml
+cargo run -- serve-mcp -transport stdio -config config.yaml
+cargo run -- serve-mcp -transport http -config config.yaml
+```
+
+`serve-mcp` 只做 migration check，不会自动创建或迁移数据库。
+
 ## HTTP 请求要求
 
 - `Content-Type: application/json`
@@ -22,7 +32,14 @@
 
 ## Token 管理
 
-- 使用 `go run . mcp issue-token ...` 签发
+- 使用 `cargo run -- mcp issue-token -config config.yaml -name <name> -scopes <scopes> -transport http` 签发
 - 明文 token 只显示一次
 - 数据库存储的是哈希，不是明文
-- 使用 `go run . mcp revoke-token ...` 立即撤销
+- 使用 `cargo run -- mcp revoke-token -config config.yaml -name <name>` 立即撤销
+
+## Rust 实现说明
+
+- HTTP MCP 已支持 resources、tools、prompts、audit 和 read/write/publish/upload 分桶限流。
+- stdio 默认只暴露只读能力；写能力需要显式设置 `mcp.stdio_write_enabled=true`。
+- 当前 Rust 限流为进程内计数器；多进程共享限流需后续接 Redis。
+- 上传 tool 会校验真实图片签名并保存原始图片字节，不做 Go 版 reencode。

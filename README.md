@@ -2,7 +2,7 @@
 
 个人博客系统，包含：
 
-- Go 后端 Web 站点
+- Rust 后端 Web 站点（Go 实现暂保留为兼容基线）
 - React 管理后台
 - MCP Server（stdio / HTTP）
 
@@ -11,21 +11,24 @@
 ### Web
 
 ```powershell
-go run . serve-web -config config.yaml
+cargo run -- db migrate --apply -config config.yaml
+cargo run -- serve-web -config config.yaml
 ```
 
 默认命令也是 `serve-web`：
 
 ```powershell
-go run .
+cargo run -- -config config.yaml
 ```
 
 ### MCP
 
 ```powershell
-go run . serve-mcp --transport=stdio -config config.yaml
-go run . serve-mcp --transport=http -config config.yaml
+cargo run -- serve-mcp -transport stdio -config config.yaml
+cargo run -- serve-mcp -transport http -config config.yaml
 ```
+
+`serve-web` 和 `serve-mcp` 启动时只检查迁移状态，不会隐式创建数据库、执行迁移或写入 seed 数据。新库先运行 `db migrate --dry-run` / `db migrate --apply`。
 
 ### 前端
 
@@ -37,8 +40,8 @@ npm run dev
 ## 测试
 
 ```powershell
-go test ./...
-go build ./...
+cargo test --offline
+go test ./internal/compat -run TestGenerateGoldenBaseline -count=1
 ```
 
 ## MCP Token
@@ -46,13 +49,13 @@ go build ./...
 签发：
 
 ```powershell
-go run . mcp issue-token --name reader --scopes blog.read --transport http
+cargo run -- mcp issue-token -config config.yaml -name reader -scopes blog.read -transport http
 ```
 
 撤销：
 
 ```powershell
-go run . mcp revoke-token --name reader
+cargo run -- mcp revoke-token -config config.yaml -name reader
 ```
 
 ## 文档

@@ -173,6 +173,9 @@
   - `cargo test --offline --test mcp`
   - `cargo test --offline`
   - `go test ./internal/compat -run TestGenerateGoldenBaseline -count=1`
+- 已更新运行文档：
+  - `README.md` 改为 Rust 启动、迁移、MCP token 和验证命令。
+  - `docs/mcp-client.md` 补充 Rust `serve-mcp`、token 管理、stdio 默认只读、进程内限流和上传不 reencode 的实现说明。
 - 已继续按 TDD 补 MCP audit 与 rate limit：
   - 新增失败测试覆盖 HTTP 成功请求和缺 Bearer Token 拒绝请求写入 `mcp_audit_logs`，且 payload 只保存 `sha256:` digest，不包含原始 payload。
   - 新增失败测试覆盖 read 与 upload 分桶限流，超过限制返回 429 `rate_limited`。

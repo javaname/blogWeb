@@ -95,7 +95,7 @@ Stitch 项目：
   - [complete] `POST /api/newsletter/subscribe`
   - [complete] `POST /api/articles/:slug/comments`
   - [pending] 读者互动速率限制、敏感词完整策略、前台页面评论展示完全复刻
-- [in_progress] 切片 G：Rust 启动命令
+- [complete] 切片 G：Rust 启动命令
   - [complete] `blogweb serve-web -config <path>` 启动前只做 migration check，未迁移时失败且不创建数据库
   - [complete] 支持 Go 风格默认命令：无子命令或首参数为 flag 时按 `serve-web` 解析
   - [complete] `blogweb serve-mcp -transport http -config <path>` 启动前只做 migration check，未迁移时失败且不创建数据库
@@ -110,7 +110,7 @@ Stitch 项目：
   - [complete] `serve-mcp -transport stdio`：从 stdin 读取 JSON-RPC 到 EOF，默认隐藏/拒绝写能力
   - [complete] MCP HTTP audit：成功、失败、拒绝请求写入 `mcp_audit_logs`，payload 仅保存 digest
   - [complete] MCP HTTP rate limit：read/write/publish/upload 分桶限流
-  - [pending] 运行文档
+  - [complete] 运行文档：README 与 MCP 客户端接入说明补充 Rust CLI 命令和行为差异
 - [pending] 一次性迁移配置、数据库、认证会话、文章/分类/评论/互动、上传和 MCP 能力
 - [pending] 更新启动文档与验证命令
 
