@@ -9,9 +9,12 @@ use serde::Deserialize;
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 use sqlx::{Pool, QueryBuilder, Row, Sqlite};
+use std::collections::HashMap;
+use std::io::{Read, Write};
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use crate::{
     config::Config,
@@ -32,6 +35,13 @@ static TOKEN_COUNTER: AtomicU64 = AtomicU64::new(1);
 struct McpState {
     db: Pool<Sqlite>,
     config: Config,
+    rate_limits: Arc<Mutex<HashMap<String, RateBucket>>>,
+}
+
+#[derive(Debug)]
+struct RateBucket {
+    started: Instant,
+    count: i64,
 }
 
 #[derive(Debug, Deserialize)]
@@ -59,7 +69,11 @@ pub fn router_with_pool_and_config(pool: Pool<Sqlite>, config: Config) -> Router
     let path = config.mcp.http_path.clone();
     Router::new()
         .route(&path, post(http_handler))
-        .with_state(McpState { db: pool, config })
+        .with_state(McpState {
+            db: pool,
+            config,
+            rate_limits: Arc::new(Mutex::new(HashMap::new())),
+        })
 }
 
 pub async fn issue_token(
@@ -144,15 +158,59 @@ async fn http_handler(
     let required_scope = required_scope_for_request(&request);
     let client = match authenticate_http(&state, &headers, required_scope).await {
         Ok(client) => client,
-        Err(err) => return mcp_error_response(request.id, err),
+        Err(err) => {
+            write_audit(
+                &state.db,
+                None,
+                "http",
+                audit_action_type(&request),
+                audit_target(&request),
+                required_scope.unwrap_or_default(),
+                "denied",
+                &id_to_request_id(request.id.as_ref()),
+                err.code,
+                &body,
+            )
+            .await;
+            return mcp_error_response(request.id, err);
+        }
     };
     let _ = sqlx::query("UPDATE mcp_clients SET last_used_at = CURRENT_TIMESTAMP WHERE id = ?")
         .bind(client.id)
         .execute(&state.db)
         .await;
+    if let Some(err) = enforce_rate_limit(&state, client.id, &request) {
+        write_audit(
+            &state.db,
+            Some(client.id),
+            "http",
+            audit_action_type(&request),
+            audit_target(&request),
+            required_scope.unwrap_or_default(),
+            "denied",
+            &id_to_request_id(request.id.as_ref()),
+            err.code,
+            &body,
+        )
+        .await;
+        return mcp_error_response(request.id, err);
+    }
 
-    match dispatch_rpc(&state, &request).await {
+    match dispatch_rpc(&state, &request, true).await {
         Ok(result) => {
+            write_audit(
+                &state.db,
+                Some(client.id),
+                "http",
+                audit_action_type(&request),
+                audit_target(&request),
+                required_scope.unwrap_or_default(),
+                "success",
+                &id_to_request_id(request.id.as_ref()),
+                "",
+                &body,
+            )
+            .await;
             if request.id.is_none() {
                 return Response::builder()
                     .status(StatusCode::ACCEPTED)
@@ -168,7 +226,22 @@ async fn http_handler(
                 }),
             )
         }
-        Err(err) => mcp_error_response(request.id, err),
+        Err(err) => {
+            write_audit(
+                &state.db,
+                Some(client.id),
+                "http",
+                audit_action_type(&request),
+                audit_target(&request),
+                required_scope.unwrap_or_default(),
+                "error",
+                &id_to_request_id(request.id.as_ref()),
+                err.code,
+                &body,
+            )
+            .await;
+            mcp_error_response(request.id, err)
+        }
     }
 }
 
@@ -287,6 +360,7 @@ async fn authenticate_http(
 async fn dispatch_rpc(
     state: &McpState,
     request: &JsonRpcRequest,
+    allow_writes: bool,
 ) -> std::result::Result<Value, McpError> {
     match request.method.as_str() {
         "initialize" => Ok(json!({
@@ -301,18 +375,21 @@ async fn dispatch_rpc(
                 "tools": {},
                 "prompts": {},
             },
-            "resources": resource_templates(true),
+            "resources": resource_templates(allow_writes),
         })),
-        "resources/list" => Ok(json!({ "resources": resource_templates(true) })),
+        "resources/list" => Ok(json!({ "resources": resource_templates(allow_writes) })),
         "resources/read" => {
             let uri = request
                 .params
                 .get("uri")
                 .and_then(Value::as_str)
                 .unwrap_or_default();
+            if !allow_writes && uri.starts_with("blog://drafts/") {
+                return Err(stdio_write_forbidden());
+            }
             read_resource(state, uri).await
         }
-        "tools/list" => Ok(json!({ "tools": tools_catalog(true) })),
+        "tools/list" => Ok(json!({ "tools": tools_catalog(allow_writes) })),
         "tools/call" => {
             let name = request
                 .params
@@ -322,6 +399,9 @@ async fn dispatch_rpc(
             let null_arguments = Value::Null;
             let arguments = request.params.get("arguments").unwrap_or(&null_arguments);
             if is_write_tool(name) {
+                if !allow_writes {
+                    return Err(stdio_write_forbidden());
+                }
                 call_write_tool(state, name, arguments).await
             } else {
                 call_read_tool(state, name, arguments).await
@@ -344,6 +424,59 @@ async fn dispatch_rpc(
             "不支持的方法",
         )),
     }
+}
+
+pub async fn serve_stdio<R, W, E>(
+    pool: Pool<Sqlite>,
+    config: Config,
+    mut input: R,
+    mut output: W,
+    mut stderr: E,
+) -> Result<()>
+where
+    R: Read,
+    W: Write,
+    E: Write,
+{
+    let mut data = String::new();
+    input.read_to_string(&mut data)?;
+    let state = McpState {
+        db: pool,
+        config,
+        rate_limits: Arc::new(Mutex::new(HashMap::new())),
+    };
+    for line in data.lines().map(str::trim).filter(|line| !line.is_empty()) {
+        let request = match serde_json::from_str::<JsonRpcRequest>(line) {
+            Ok(request) => request,
+            Err(err) => {
+                let _ = writeln!(stderr, "{err}");
+                write_json_line(
+                    &mut output,
+                    &json!({
+                        "jsonrpc": "2.0",
+                        "error": {
+                            "code": 400,
+                            "message": "JSON-RPC 请求格式错误",
+                        }
+                    }),
+                )?;
+                continue;
+            }
+        };
+        let id = request.id.clone();
+        match dispatch_rpc(&state, &request, state.config.mcp.stdio_write_enabled).await {
+            Ok(result) => write_json_line(
+                &mut output,
+                &json!({
+                    "jsonrpc": "2.0",
+                    "id": id,
+                    "result": result,
+                }),
+            )?,
+            Err(err) => write_json_line(&mut output, &stdio_error_response(id, err))?,
+        }
+    }
+    Ok(())
 }
 
 async fn call_write_tool(
@@ -1286,6 +1419,144 @@ fn upload_type_allowed(config: &Config, mime_type: &str) -> bool {
         .any(|allowed| allowed.eq_ignore_ascii_case(mime_type))
 }
 
+async fn write_audit(
+    pool: &Pool<Sqlite>,
+    client_id: Option<i64>,
+    transport: &str,
+    action_type: &str,
+    target: String,
+    scope: &str,
+    status: &str,
+    request_id: &str,
+    error_code: &str,
+    payload: &str,
+) {
+    let payload_digest = if payload.is_empty() {
+        String::new()
+    } else {
+        hash_digest(payload)
+    };
+    let _ = sqlx::query(
+        "INSERT INTO mcp_audit_logs (
+            client_id, transport, action_type, target, scope, status,
+            request_id, actor_ip, error_code, payload_digest, created_at
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, '', ?, ?, CURRENT_TIMESTAMP)",
+    )
+    .bind(client_id)
+    .bind(transport)
+    .bind(action_type)
+    .bind(target)
+    .bind(scope)
+    .bind(status)
+    .bind(request_id)
+    .bind(error_code)
+    .bind(payload_digest)
+    .execute(pool)
+    .await;
+}
+
+fn audit_action_type(request: &JsonRpcRequest) -> &'static str {
+    match request.method.as_str() {
+        "resources/read" => "resource_read",
+        "prompts/get" => "prompt_get",
+        _ => "tool_call",
+    }
+}
+
+fn audit_target(request: &JsonRpcRequest) -> String {
+    match request.method.as_str() {
+        "tools/call" => request
+            .params
+            .get("name")
+            .and_then(Value::as_str)
+            .filter(|value| !value.trim().is_empty())
+            .unwrap_or(&request.method)
+            .to_string(),
+        "resources/read" => request
+            .params
+            .get("uri")
+            .and_then(Value::as_str)
+            .filter(|value| !value.trim().is_empty())
+            .unwrap_or(&request.method)
+            .to_string(),
+        "prompts/get" => request
+            .params
+            .get("name")
+            .and_then(Value::as_str)
+            .filter(|value| !value.trim().is_empty())
+            .unwrap_or(&request.method)
+            .to_string(),
+        _ => request.method.clone(),
+    }
+}
+
+fn hash_digest(payload: &str) -> String {
+    let mut hasher = Sha256::new();
+    hasher.update(payload.as_bytes());
+    hasher.update([0]);
+    format!("sha256:{}", to_hex(&hasher.finalize()))
+}
+
+fn enforce_rate_limit(
+    state: &McpState,
+    client_id: i64,
+    request: &JsonRpcRequest,
+) -> Option<McpError> {
+    let (bucket, max, window) = rate_limit_bucket(state, request)?;
+    let key = format!("{client_id}:{bucket}");
+    let mut buckets = state.rate_limits.lock().ok()?;
+    let now = Instant::now();
+    let entry = buckets.entry(key).or_insert(RateBucket {
+        started: now,
+        count: 0,
+    });
+    if now.duration_since(entry.started) >= window {
+        entry.started = now;
+        entry.count = 0;
+    }
+    entry.count += 1;
+    if entry.count > max {
+        Some(McpError::new(
+            StatusCode::TOO_MANY_REQUESTS,
+            "rate_limited",
+            "MCP 请求过于频繁，请稍后再试",
+        ))
+    } else {
+        None
+    }
+}
+
+fn rate_limit_bucket(
+    state: &McpState,
+    request: &JsonRpcRequest,
+) -> Option<(&'static str, i64, Duration)> {
+    let cfg = &state.config.mcp.rate_limit;
+    match request.method.as_str() {
+        "resources/read" => Some(("read", cfg.read_per_minute, Duration::from_secs(60))),
+        "tools/call" => {
+            let name = request
+                .params
+                .get("name")
+                .and_then(Value::as_str)
+                .unwrap_or("");
+            match name {
+                "upload_image" => Some(("upload", cfg.upload_per_10min, Duration::from_secs(600))),
+                "publish_article" | "unpublish_article" => {
+                    Some(("publish", cfg.publish_per_10min, Duration::from_secs(600)))
+                }
+                value if is_write_tool(value) => {
+                    Some(("write", cfg.write_per_minute, Duration::from_secs(60)))
+                }
+                _ => Some(("read", cfg.read_per_minute, Duration::from_secs(60))),
+            }
+        }
+        "prompts/get" | "tools/list" | "resources/list" | "initialize" | "prompts/list" => {
+            Some(("read", cfg.read_per_minute, Duration::from_secs(60)))
+        }
+        _ => None,
+    }
+}
+
 fn upload_token() -> String {
     let mut bytes = [0_u8; 16];
     if fill_random(&mut bytes).is_ok() {
@@ -1559,6 +1830,34 @@ fn mcp_error_response(id: Option<Value>, err: McpError) -> Response<Body> {
         _ => {}
     }
     response
+}
+
+fn stdio_error_response(id: Option<Value>, err: McpError) -> Value {
+    json!({
+        "jsonrpc": "2.0",
+        "id": id,
+        "error": {
+            "code": err.status.as_u16(),
+            "message": err.message,
+            "data": {
+                "code": err.code,
+            }
+        }
+    })
+}
+
+fn write_json_line<W: Write>(writer: &mut W, value: &Value) -> Result<()> {
+    serde_json::to_writer(&mut *writer, value)?;
+    writer.write_all(b"\n")?;
+    Ok(())
+}
+
+fn stdio_write_forbidden() -> McpError {
+    McpError::new(
+        StatusCode::FORBIDDEN,
+        "forbidden_scope",
+        "stdio 写能力默认关闭，请开启 mcp.stdio_write_enabled",
+    )
 }
 
 fn id_to_request_id(id: Option<&Value>) -> String {

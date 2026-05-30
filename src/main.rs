@@ -156,9 +156,13 @@ async fn run() -> Result<()> {
                     axum::serve(listener, router).await?;
                     Ok(())
                 }
-                "stdio" => Err(blogweb::error::AppError::Config(
-                    "serve-mcp stdio is not implemented in the Rust backend yet".into(),
-                )),
+                "stdio" => {
+                    let stdin = std::io::stdin();
+                    let stdout = std::io::stdout();
+                    let stderr = std::io::stderr();
+                    blogweb::mcp::serve_stdio(pool, cfg, stdin.lock(), stdout.lock(), stderr.lock())
+                        .await
+                }
                 other => Err(blogweb::error::AppError::Config(format!(
                     "unsupported mcp transport {other}"
                 ))),

@@ -91,6 +91,16 @@ pub struct McpConfig {
     pub protocol_versions: Vec<String>,
     pub require_origin_check: bool,
     pub allowed_origins: Vec<String>,
+    pub rate_limit: McpRateLimitConfig,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(default)]
+pub struct McpRateLimitConfig {
+    pub read_per_minute: i64,
+    pub write_per_minute: i64,
+    pub publish_per_10min: i64,
+    pub upload_per_10min: i64,
 }
 
 impl Default for Config {
@@ -204,6 +214,18 @@ impl Default for McpConfig {
                 "https://chatgpt.com".into(),
                 "https://chat.openai.com".into(),
             ],
+            rate_limit: McpRateLimitConfig::default(),
+        }
+    }
+}
+
+impl Default for McpRateLimitConfig {
+    fn default() -> Self {
+        Self {
+            read_per_minute: 120,
+            write_per_minute: 30,
+            publish_per_10min: 10,
+            upload_per_10min: 10,
         }
     }
 }
@@ -255,6 +277,15 @@ impl Config {
         if self.mcp.protocol_versions.is_empty() {
             return Err(AppError::Config(
                 "mcp.protocol_versions must not be empty".into(),
+            ));
+        }
+        if self.mcp.rate_limit.read_per_minute <= 0
+            || self.mcp.rate_limit.write_per_minute <= 0
+            || self.mcp.rate_limit.publish_per_10min <= 0
+            || self.mcp.rate_limit.upload_per_10min <= 0
+        {
+            return Err(AppError::Config(
+                "mcp.rate_limit values must be greater than 0".into(),
             ));
         }
         if self.admin.init_username.is_empty() {

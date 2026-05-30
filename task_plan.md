@@ -107,7 +107,10 @@ Stitch 项目：
   - [complete] MCP HTTP 写 `tools/call`：`create_article_draft`、`update_article`、`publish_article`、`unpublish_article`、`create_category`、`update_category`
   - [complete] MCP HTTP 上传 `tools/call`：`upload_image` base64 解码、大小限制、图片类型识别和文件落盘
   - [complete] MCP HTTP prompts：`prompts/list`、`prompts/get` 三个模板和参数校验
-  - [pending] `serve-mcp` stdio transport、MCP audit/rate limit、运行文档
+  - [complete] `serve-mcp -transport stdio`：从 stdin 读取 JSON-RPC 到 EOF，默认隐藏/拒绝写能力
+  - [complete] MCP HTTP audit：成功、失败、拒绝请求写入 `mcp_audit_logs`，payload 仅保存 digest
+  - [complete] MCP HTTP rate limit：read/write/publish/upload 分桶限流
+  - [pending] 运行文档
 - [pending] 一次性迁移配置、数据库、认证会话、文章/分类/评论/互动、上传和 MCP 能力
 - [pending] 更新启动文档与验证命令
 

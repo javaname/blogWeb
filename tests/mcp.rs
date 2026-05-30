@@ -4,7 +4,11 @@ use blogweb::{config::Config, db, mcp};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 use sqlx::Row;
-use std::{fs, process::Command};
+use std::{
+    fs,
+    io::Write,
+    process::{Command, Stdio},
+};
 use tower::ServiceExt;
 
 const SESSION_SECRET: &str = "custom-session-secret-with-32-bytes";
@@ -621,6 +625,111 @@ async fn mcp_http_prompts_list_and_get_validate_arguments() {
     assert_eq!(invalid.1["error"]["data"]["code"], "invalid_params");
 }
 
+#[tokio::test]
+async fn mcp_http_writes_audit_logs_for_success_and_denied_requests_without_raw_payload() {
+    let pool = migrated_pool().await;
+    let token = "audit-token";
+    insert_mcp_client(&pool, "audited", token, &["blog.read"]).await;
+
+    let success = perform_mcp_json(
+        pool.clone(),
+        r#"{"jsonrpc":"2.0","id":90,"method":"tools/list","params":{"note":"secret raw payload"}}"#,
+        token,
+    )
+    .await;
+    assert_eq!(success.0, StatusCode::OK);
+    let row = sqlx::query(
+        "SELECT transport, action_type, target, status, request_id, error_code, payload_digest
+         FROM mcp_audit_logs ORDER BY id DESC LIMIT 1",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(row.get::<String, _>("transport"), "http");
+    assert_eq!(row.get::<String, _>("action_type"), "tool_call");
+    assert_eq!(row.get::<String, _>("target"), "tools/list");
+    assert_eq!(row.get::<String, _>("status"), "success");
+    assert_eq!(row.get::<String, _>("request_id"), "90");
+    assert_eq!(row.get::<String, _>("error_code"), "");
+    let digest: String = row.get("payload_digest");
+    assert!(digest.starts_with("sha256:"));
+    assert!(!digest.contains("secret raw payload"));
+
+    let denied_response = mcp::router_with_pool_and_config(pool.clone(), Config::default())
+        .oneshot(mcp_request(
+            r#"{"jsonrpc":"2.0","id":91,"method":"initialize","params":{}}"#,
+            None,
+        ))
+        .await
+        .unwrap();
+    assert_eq!(denied_response.status(), StatusCode::UNAUTHORIZED);
+
+    let denied = sqlx::query(
+        "SELECT client_id, transport, action_type, target, status, request_id, error_code
+         FROM mcp_audit_logs ORDER BY id DESC LIMIT 1",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(denied.get::<Option<i64>, _>("client_id"), None);
+    assert_eq!(denied.get::<String, _>("transport"), "http");
+    assert_eq!(denied.get::<String, _>("action_type"), "tool_call");
+    assert_eq!(denied.get::<String, _>("target"), "initialize");
+    assert_eq!(denied.get::<String, _>("status"), "denied");
+    assert_eq!(denied.get::<String, _>("request_id"), "91");
+    assert_eq!(denied.get::<String, _>("error_code"), "auth_required");
+}
+
+#[tokio::test]
+async fn mcp_http_rate_limit_applies_to_read_and_upload_buckets() {
+    let pool = migrated_pool().await;
+    let token = "rate-token";
+    insert_mcp_client(&pool, "rate-client", token, &["blog.read", "blog.upload"]).await;
+    let upload_dir = tempfile::tempdir().unwrap();
+    let mut config = Config::default();
+    config.upload.dir = upload_dir.path().display().to_string();
+    config.mcp.rate_limit.read_per_minute = 1;
+    config.mcp.rate_limit.upload_per_10min = 1;
+    let router = mcp::router_with_pool_and_config(pool, config);
+
+    let first_read = router
+        .clone()
+        .oneshot(mcp_request(
+            r#"{"jsonrpc":"2.0","id":100,"method":"tools/list","params":{}}"#,
+            Some(token),
+        ))
+        .await
+        .unwrap();
+    assert_eq!(first_read.status(), StatusCode::OK);
+    let second_read = router
+        .clone()
+        .oneshot(mcp_request(
+            r#"{"jsonrpc":"2.0","id":101,"method":"tools/list","params":{}}"#,
+            Some(token),
+        ))
+        .await
+        .unwrap();
+    assert_eq!(second_read.status(), StatusCode::TOO_MANY_REQUESTS);
+
+    let upload_body = r#"{"jsonrpc":"2.0","id":102,"method":"tools/call","params":{"name":"upload_image","arguments":{"filename":"ok.png","mime_type":"image/png","content_base64":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAFgwJ/lAbQwQAAAABJRU5ErkJggg=="}}}"#;
+    let first_upload = router
+        .clone()
+        .oneshot(mcp_request(upload_body, Some(token)))
+        .await
+        .unwrap();
+    assert_eq!(first_upload.status(), StatusCode::OK);
+    let second_upload = router
+        .oneshot(mcp_request(upload_body, Some(token)))
+        .await
+        .unwrap();
+    assert_eq!(second_upload.status(), StatusCode::TOO_MANY_REQUESTS);
+    let body = axum::body::to_bytes(second_upload.into_body(), usize::MAX)
+        .await
+        .unwrap();
+    let payload: Value = serde_json::from_slice(&body).unwrap();
+    assert_eq!(payload["error"]["data"]["code"], "rate_limited");
+}
+
 #[test]
 fn serve_mcp_http_fails_when_database_is_not_migrated_without_creating_db() {
     let dir = tempfile::tempdir().unwrap();
@@ -642,6 +751,63 @@ fn serve_mcp_http_fails_when_database_is_not_migrated_without_creating_db() {
         !db_path.exists(),
         "serve-mcp must not create or migrate the target database"
     );
+}
+
+#[test]
+fn serve_mcp_stdio_processes_jsonrpc_until_eof_and_hides_write_tools_by_default() {
+    let dir = tempfile::tempdir().unwrap();
+    let config = dir.path().join("config.yaml");
+    let db_path = dir.path().join("blog.db");
+    write_config(&config, &db_path);
+
+    let migrate = Command::new(blogweb())
+        .args(["db", "migrate", "--apply", "-config"])
+        .arg(&config)
+        .output()
+        .unwrap();
+    assert!(
+        migrate.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&migrate.stderr)
+    );
+
+    let mut child = Command::new(blogweb())
+        .args(["serve-mcp", "-config"])
+        .arg(&config)
+        .args(["-transport", "stdio"])
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+    {
+        let stdin = child.stdin.as_mut().unwrap();
+        stdin
+            .write_all(
+                br##"{"jsonrpc":"2.0","id":80,"method":"tools/list","params":{}}
+{"jsonrpc":"2.0","id":81,"method":"tools/call","params":{"name":"preview_markdown","arguments":{"content":"# Hi"}}}
+{"jsonrpc":"2.0","id":82,"method":"tools/call","params":{"name":"create_article_draft","arguments":{"title":"x","content":"# body"}}}
+"##,
+            )
+            .unwrap();
+    }
+    let output = child.wait_with_output().unwrap();
+    assert!(
+        output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let lines = stdout
+        .lines()
+        .map(|line| serde_json::from_str::<Value>(line).unwrap())
+        .collect::<Vec<_>>();
+    assert_eq!(lines.len(), 3, "stdout: {stdout}");
+    assert_eq!(lines[0]["id"], 80);
+    assert!(!lines[0].to_string().contains("create_article_draft"));
+    assert_eq!(lines[1]["result"]["content_html"], "<h1>Hi</h1>\n");
+    assert_eq!(lines[2]["error"]["code"], 403);
+    assert_eq!(lines[2]["error"]["data"]["code"], "forbidden_scope");
 }
 
 async fn migrated_pool() -> sqlx::Pool<sqlx::Sqlite> {

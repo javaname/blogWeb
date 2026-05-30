@@ -173,6 +173,23 @@
   - `cargo test --offline --test mcp`
   - `cargo test --offline`
   - `go test ./internal/compat -run TestGenerateGoldenBaseline -count=1`
+- 已继续按 TDD 补 MCP audit 与 rate limit：
+  - 新增失败测试覆盖 HTTP 成功请求和缺 Bearer Token 拒绝请求写入 `mcp_audit_logs`，且 payload 只保存 `sha256:` digest，不包含原始 payload。
+  - 新增失败测试覆盖 read 与 upload 分桶限流，超过限制返回 429 `rate_limited`。
+- 已实现 Rust MCP HTTP audit：记录 client_id、transport、action_type、target、scope、status、request_id、error_code、payload_digest。
+- 已实现 Rust MCP HTTP 进程内 rate limit：read/write/publish/upload 分桶，配置来自 `mcp.rate_limit`，默认值对齐 Go。
+- 最新验证继续通过：
+  - `cargo test --offline --test mcp`
+  - `cargo test --offline`
+  - `go test ./internal/compat -run TestGenerateGoldenBaseline -count=1`
+- 已继续按 TDD 补 `serve-mcp -transport stdio`：
+  - 新增失败测试通过 CLI stdin 喂入 `tools/list`、`preview_markdown` 和写 tool 请求，要求 EOF 后进程正常退出。
+  - 默认 `mcp.stdio_write_enabled=false` 时，`tools/list` 不暴露写 tools，写 tool 返回 403 `forbidden_scope`。
+- 已实现 Rust MCP stdio transport：读取 stdin JSON-RPC 请求，复用 MCP dispatch，逐行输出 JSON-RPC response；写能力由 `mcp.stdio_write_enabled` 控制。
+- 最新验证继续通过：
+  - `cargo test --offline --test mcp`
+  - `cargo test --offline`
+  - `go test ./internal/compat -run TestGenerateGoldenBaseline -count=1`
 - 已继续按 TDD 补 MCP prompts：
   - 新增失败测试覆盖 `prompts/list` 返回 `draft_article_from_outline`、`seo_review_article`、`rewrite_article_summary`。
   - 新增失败测试覆盖 `prompts/get` 返回 `{name, content, input}` 并校验 title/content。
