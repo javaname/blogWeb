@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Query, State},
+    extract::{Path, Query, State},
     http::HeaderMap,
     response::{IntoResponse, Response},
     Json,
@@ -97,7 +97,7 @@ struct AdminComment {
 }
 
 pub async fn dashboard(State(state): State<PublicState>, headers: HeaderMap) -> Result<Response> {
-    if session_user(&state, &headers).is_none() {
+    if session_user(&state, &headers).await.is_none() {
         return Ok(auth_required());
     }
 
@@ -143,7 +143,7 @@ pub async fn dashboard(State(state): State<PublicState>, headers: HeaderMap) -> 
 }
 
 pub async fn settings(State(state): State<PublicState>, headers: HeaderMap) -> Response {
-    if session_user(&state, &headers).is_none() {
+    if session_user(&state, &headers).await.is_none() {
         return auth_required();
     }
     let cfg = &state.config;
@@ -183,7 +183,7 @@ pub async fn list_articles(
     headers: HeaderMap,
     Query(query): Query<ArticleListQuery>,
 ) -> Result<Response> {
-    if session_user(&state, &headers).is_none() {
+    if session_user(&state, &headers).await.is_none() {
         return Ok(auth_required());
     }
 
@@ -269,11 +269,54 @@ pub async fn list_articles(
     .into_response())
 }
 
+pub async fn get_article(
+    State(state): State<PublicState>,
+    headers: HeaderMap,
+    Path(id): Path<i64>,
+) -> Result<Response> {
+    if session_user(&state, &headers).await.is_none() {
+        return Ok(auth_required());
+    }
+
+    let row = sqlx::query(
+        "SELECT
+            id, title, slug, content, cover_image, category_id, status, is_pinned,
+            published_at, created_at, updated_at
+         FROM articles
+         WHERE id = ?",
+    )
+    .bind(id)
+    .fetch_optional(&state.db)
+    .await?;
+    let Some(row) = row else {
+        return Ok((
+            axum::http::StatusCode::NOT_FOUND,
+            Json(json!({"code":"not_found","message":"文章不存在"})),
+        )
+            .into_response());
+    };
+
+    Ok(Json(json!({
+        "id": row.try_get::<i64, _>("id")?,
+        "title": row.try_get::<String, _>("title")?,
+        "slug": row.try_get::<String, _>("slug")?,
+        "content": row.try_get::<String, _>("content")?,
+        "cover_image": row.try_get::<String, _>("cover_image")?,
+        "category_id": row.try_get::<Option<i64>, _>("category_id")?,
+        "status": row.try_get::<String, _>("status")?,
+        "is_pinned": row.try_get::<i64, _>("is_pinned")? != 0,
+        "published_at": row.try_get::<Option<String>, _>("published_at")?,
+        "created_at": row.try_get::<String, _>("created_at")?,
+        "updated_at": row.try_get::<String, _>("updated_at")?,
+    }))
+    .into_response())
+}
+
 pub async fn list_categories(
     State(state): State<PublicState>,
     headers: HeaderMap,
 ) -> Result<Response> {
-    if session_user(&state, &headers).is_none() {
+    if session_user(&state, &headers).await.is_none() {
         return Ok(auth_required());
     }
 
@@ -313,7 +356,7 @@ pub async fn list_comments(
     headers: HeaderMap,
     Query(query): Query<CommentListQuery>,
 ) -> Result<Response> {
-    if session_user(&state, &headers).is_none() {
+    if session_user(&state, &headers).await.is_none() {
         return Ok(auth_required());
     }
 

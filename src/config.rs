@@ -11,8 +11,10 @@ pub struct Config {
     pub database: DatabaseConfig,
     pub redis: RedisConfig,
     pub session: SessionConfig,
+    pub rate_limit: RateLimitConfig,
     pub upload: UploadConfig,
     pub admin: AdminConfig,
+    pub email: EmailConfig,
     pub seed: SeedConfig,
     pub site: SiteConfig,
     pub mcp: McpConfig,
@@ -49,6 +51,27 @@ pub struct SessionConfig {
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(default)]
+pub struct RateLimitConfig {
+    pub login_ip_window_sec: i64,
+    pub login_ip_max_attempts: i64,
+    pub login_user_fail_threshold: i64,
+    pub login_user_cooldown_sec: i64,
+    pub registration_ip_window_sec: i64,
+    pub registration_ip_max_requests: i64,
+    pub registration_email_window_sec: i64,
+    pub registration_email_max_requests: i64,
+    pub like_ip_window_sec: i64,
+    pub like_ip_max_requests: i64,
+    pub like_article_window_sec: i64,
+    pub like_article_max_actions: i64,
+    pub comment_ip_window_sec: i64,
+    pub comment_ip_max_requests: i64,
+    pub comment_article_window_sec: i64,
+    pub comment_article_max_actions: i64,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(default)]
 pub struct UploadConfig {
     pub dir: String,
     pub max_size: u64,
@@ -62,6 +85,17 @@ pub struct UploadConfig {
 pub struct AdminConfig {
     pub init_username: String,
     pub init_password: String,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(default)]
+pub struct EmailConfig {
+    pub smtp_host: String,
+    pub smtp_port: u16,
+    pub username: String,
+    pub password: String,
+    pub from: String,
+    pub verification_ttl_sec: u64,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -110,8 +144,10 @@ impl Default for Config {
             database: DatabaseConfig::default(),
             redis: RedisConfig::default(),
             session: SessionConfig::default(),
+            rate_limit: RateLimitConfig::default(),
             upload: UploadConfig::default(),
             admin: AdminConfig::default(),
+            email: EmailConfig::default(),
             seed: SeedConfig::default(),
             site: SiteConfig::default(),
             mcp: McpConfig::default(),
@@ -154,6 +190,29 @@ impl Default for SessionConfig {
     }
 }
 
+impl Default for RateLimitConfig {
+    fn default() -> Self {
+        Self {
+            login_ip_window_sec: 600,
+            login_ip_max_attempts: 20,
+            login_user_fail_threshold: 5,
+            login_user_cooldown_sec: 900,
+            registration_ip_window_sec: 600,
+            registration_ip_max_requests: 5,
+            registration_email_window_sec: 600,
+            registration_email_max_requests: 3,
+            like_ip_window_sec: 60,
+            like_ip_max_requests: 60,
+            like_article_window_sec: 600,
+            like_article_max_actions: 20,
+            comment_ip_window_sec: 60,
+            comment_ip_max_requests: 10,
+            comment_article_window_sec: 600,
+            comment_article_max_actions: 5,
+        }
+    }
+}
+
 impl Default for UploadConfig {
     fn default() -> Self {
         Self {
@@ -176,6 +235,19 @@ impl Default for AdminConfig {
         Self {
             init_username: "admin".into(),
             init_password: "change-me-123456".into(),
+        }
+    }
+}
+
+impl Default for EmailConfig {
+    fn default() -> Self {
+        Self {
+            smtp_host: "smtp.163.com".into(),
+            smtp_port: 465,
+            username: String::new(),
+            password: String::new(),
+            from: String::new(),
+            verification_ttl_sec: 600,
         }
     }
 }
@@ -263,6 +335,27 @@ impl Config {
                 "session.idle_timeout must be greater than 0".into(),
             ));
         }
+        if self.rate_limit.login_ip_window_sec <= 0
+            || self.rate_limit.login_ip_max_attempts <= 0
+            || self.rate_limit.login_user_fail_threshold <= 0
+            || self.rate_limit.login_user_cooldown_sec <= 0
+            || self.rate_limit.registration_ip_window_sec <= 0
+            || self.rate_limit.registration_ip_max_requests <= 0
+            || self.rate_limit.registration_email_window_sec <= 0
+            || self.rate_limit.registration_email_max_requests <= 0
+            || self.rate_limit.like_ip_window_sec <= 0
+            || self.rate_limit.like_ip_max_requests <= 0
+            || self.rate_limit.like_article_window_sec <= 0
+            || self.rate_limit.like_article_max_actions <= 0
+            || self.rate_limit.comment_ip_window_sec <= 0
+            || self.rate_limit.comment_ip_max_requests <= 0
+            || self.rate_limit.comment_article_window_sec <= 0
+            || self.rate_limit.comment_article_max_actions <= 0
+        {
+            return Err(AppError::Config(
+                "rate_limit values must be greater than 0".into(),
+            ));
+        }
         if self.upload.dir.is_empty() {
             return Err(AppError::Config("upload.dir is required".into()));
         }
@@ -290,6 +383,16 @@ impl Config {
         }
         if self.admin.init_username.is_empty() {
             return Err(AppError::Config("admin.init_username is required".into()));
+        }
+        if self.email.smtp_port == 0 {
+            return Err(AppError::Config(
+                "email.smtp_port must be greater than 0".into(),
+            ));
+        }
+        if self.email.verification_ttl_sec == 0 {
+            return Err(AppError::Config(
+                "email.verification_ttl_sec must be greater than 0".into(),
+            ));
         }
         if is_insecure_admin_password(&self.admin.init_password)
             && !self.seed.allow_insecure_admin_password

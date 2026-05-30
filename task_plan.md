@@ -76,7 +76,7 @@ Stitch 项目：
   - [complete] `POST /api/admin/login` 对齐 Go golden body 与 `admin_session` cookie 契约
   - [complete] `GET /api/admin/csrf-token` 未登录对齐 Go golden 401 body
   - [complete] 登录后会话可读取 `GET /api/admin/csrf-token` 与 `GET /api/admin/me`
-  - [pending] Redis 会话存储、bcrypt 密码校验、logout、CSRF 写接口保护
+  - [complete] Redis 会话存储、bcrypt 密码校验、logout、CSRF 写接口保护
 - [in_progress] 切片 D：后台管理只读 API
   - [complete] `GET /api/admin/dashboard` 真实统计、活动和 30 天趋势
   - [complete] `GET /api/admin/settings` 返回公开运行时策略且不泄露密钥
@@ -123,3 +123,36 @@ Stitch 项目：
 - [complete] 运行后端定向测试和全量验证
 - [complete] 按已批准规格实现后台管理端 Stitch 原型落地
 - [complete] 运行前端 i18n、UI 和构建验证
+
+# 新增阶段：Rust 剩余 16 项并行补齐
+
+目标：基于复盘清单补齐 Rust 后端剩余生产路径能力，保持已有 Go/Rust 契约兼容。
+
+执行方式：
+- [complete] 切片 1：后台文章/分类/评论/设置/上传 API 补齐
+  - [complete] `GET /api/admin/articles/:id`
+  - [complete] `PUT /api/admin/articles/:id`
+  - [complete] `DELETE /api/admin/articles/:id`
+  - [complete] `PUT /api/admin/categories/:id`
+  - [complete] `DELETE /api/admin/categories/:id`
+  - [complete] `PUT /api/admin/categories/sort`
+  - [complete] `DELETE /api/admin/comments/:id`
+  - [complete] `PUT /api/admin/settings`
+  - [complete] `POST /api/admin/upload`
+- [complete] 切片 2：邮箱验证码注册与邮箱登录闭环
+  - [complete] `POST /api/auth/register/code`
+  - [complete] `POST /api/auth/register`
+  - [complete] Rust email config / fake sender 测试路径
+  - [complete] 注册用户 bcrypt 密码和邮箱登录
+  - [pending] 真实 SMTP 投递实现
+- [complete] 切片 3：公开页面模板细节补齐
+  - [complete] 首页/分类页/文章页基础结构向 Go 模板靠齐
+  - [complete] 文章页评论展示、回复展示和相关文章
+- [complete] 切片 4：读者互动限流与策略
+  - [complete] 点赞/收藏/关注/订阅/评论限流
+  - [complete] 评论敏感词完整策略
+- [in_progress] 切片 5：验证、文档记录、阶段提交与推送
+  - [complete] `cargo test --offline`
+  - [complete] `go test ./internal/compat -run TestGenerateGoldenBaseline -count=1`
+  - [complete] `go test ./... -count=1 -timeout=120s`
+  - [pending] 阶段提交与推送

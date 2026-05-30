@@ -37,7 +37,26 @@ async fn seeded_pool() -> Pool<sqlx::Sqlite> {
          (2, 'Design Systems', 'design-systems',
           '# Design', '', 'Design excerpt', 2, 1,
           'published', 0, '2026-05-28T08:00:00Z',
+          '2026-05-29T00:00:00Z', '2026-05-29T00:00:00Z'),
+         (3, 'Related Rust Story', 'related-rust-story',
+          '# Related', '', 'Related excerpt', 1, 1,
+          'published', 0, '2026-05-27T08:00:00Z',
           '2026-05-29T00:00:00Z', '2026-05-29T00:00:00Z')",
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO comments (
+            id, article_id, parent_id, author_name, content, status, anonymous_id,
+            ip_address, user_agent, created_at, updated_at
+         ) VALUES
+         (1, 1, NULL, 'Alice', '第一条已通过评论', 'approved', 'reader-1',
+          '', '', '2026-05-29T01:00:00Z', '2026-05-29T01:00:00Z'),
+         (2, 1, 1, 'Bob', '这是回复内容', 'approved', 'reader-2',
+          '', '', '2026-05-29T01:01:00Z', '2026-05-29T01:01:00Z'),
+         (3, 1, NULL, 'Mallory', '这条待审核不应出现', 'pending', 'reader-3',
+          '', '', '2026-05-29T01:02:00Z', '2026-05-29T01:02:00Z')",
     )
     .execute(&pool)
     .await
@@ -86,6 +105,30 @@ async fn article_page_renders_sanitized_html_without_escaping() {
     assert!(body.contains("<h1>Baseline</h1>"), "{body}");
     assert!(!body.contains("<script>"), "{body}");
     assert!(!body.contains("&lt;h1&gt;Baseline"), "{body}");
+}
+
+#[tokio::test]
+async fn article_page_renders_approved_comments_replies_and_related_articles() {
+    let response = app::router_with_pool(seeded_pool().await)
+        .oneshot(
+            Request::builder()
+                .uri("/articles/rust-migration-baseline")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = body_text(response).await;
+    assert!(body.contains("评论"), "{body}");
+    assert!(body.contains("第一条已通过评论"), "{body}");
+    assert!(body.contains("这是回复内容"), "{body}");
+    assert!(!body.contains("这条待审核不应出现"), "{body}");
+    assert!(body.contains("相关文章"), "{body}");
+    assert!(body.contains("Related Rust Story"), "{body}");
+    assert!(body.contains("/articles/related-rust-story"), "{body}");
+    assert!(!body.contains("Design Systems"), "{body}");
 }
 
 #[tokio::test]

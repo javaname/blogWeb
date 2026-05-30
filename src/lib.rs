@@ -9,3 +9,4 @@ pub mod http_interactions;
 pub mod http_public;
 pub mod mcp;
 pub mod renderer;
+pub mod session;

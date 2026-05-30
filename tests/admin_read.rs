@@ -1,17 +1,20 @@
 use axum::body::Body;
 use axum::http::{header::SET_COOKIE, Request, StatusCode};
-use blogweb::{app, db};
+use blogweb::db;
 use serde_json::Value;
 use sqlx::Pool;
 use tower::ServiceExt;
+
+mod support;
 
 async fn seeded_pool() -> Pool<sqlx::Sqlite> {
     let pool = db::connect_memory().await.unwrap();
     db::apply_migrations(&pool).await.unwrap();
     sqlx::query(
         "INSERT INTO users (id, username, password, role, email, created_at)
-         VALUES (1, 'admin', 'admin-password', 'admin', '', '2026-05-29T00:00:00Z')",
+         VALUES (1, 'admin', ?, 'admin', '', '2026-05-29T00:00:00Z')",
     )
+    .bind(support::ADMIN_PASSWORD_HASH)
     .execute(&pool)
     .await
     .unwrap();
@@ -66,9 +69,10 @@ async fn admin_cookie(router: axum::Router) -> String {
                 .method("POST")
                 .uri("/api/admin/login")
                 .header("content-type", "application/json")
-                .body(Body::from(
-                    r#"{"username":"admin","password":"admin-password"}"#,
-                ))
+                .body(Body::from(format!(
+                    r#"{{"username":"admin","password":"{}"}}"#,
+                    support::ADMIN_PASSWORD
+                )))
                 .unwrap(),
         )
         .await
@@ -105,7 +109,8 @@ async fn get_json(router: axum::Router, uri: &str, cookie: &str) -> (StatusCode,
 
 #[tokio::test]
 async fn admin_read_routes_require_login() {
-    let response = app::router_with_pool(seeded_pool().await)
+    let redis = support::FakeRedis::start();
+    let response = support::router_with_redis(seeded_pool().await, &redis)
         .oneshot(
             Request::builder()
                 .uri("/api/admin/dashboard")
@@ -128,7 +133,8 @@ async fn admin_read_routes_require_login() {
 
 #[tokio::test]
 async fn admin_dashboard_returns_real_metrics() {
-    let router = app::router_with_pool(seeded_pool().await);
+    let redis = support::FakeRedis::start();
+    let router = support::router_with_redis(seeded_pool().await, &redis);
     let cookie = admin_cookie(router.clone()).await;
 
     let (status, payload) = get_json(router, "/api/admin/dashboard", &cookie).await;
@@ -145,7 +151,8 @@ async fn admin_dashboard_returns_real_metrics() {
 
 #[tokio::test]
 async fn admin_settings_returns_public_runtime_policy_without_secrets() {
-    let router = app::router_with_pool(seeded_pool().await);
+    let redis = support::FakeRedis::start();
+    let router = support::router_with_redis(seeded_pool().await, &redis);
     let cookie = admin_cookie(router.clone()).await;
 
     let (status, payload) = get_json(router, "/api/admin/settings", &cookie).await;
@@ -161,7 +168,8 @@ async fn admin_settings_returns_public_runtime_policy_without_secrets() {
 
 #[tokio::test]
 async fn admin_articles_categories_and_comments_lists_match_go_shape() {
-    let router = app::router_with_pool(seeded_pool().await);
+    let redis = support::FakeRedis::start();
+    let router = support::router_with_redis(seeded_pool().await, &redis);
     let cookie = admin_cookie(router.clone()).await;
 
     let (articles_status, articles) = get_json(

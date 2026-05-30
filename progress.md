@@ -210,3 +210,50 @@
   - `cargo test --offline --test mcp`
   - `cargo test --offline`
   - `go test ./internal/compat -run TestGenerateGoldenBaseline -count=1`
+
+## 2026-05-30 Rust 后台认证补齐
+
+- 用户要求补齐当前 Rust 后台认证中的最小内存会话和明文测试密码路径，完成后暂停复盘。
+- 已按 TDD 新增认证测试支持：
+  - `tests/support.rs` 提供 fake Redis RESP 服务和 bcrypt 管理员密码 fixture。
+  - `tests/admin_auth.rs` 覆盖 bcrypt 登录、Redis `session:*`/`csrf:*` 写入、logout 删除 Redis key 并清 cookie。
+  - `tests/admin_read.rs`、`tests/admin_write.rs` 改为通过 fake Redis session 验证后台只读和 CSRF 写接口。
+- 已新增 `src/session.rs`，实现 Rust Redis session store：随机 24 字节 URL-safe token、session/csrf 双 key 写入、TTL、last_seen 刷新、绝对过期和 idle timeout 检查、destroy 删除双 key。
+- 已改造 `src/admin_auth.rs`：登录使用 `bcrypt::verify`，session 写入 Redis，新增 `POST /api/admin/logout`，`/csrf-token` 和 `/me` 从 Redis 读取会话。
+- 已改造后台只读/写接口为 async session 校验，写接口继续要求 `X-CSRF-Token`。
+- 已新增 Rust 依赖：`bcrypt`、`base64`、`rand`，并启用 `tokio` 的 `net`/`io-util` features。
+- 已验证通过：
+  - `cargo test --offline --test admin_auth --test admin_read --test admin_write`
+  - `cargo test --offline`
+- 按用户要求，认证部分完成后暂停；未继续推进后台写接口补全、模板级页面复刻、邮箱注册。
+
+## 2026-05-30 Rust 剩余 16 项并行补齐启动
+
+- 用户要求启动独立子智能体并行推进复盘中未做的 16 项。
+- 当前界面无独立子智能体调度工具，实际执行方式调整为：并行梳理上下文，按 TDD 将互相影响的文件编辑串行落地。
+- 已在 `task_plan.md` 新增“Rust 剩余 16 项并行补齐”阶段，拆为后台 API、邮箱注册、公开模板、互动限流、验证提交 5 个切片。
+
+## 2026-05-30 Rust 剩余 16 项补齐进展
+
+- 已完成后台 API 补齐并覆盖测试：
+  - `GET/PUT/DELETE /api/admin/articles/:id`
+  - `PUT/DELETE /api/admin/categories/:id`
+  - `PUT /api/admin/categories/sort`
+  - `DELETE /api/admin/comments/:id`
+  - `PUT /api/admin/settings`
+  - `POST /api/admin/upload`
+- 已完成邮箱验证码注册和邮箱登录闭环测试路径：`/api/auth/register/code`、`/api/auth/register`、注册用户 bcrypt 密码、邮箱作为登录名、Redis session 登录。当前 Rust 路径支持 fake/test sender；真实 SMTP 投递仍未实现。
+- 已补公开文章页细节：文章页展示 approved 评论、一级回复和同分类相关文章；pending 评论不渲染。
+- 已补读者互动限流与评论策略：
+  - Rust 配置新增 Go 同名 `rate_limit` 默认值。
+  - Redis 客户端新增 `INCR/EXPIRE`，fake Redis 同步支持测试。
+  - 点赞、收藏、关注、订阅、评论和批量点赞进入 Redis 限流。
+  - 评论敏感词策略同步 Go 侧政治/暴力/血腥关键词与归一化规则。
+- 验证通过：
+  - `cargo test --offline`
+  - `go test ./internal/compat -run TestGenerateGoldenBaseline -count=1`
+  - `go test ./... -count=1 -timeout=120s`
+- 遇到并处理的问题：
+  - `session-catchup.py` 本机路径不存在，已继续按现有计划文件恢复。
+  - 一次 PowerShell regex 文件筛选写法错误，未影响代码。
+  - Go golden JSON 工作区被 CRLF 化导致字节级 hash mismatch；已重写为 LF，并新增 `.gitattributes` 固定 `tests/golden/**/*.json text eol=lf`。

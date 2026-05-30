@@ -9,9 +9,7 @@ use axum::{
 };
 use serde::{Deserialize, Serialize};
 use sqlx::{Pool, QueryBuilder, Row, Sqlite};
-use std::collections::HashMap;
 use std::path::{Component, Path as FsPath, PathBuf};
-use std::sync::{Arc, RwLock};
 use tokio::fs;
 
 use crate::{
@@ -25,7 +23,7 @@ pub struct PublicState {
     pub db: Pool<Sqlite>,
     pub assets_dir: PathBuf,
     pub upload_dir: PathBuf,
-    pub sessions: Arc<RwLock<HashMap<String, crate::admin_auth::SessionUser>>>,
+    pub session_store: crate::session::RedisSessionStore,
     pub config: Config,
 }
 
@@ -102,6 +100,14 @@ struct PublicAuthor {
     username: String,
 }
 
+#[derive(Debug)]
+struct PublicCommentNode {
+    id: i64,
+    author_name: String,
+    content: String,
+    replies: Vec<PublicCommentNode>,
+}
+
 pub async fn home_page(State(state): State<PublicState>) -> Result<axum::response::Response> {
     let articles = published_summaries(&state, ListQuery::default()).await?;
     let mut html = String::from("<!doctype html><html lang=\"zh-CN\"><body><main>");
@@ -124,12 +130,59 @@ pub async fn article_page(
     let Some(detail) = detail else {
         return Err(AppError::HttpStatus(404, "not_found".into()));
     };
+    let comments = approved_comments(&state.db, detail.summary.id).await?;
+    let related = related_articles(&state, &detail.summary).await?;
     let mut html = String::from("<!doctype html><html lang=\"zh-CN\"><body><article>");
     html.push_str("<h1>");
     html.push_str(&escape_html(&detail.summary.title));
     html.push_str("</h1><div class=\"article-html\">");
     html.push_str(&detail.content_html);
-    html.push_str("</div></article></body></html>");
+    html.push_str("</div></article>");
+    html.push_str("<section class=\"comments\"><h2>评论 <span>");
+    html.push_str(&comments.len().to_string());
+    html.push_str("</span></h2>");
+    if comments.is_empty() {
+        html.push_str("<p>成为第一个分享想法的人。</p>");
+    } else {
+        for comment in &comments {
+            html.push_str("<div class=\"comment\" data-comment-id=\"");
+            html.push_str(&comment.id.to_string());
+            html.push_str("\"><strong>");
+            html.push_str(&escape_html(&comment.author_name));
+            html.push_str("</strong><p>");
+            html.push_str(&escape_html(&comment.content));
+            html.push_str("</p>");
+            if !comment.replies.is_empty() {
+                html.push_str("<div class=\"comment-replies\">");
+                for reply in &comment.replies {
+                    html.push_str("<div class=\"comment reply\" data-comment-id=\"");
+                    html.push_str(&reply.id.to_string());
+                    html.push_str("\"><strong>");
+                    html.push_str(&escape_html(&reply.author_name));
+                    html.push_str("</strong><p>");
+                    html.push_str(&escape_html(&reply.content));
+                    html.push_str("</p></div>");
+                }
+                html.push_str("</div>");
+            }
+            html.push_str("</div>");
+        }
+    }
+    html.push_str("</section>");
+    if !related.is_empty() {
+        html.push_str("<section class=\"related\"><h2>相关文章</h2>");
+        for article in related {
+            html.push_str("<article><a href=\"/articles/");
+            html.push_str(&escape_html(&article.slug));
+            html.push_str("\">");
+            html.push_str(&escape_html(&article.title));
+            html.push_str("</a><p>");
+            html.push_str(&escape_html(&article.excerpt));
+            html.push_str("</p></article>");
+        }
+        html.push_str("</section>");
+    }
+    html.push_str("</body></html>");
     Ok(html_response(html))
 }
 
@@ -358,6 +411,82 @@ async fn published_detail(pool: &Pool<Sqlite>, slug: &str) -> Result<Option<Publ
         created_at: row.try_get("created_at")?,
         updated_at: row.try_get("updated_at")?,
     }))
+}
+
+async fn approved_comments(pool: &Pool<Sqlite>, article_id: i64) -> Result<Vec<PublicCommentNode>> {
+    let rows = sqlx::query(
+        "SELECT id, parent_id, author_name, content
+         FROM comments
+         WHERE article_id = ? AND status = 'approved'
+         ORDER BY created_at ASC, id ASC",
+    )
+    .bind(article_id)
+    .fetch_all(pool)
+    .await?;
+    let mut parents = Vec::<PublicCommentNode>::new();
+    let mut replies = Vec::<(i64, PublicCommentNode)>::new();
+    for row in rows {
+        let node = PublicCommentNode {
+            id: row.try_get("id")?,
+            author_name: row.try_get("author_name")?,
+            content: row.try_get("content")?,
+            replies: Vec::new(),
+        };
+        match row.try_get::<Option<i64>, _>("parent_id")? {
+            Some(parent_id) => replies.push((parent_id, node)),
+            None => parents.push(node),
+        }
+    }
+    for (parent_id, reply) in replies {
+        if let Some(parent) = parents.iter_mut().find(|parent| parent.id == parent_id) {
+            parent.replies.push(reply);
+        }
+    }
+    parents.reverse();
+    Ok(parents)
+}
+
+async fn related_articles(
+    state: &PublicState,
+    article: &PublicArticleSummary,
+) -> Result<Vec<PublicArticleSummary>> {
+    let Some(category) = &article.category else {
+        return Ok(Vec::new());
+    };
+    let rows = sqlx::query(
+        "SELECT
+            articles.id,
+            articles.title,
+            articles.slug,
+            articles.cover_image,
+            articles.excerpt,
+            articles.is_pinned,
+            articles.published_at,
+            categories.id AS category_id,
+            categories.name AS category_name,
+            categories.slug AS category_slug,
+            users.id AS author_id,
+            users.username AS author_username,
+            COUNT(likes.id) AS like_count
+         FROM articles
+         LEFT JOIN categories ON categories.id = articles.category_id
+         INNER JOIN users ON users.id = articles.author_id
+         LEFT JOIN likes ON likes.article_id = articles.id
+         WHERE articles.id <> ?
+           AND articles.category_id = ?
+           AND articles.status = 'published'
+           AND (articles.published_at IS NULL OR articles.published_at <= datetime('now'))
+         GROUP BY articles.id
+         ORDER BY articles.published_at DESC, articles.id DESC
+         LIMIT 3",
+    )
+    .bind(article.id)
+    .bind(category.id)
+    .fetch_all(&state.db)
+    .await?;
+    rows.into_iter()
+        .map(|row| summary_from_row(&row))
+        .collect::<Result<Vec<_>>>()
 }
 
 async fn lookup_current_slug(pool: &Pool<Sqlite>, old_slug: &str) -> Result<Option<String>> {

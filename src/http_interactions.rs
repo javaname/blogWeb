@@ -49,6 +49,26 @@ pub async fn like_article(
         ));
     };
     let article_id = published_article_id(&state, &slug).await?;
+    if let Some(response) = ensure_rate_limit(
+        &state,
+        &rate_key("like_rate", &client_ip(&headers)),
+        state.config.rate_limit.like_ip_max_requests,
+        state.config.rate_limit.like_ip_window_sec,
+    )
+    .await?
+    {
+        return Ok(response);
+    }
+    if let Some(response) = ensure_rate_limit(
+        &state,
+        &article_rate_key("like_article_rate", &client_ip(&headers), article_id),
+        state.config.rate_limit.like_article_max_actions,
+        state.config.rate_limit.like_article_window_sec,
+    )
+    .await?
+    {
+        return Ok(response);
+    }
     match request.action.trim() {
         "like" => {
             let result = sqlx::query(
@@ -107,6 +127,26 @@ pub async fn bookmark_article(
         ));
     };
     let article_id = published_article_id(&state, &slug).await?;
+    if let Some(response) = ensure_rate_limit(
+        &state,
+        &rate_key("bookmark_rate", &client_ip(&headers)),
+        state.config.rate_limit.like_ip_max_requests,
+        state.config.rate_limit.like_ip_window_sec,
+    )
+    .await?
+    {
+        return Ok(response);
+    }
+    if let Some(response) = ensure_rate_limit(
+        &state,
+        &article_rate_key("bookmark_article_rate", &client_ip(&headers), article_id),
+        state.config.rate_limit.like_article_max_actions,
+        state.config.rate_limit.like_article_window_sec,
+    )
+    .await?
+    {
+        return Ok(response);
+    }
     let bookmarked = match request.action.trim() {
         "bookmark" => {
             sqlx::query(
@@ -162,6 +202,26 @@ pub async fn follow_author(
         .await?;
     if exists == 0 {
         return Ok(json_error(StatusCode::NOT_FOUND, "not_found", "作者不存在"));
+    }
+    if let Some(response) = ensure_rate_limit(
+        &state,
+        &rate_key("follow_rate", &client_ip(&headers)),
+        state.config.rate_limit.like_ip_max_requests,
+        state.config.rate_limit.like_ip_window_sec,
+    )
+    .await?
+    {
+        return Ok(response);
+    }
+    if let Some(response) = ensure_rate_limit(
+        &state,
+        &article_rate_key("follow_author_rate", &client_ip(&headers), author_id),
+        state.config.rate_limit.like_article_max_actions,
+        state.config.rate_limit.like_article_window_sec,
+    )
+    .await?
+    {
+        return Ok(response);
     }
     let following = match request.action.trim() {
         "follow" => {
@@ -220,6 +280,16 @@ pub async fn subscribe_newsletter(
             },
         ));
     }
+    if let Some(response) = ensure_rate_limit(
+        &state,
+        &rate_key("newsletter_rate", &client_ip(&headers)),
+        state.config.rate_limit.like_ip_max_requests,
+        state.config.rate_limit.like_ip_window_sec,
+    )
+    .await?
+    {
+        return Ok(response);
+    }
     sqlx::query(
         "INSERT INTO newsletter_subscriptions (
             email, anonymous_id, status, ip_address, user_agent, created_at, updated_at
@@ -251,6 +321,26 @@ pub async fn create_comment(
 ) -> Result<Response> {
     let reader_id = anonymous_id(&headers).unwrap_or_default();
     let article_id = published_article_id(&state, &slug).await?;
+    if let Some(response) = ensure_rate_limit(
+        &state,
+        &rate_key("comment_rate", &client_ip(&headers)),
+        state.config.rate_limit.comment_ip_max_requests,
+        state.config.rate_limit.comment_ip_window_sec,
+    )
+    .await?
+    {
+        return Ok(response);
+    }
+    if let Some(response) = ensure_rate_limit(
+        &state,
+        &article_rate_key("comment_article_rate", &client_ip(&headers), article_id),
+        state.config.rate_limit.comment_article_max_actions,
+        state.config.rate_limit.comment_article_window_sec,
+    )
+    .await?
+    {
+        return Ok(response);
+    }
     let author_name = request
         .author_name
         .as_deref()
@@ -262,6 +352,13 @@ pub async fn create_comment(
             StatusCode::BAD_REQUEST,
             "invalid_params",
             "昵称不能超过 40 个字符",
+        ));
+    }
+    if let Some(message) = comment_policy_violation(author_name) {
+        return Ok(json_error(
+            StatusCode::BAD_REQUEST,
+            "comment_policy_violation",
+            message,
         ));
     }
     let content = request.content.trim();
@@ -277,6 +374,13 @@ pub async fn create_comment(
             StatusCode::BAD_REQUEST,
             "invalid_params",
             "评论内容不能超过 500 个字符",
+        ));
+    }
+    if let Some(message) = comment_policy_violation(content) {
+        return Ok(json_error(
+            StatusCode::BAD_REQUEST,
+            "comment_policy_violation",
+            message,
         ));
     }
     if let Some(parent_id) = request.parent_id {
@@ -339,6 +443,16 @@ pub async fn batch_likes(
             "invalid_params",
             "article_slugs 数量不能超过 100",
         ));
+    }
+    if let Some(response) = ensure_rate_limit(
+        &state,
+        &rate_key("like_rate", &client_ip(&headers)),
+        state.config.rate_limit.like_ip_max_requests,
+        state.config.rate_limit.like_ip_window_sec,
+    )
+    .await?
+    {
+        return Ok(response);
     }
     let mut liked_map = serde_json::Map::new();
     for slug in request.article_slugs {
@@ -411,6 +525,47 @@ fn anonymous_id(headers: &HeaderMap) -> Option<String> {
         .map(str::to_string)
 }
 
+async fn ensure_rate_limit(
+    state: &PublicState,
+    key: &str,
+    max_attempts: i64,
+    window_sec: i64,
+) -> Result<Option<Response>> {
+    if state
+        .session_store
+        .allow_rate_limit(key, max_attempts, window_sec)
+        .await?
+    {
+        Ok(None)
+    } else {
+        Ok(Some(json_error(
+            StatusCode::TOO_MANY_REQUESTS,
+            "rate_limited",
+            "请求过于频繁，请稍后再试",
+        )))
+    }
+}
+
+fn client_ip(headers: &HeaderMap) -> String {
+    headers
+        .get("x-forwarded-for")
+        .or_else(|| headers.get("x-real-ip"))
+        .and_then(|value| value.to_str().ok())
+        .and_then(|value| value.split(',').next())
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .unwrap_or("unknown")
+        .to_string()
+}
+
+fn rate_key(prefix: &str, ip: &str) -> String {
+    format!("{prefix}:{ip}")
+}
+
+fn article_rate_key(prefix: &str, ip: &str, id: i64) -> String {
+    format!("{prefix}:{ip}:{id}")
+}
+
 fn json_error(status: StatusCode, code: &str, message: &str) -> Response {
     (
         status,
@@ -428,3 +583,127 @@ fn valid_email(value: &str) -> bool {
     };
     !local.is_empty() && domain.contains('.') && !domain.ends_with('.')
 }
+
+fn comment_policy_violation(content: &str) -> Option<&'static str> {
+    let normalized = normalize_policy_text(content);
+    if normalized.is_empty() {
+        return None;
+    }
+    for rule in COMMENT_POLICY_RULES {
+        if rule
+            .keywords
+            .iter()
+            .any(|keyword| normalized.contains(&normalize_policy_text(keyword)))
+        {
+            return Some(rule.message);
+        }
+    }
+    None
+}
+
+fn normalize_policy_text(value: &str) -> String {
+    value
+        .trim()
+        .to_lowercase()
+        .chars()
+        .filter(|value| value.is_alphanumeric())
+        .collect()
+}
+
+struct CommentPolicyRule {
+    message: &'static str,
+    keywords: &'static [&'static str],
+}
+
+const COMMENT_POLICY_RULES: &[CommentPolicyRule] = &[
+    CommentPolicyRule {
+        message: "评论包含政治相关敏感内容，请修改后再提交",
+        keywords: &[
+            "政治",
+            "政府",
+            "选举",
+            "总统",
+            "国家主席",
+            "政党",
+            "议会",
+            "国会",
+            "外交",
+            "制裁",
+            "游行",
+            "抗议",
+            "革命",
+            "分裂",
+            "独立运动",
+            "台独",
+            "港独",
+            "藏独",
+            "疆独",
+            "共产党",
+            "国民党",
+            "习近平",
+            "拜登",
+            "特朗普",
+            "普京",
+            "politics",
+            "government",
+            "election",
+            "president",
+            "congress",
+            "parliament",
+            "revolution",
+            "protest",
+        ],
+    },
+    CommentPolicyRule {
+        message: "评论包含暴力相关敏感内容，请修改后再提交",
+        keywords: &[
+            "暴力",
+            "杀人",
+            "杀害",
+            "砍人",
+            "枪击",
+            "枪支",
+            "炸弹",
+            "爆炸",
+            "袭击",
+            "恐怖袭击",
+            "暗杀",
+            "绑架",
+            "虐待",
+            "伤害",
+            "打死",
+            "打砸",
+            "纵火",
+            "武器",
+            "violence",
+            "kill",
+            "murder",
+            "gun",
+            "bomb",
+            "explosion",
+            "attack",
+            "weapon",
+        ],
+    },
+    CommentPolicyRule {
+        message: "评论包含血腥相关敏感内容，请修改后再提交",
+        keywords: &[
+            "血腥",
+            "鲜血",
+            "流血",
+            "尸体",
+            "尸块",
+            "肢解",
+            "断肢",
+            "内脏",
+            "屠杀",
+            "惨死",
+            "血肉模糊",
+            "gore",
+            "blood",
+            "corpse",
+            "dismember",
+            "slaughter",
+        ],
+    },
+];

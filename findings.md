@@ -83,3 +83,11 @@
 - 最小修复方向：后端所有读者状态接口统一接受 header 或 cookie；前台同源请求不再发送 `X-Anonymous-Id`，依赖浏览器自动携带 HttpOnly cookie。
 - MCP `create_article_draft` 不能硬编码作者 ID 1；应优先使用配置中的初始管理员用户名解析 admin 用户，找不到时回退第一个 `role = admin` 的用户。
 - 当前仓库根目录没有 `.gitignore`，且 `config.yaml` 内有真实初始管理员密码；应新增 `.gitignore` 忽略运行时配置，并将本地配置密码替换为占位符。
+
+## 2026-05-30 Rust 剩余项补齐
+
+- Rust 公开文章页需要查询 approved 评论并按 `parent_id` 组装一级回复；Go 侧父评论按创建时间升序构建后反转，回复保持升序。
+- Rust 读者互动限流复用 Redis `INCR` + `EXPIRE` 模型；没有真实远端地址注入时，Axum 测试路径使用 `unknown` 作为 IP 维度 key。
+- Rust 评论策略已同步 Go 侧关键词和归一化方式：转小写后仅保留字母与数字，因此 `b-l-o-o-d` 会匹配 `blood`。
+- Rust 邮箱注册当前闭环覆盖验证码存储、校验、bcrypt 用户创建和邮箱登录；真实 SMTP 投递仍需单独实现 TLS SMTP 发送。
+- `tests/golden/**/*.json` 是字节级 golden，Windows 工作区 CRLF 会导致 Go 兼容测试 hash mismatch；需要通过 `.gitattributes` 固定 LF。

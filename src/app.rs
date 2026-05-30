@@ -5,22 +5,27 @@ use axum::{
     },
     middleware::{self, Next},
     response::Response,
-    routing::{get, post, put},
+    routing::{delete, get, post, put},
     Json, Router,
 };
 use serde_json::json;
 use sqlx::{Pool, Sqlite};
-use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::{Arc, RwLock};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use crate::admin_auth::{csrf_token, current_user, login};
-use crate::admin_read::{
-    dashboard, list_articles as list_admin_articles, list_categories, list_comments, settings,
+use crate::admin_auth::{
+    csrf_token, current_user, login, logout, register_with_email, request_registration_code,
 };
-use crate::admin_write::{create_article, create_category, update_comment_status};
+use crate::admin_read::{
+    dashboard, get_article as get_admin_article, list_articles as list_admin_articles,
+    list_categories, list_comments, settings,
+};
+use crate::admin_write::{
+    create_article, create_category, delete_article, delete_category, delete_comment,
+    sort_categories, update_article, update_category, update_comment_status, update_settings,
+    upload,
+};
 use crate::config::Config;
 use crate::http_interactions::{
     batch_likes, bookmark_article, create_comment, follow_author, like_article,
@@ -30,6 +35,7 @@ use crate::http_public::{
     article_detail, article_page, category_page, home_page, list_articles, serve_asset,
     serve_upload, PublicState,
 };
+use crate::session::RedisSessionStore;
 
 static ANONYMOUS_COUNTER: AtomicU64 = AtomicU64::new(1);
 
@@ -66,7 +72,7 @@ pub fn router_with_pool_and_config(
         db: pool,
         assets_dir: assets_dir.into(),
         upload_dir: upload_dir.into(),
-        sessions: Arc::new(RwLock::new(HashMap::new())),
+        session_store: RedisSessionStore::new(&config),
         config,
     };
     Router::new()
@@ -84,21 +90,37 @@ pub fn router_with_pool_and_config(
         .route("/api/authors/:id/follow", post(follow_author))
         .route("/api/newsletter/subscribe", post(subscribe_newsletter))
         .route("/api/likes/batch", post(batch_likes))
+        .route("/api/auth/register/code", post(request_registration_code))
+        .route("/api/auth/register", post(register_with_email))
         .route("/api/admin/login", post(login))
+        .route("/api/admin/logout", post(logout))
         .route("/api/admin/csrf-token", get(csrf_token))
         .route("/api/admin/me", get(current_user))
         .route("/api/admin/dashboard", get(dashboard))
-        .route("/api/admin/settings", get(settings))
+        .route("/api/admin/settings", get(settings).put(update_settings))
         .route(
             "/api/admin/articles",
             get(list_admin_articles).post(create_article),
         )
         .route(
+            "/api/admin/articles/:id",
+            get(get_admin_article)
+                .put(update_article)
+                .delete(delete_article),
+        )
+        .route(
             "/api/admin/categories",
             get(list_categories).post(create_category),
         )
+        .route("/api/admin/categories/sort", put(sort_categories))
+        .route(
+            "/api/admin/categories/:id",
+            put(update_category).delete(delete_category),
+        )
         .route("/api/admin/comments", get(list_comments))
         .route("/api/admin/comments/:id/status", put(update_comment_status))
+        .route("/api/admin/comments/:id", delete(delete_comment))
+        .route("/api/admin/upload", post(upload))
         .with_state(state)
         .layer(middleware::from_fn(apply_response_contract))
 }
