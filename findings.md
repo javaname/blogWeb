@@ -67,7 +67,7 @@
 - Rust `serve-web` 已遵守设计中的 check-only 启动策略：不会在启动时隐式 apply migration 或 seed；生产切换前仍需补 Redis-backed session、MCP 命令和完整启动文档。
 - Rust MCP token hash 已按 Go 行为使用 `session.secret` 做 HMAC-SHA256 后入库，CLI 不保存明文 token；token 生成优先走系统随机源。
 - Rust MCP 已覆盖 HTTP `initialize` golden 兼容、缺 Bearer Token JSON-RPC 401、只读 resources/tools、写 tools、上传 tool、prompts、stdio transport、audit 和 rate limit。
-- Rust `serve-mcp -transport http` 已遵守 check-only 启动策略：未迁移数据库时失败且不创建数据库；stdio transport 仍需后续单独迁移。
+- Rust `serve-mcp -transport http|stdio` 已遵守 check-only 启动策略：未迁移数据库时失败且不创建数据库。
 - Rust MCP HTTP 只读资源已补齐站点元信息、分类、公开文章、分类文章列表和 draft-by-id 基础读取；公开读取继续遵守 published + published_at 不晚于当前时间的过滤。
 - Rust MCP HTTP 只读 tools 已补齐 `list_articles`、`get_article`、`list_categories`、`preview_markdown`；preview 复用 Rust Markdown renderer/sanitizer。
 - Rust MCP HTTP 写 tools 已补齐草稿创建、文章更新、发布/取消发布、分类创建/更新；草稿作者会优先使用配置管理员，title 变更会登记旧 slug。
