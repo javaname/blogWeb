@@ -1,0 +1,47 @@
+{
+  "status": 200,
+  "headers": {
+    "Content-Type": [
+      "application/json"
+    ]
+  },
+  "body": {
+    "id": 2,
+    "jsonrpc": "2.0",
+    "result": {
+      "capabilities": {
+        "prompts": {},
+        "resources": {
+          "listChanged": false
+        },
+        "tools": {}
+      },
+      "resources": [
+        {
+          "name": "site_meta",
+          "uri": "blog://site/meta"
+        },
+        {
+          "name": "categories",
+          "uri": "blog://categories"
+        },
+        {
+          "name": "article_by_slug",
+          "uriTemplate": "blog://articles/{slug}"
+        },
+        {
+          "name": "category_articles",
+          "uriTemplate": "blog://categories/{slug}/articles"
+        },
+        {
+          "name": "draft_by_id",
+          "uriTemplate": "blog://drafts/{id}"
+        }
+      ],
+      "serverInfo": {
+        "name": "blogWeb",
+        "version": "v6"
+      }
+    }
+  }
+}

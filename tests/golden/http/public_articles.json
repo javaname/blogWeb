@@ -1,0 +1,55 @@
+{
+  "status": 200,
+  "headers": {
+    "Content-Security-Policy": [
+      "default-src 'self'; base-uri 'self'; connect-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com; object-src 'none'; frame-ancestors 'none'"
+    ],
+    "Content-Type": [
+      "application/json; charset=utf-8"
+    ],
+    "Referrer-Policy": [
+      "strict-origin-when-cross-origin"
+    ],
+    "X-Content-Type-Options": [
+      "nosniff"
+    ],
+    "X-Frame-Options": [
+      "DENY"
+    ]
+  },
+  "cookies": [
+    {
+      "name": "anonymous_id",
+      "value": "\u003cTOKEN\u003e",
+      "path": "/",
+      "max_age": 31536000,
+      "http_only": true
+    }
+  ],
+  "body": {
+    "has_more": false,
+    "list": [
+      {
+        "author": {
+          "id": 1,
+          "username": "admin"
+        },
+        "category": {
+          "id": 1,
+          "name": "Technology",
+          "slug": "technology"
+        },
+        "cover_image": "",
+        "excerpt": "Baseline \u003cscript alert 1 \u003c/script Stable text.",
+        "id": 1,
+        "is_pinned": false,
+        "like_count": 0,
+        "published_at": "2026-05-29T08:00:00Z",
+        "read_time_min": 1,
+        "slug": "rust-migration-baseline",
+        "title": "Rust Migration Baseline"
+      }
+    ],
+    "next_cursor": ""
+  }
+}

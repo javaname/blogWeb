@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ink &amp; Insight Admin - Content Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:wght@400;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#ffdcc6",
+                        "surface-container-highest": "#e1e3e4",
+                        "inverse-on-surface": "#f0f1f2",
+                        "surface-variant": "#e1e3e4",
+                        "outline-variant": "#c2c6d6",
+                        "on-secondary-container": "#636262",
+                        "background": "#f8f9fa",
+                        "on-surface-variant": "#424754",
+                        "on-background": "#191c1d",
+                        "error": "#ba1a1a",
+                        "primary-container": "#2170e4",
+                        "primary-fixed-dim": "#adc6ff",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed": "#001a42",
+                        "tertiary-container": "#b75b00",
+                        "surface-container": "#edeeef",
+                        "on-tertiary-container": "#fffbff",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#e2dfde",
+                        "on-tertiary-fixed": "#311400",
+                        "tertiary-fixed-dim": "#ffb786",
+                        "on-tertiary": "#ffffff",
+                        "surface-dim": "#d9dadb",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "tertiary": "#924700",
+                        "primary-fixed": "#d8e2ff",
+                        "outline": "#727785",
+                        "on-primary-container": "#fefcff",
+                        "secondary-fixed": "#e5e2e1",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "on-primary-fixed-variant": "#004395",
+                        "on-error-container": "#93000a",
+                        "surface-container-high": "#e7e8e9",
+                        "on-tertiary-fixed-variant": "#723600",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#adc6ff",
+                        "inverse-surface": "#2e3132",
+                        "secondary": "#5f5e5e",
+                        "surface-bright": "#f8f9fa",
+                        "surface-container-low": "#f3f4f5",
+                        "surface-tint": "#005ac2",
+                        "surface": "#f8f9fa",
+                        "on-primary": "#ffffff",
+                        "on-surface": "#191c1d",
+                        "primary": "#0058be",
+                        "error-container": "#ffdad6",
+                        "on-secondary-fixed-variant": "#474746"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-max": "1200px",
+                        "base": "8px",
+                        "margin-desktop": "40px",
+                        "article-max": "720px",
+                        "gutter": "24px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "interface-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "article-body-mobile": ["Source Serif 4"],
+                        "display-lg": ["Inter"],
+                        "caption": ["Inter"],
+                        "article-body": ["Source Serif 4"],
+                        "headline-md": ["Inter"],
+                        "display-lg-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "interface-md": ["16px", {"lineHeight": "24px", "fontWeight": "500"}],
+                        "label-sm": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "article-body-mobile": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "caption": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "article-body": ["20px", {"lineHeight": "32px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "display-lg-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-surface-container-low flex flex-col gap-base p-margin-mobile border-r border-outline-variant shadow-sm z-50">
+<div class="mb-8 px-4">
+<h1 class="font-headline-md text-headline-md font-bold text-on-surface">Admin Console</h1>
+<p class="font-caption text-caption text-on-surface-variant">Content Manager</p>
+</div>
+<nav class="flex flex-col gap-2 grow">
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-lg px-4 py-2 flex items-center gap-3 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-interface-md text-interface-md">Dashboard</span>
+</a>
+<a class="bg-primary-container text-on-primary-container font-bold rounded-lg px-4 py-2 flex items-center gap-3 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="article">article</span>
+<span class="font-interface-md text-interface-md">Posts</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-lg px-4 py-2 flex items-center gap-3 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="category">category</span>
+<span class="font-interface-md text-interface-md">Categories</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-lg px-4 py-2 flex items-center gap-3 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="comment">comment</span>
+<span class="font-interface-md text-interface-md">Comments</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-lg px-4 py-2 flex items-center gap-3 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-interface-md text-interface-md">Settings</span>
+</a>
+</nav>
+<div class="mt-auto px-4 pb-4">
+<button class="w-full bg-primary text-on-primary font-interface-md text-interface-md py-3 rounded-lg flex items-center justify-center gap-2 shadow-sm hover:brightness-90 transition-all active:scale-95">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                New Post
+            </button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[280px] min-h-screen flex flex-col">
+<!-- TopNavBar (Admin) -->
+<header class="bg-surface-container-low sticky top-0 z-40 flex justify-end items-center w-full px-margin-desktop py-2 h-16 shadow-sm">
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:bg-surface-container-high rounded-full p-2 transition-all active:scale-90">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-container-high rounded-full p-2 transition-all active:scale-90">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<div class="h-8 w-8 rounded-full overflow-hidden border border-outline-variant bg-surface-container-highest">
+<img alt="Admin Avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a modern office professional with a clean, high-key background. The person has a friendly but authoritative expression, suitable for a lead content administrator profile picture. The lighting is soft and studio-quality, emphasizing a professional and focused atmosphere within a minimalist UI design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhmrJquSYtYV19zNRCJvrjM2NjPrs87IaNh9Q0MluV7v-DKYCsCIs8f9_ty7-uv39DJyn6ErBAjTMSgtCgzxbEswz91BOn9bveBhWeHPoxPRY3a89Y6SOr0Yhcf77tEUYmc1ybymEiDIx-zlbHae_iYtum4jUxTSdmK2i5mS6jNn8eBD1H-qQ2ncu7MRd09jT2DwRwaxOInFdhbU0aYeaMM7N-bPChdVDbMhOzROPqqWuvrcqm2dLGouWTpW2aG9MGqeO2PspidZg"/>
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<div class="p-margin-desktop grow">
+<!-- Page Header & Action -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Manage Content</h2>
+<p class="font-interface-md text-interface-md text-on-surface-variant">Review and edit your published stories</p>
+</div>
+<div class="flex gap-4">
+<button class="bg-primary text-on-primary font-interface-md text-interface-md px-6 py-2.5 rounded-lg flex items-center gap-2 shadow-sm hover:brightness-90 transition-all">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                        New Post
+                    </button>
+</div>
+</div>
+<!-- Search and Filter Bar -->
+<div class="bg-surface-container-lowest p-4 rounded-xl shadow-sm border border-outline-variant mb-8 flex flex-col md:flex-row gap-4">
+<div class="relative flex-grow">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" data-icon="search">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-background border border-outline rounded-lg focus:outline-none focus:ring-2 focus:ring-primary font-interface-md text-interface-md text-on-surface" placeholder="Search posts..." type="text"/>
+</div>
+<div class="flex gap-2">
+<select class="bg-background border border-outline rounded-lg px-4 py-2 font-interface-md text-interface-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary">
+<option>Status</option>
+<option>Published</option>
+<option>Draft</option>
+</select>
+<select class="bg-background border border-outline rounded-lg px-4 py-2 font-interface-md text-interface-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary">
+<option>Category</option>
+<option>Technology</option>
+<option>Design</option>
+<option>Lifestyle</option>
+</select>
+<button class="bg-surface-container-high text-on-surface-variant p-2 rounded-lg hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined" data-icon="tune">tune</span>
+</button>
+</div>
+</div>
+<!-- Data Table Post List -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<th class="px-6 py-4 font-label-sm text-label-sm text-on-surface-variant">Title</th>
+<th class="px-6 py-4 font-label-sm text-label-sm text-on-surface-variant">Status</th>
+<th class="px-6 py-4 font-label-sm text-label-sm text-on-surface-variant">Category</th>
+<th class="px-6 py-4 font-label-sm text-label-sm text-on-surface-variant">Author</th>
+<th class="px-6 py-4 font-label-sm text-label-sm text-on-surface-variant">Date</th>
+<th class="px-6 py-4 font-label-sm text-label-sm text-on-surface-variant text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Post 1 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container overflow-hidden shrink-0">
+<img alt="Post Thumbnail" class="w-full h-full object-cover" data-alt="A high-contrast editorial photograph showing a sleek silver laptop on a minimalist white desk, surrounded by deep green succulent plants. The lighting is bright and natural, coming from a side window, creating sharp but clean shadows. The aesthetic is professional, modern, and aligned with a high-end tech and design blog interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIrl7yWvzo8Mji5shezOTiB7uyIsY-nFWA3Q4CoJgZMz8TvCoLv60tlrlA3x67WShImj4RP0dy-705LveJxqZa1MnmN9THC0g0z8nLiOh0cdBodp1zJZ3pRavkQMehELSUfPkVw4rkIqwc67eaSW2jgBcKWvru9cX0DLfOH0qdT5jdBjLf6I_JnELtchG_JfB39H8-uN_Qd2AY5HfOMdhyuXg98thbKRCZixJ1vaqhFfBy2ZRhYqDFNc7ThZfG7PngWJeeMcyGEa4"/>
+</div>
+<span class="font-interface-md text-interface-md text-on-surface font-semibold truncate max-w-[240px]">The Future of Minimalist Interfaces in 2024</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="bg-primary-fixed text-on-primary-fixed text-[12px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">Published</span>
+</td>
+<td class="px-6 py-4">
+<span class="bg-[#EBF3FF] text-primary text-[12px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">Design</span>
+</td>
+<td class="px-6 py-4 font-interface-md text-interface-md text-on-surface-variant">Alex Rivera</td>
+<td class="px-6 py-4 font-interface-md text-interface-md text-on-surface-variant">Oct 24, 2024</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="edit">edit</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Post 2 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container overflow-hidden shrink-0">
+<img alt="Post Thumbnail" class="w-full h-full object-cover" data-alt="A macro photograph of clean, well-indented source code displayed on a high-resolution monitor. The color scheme features deep purples, vibrant blues, and sharp whites on a dark background. The lighting is atmospheric and focused, conveying a sense of deep technical mastery and intellectual rigor. The style is crisp and editorial, fitting for a professional developer blog." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCV2UtPb9E67l6mxheasQnhHHKyrIOL1SIID-KQAW7tejVbUG-k7WuEHhu00K2POOlFtQOwnTP0AXg_0haqwg6uYhpkmsQv49mttZqPKOgZHtlghVyTyrUBzMXIlr2JYnCO1IguR2EbYmzNgXabOsb5sm_l2POyJQJAGRY7mlr5EZpYpzzFdMQcVmmdfTy-NVW-Cq1g0U5JavS8KSq-1CGLxhncHvAWb6ETUzEhC2iQAFoXItvMiZcyJmUsBFy6lgw0uMdHbn0O3b8"/>
+</div>
+<span class="font-interface-md text-interface-md text-on-surface font-semibold truncate max-w-[240px]">Why Tailwind CSS is Dominating the Web</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="bg-secondary-container text-on-secondary-container text-[12px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">Draft</span>
+</td>
+<td class="px-6 py-4">
+<span class="bg-[#EBF3FF] text-primary text-[12px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">Tech</span>
+</td>
+<td class="px-6 py-4 font-interface-md text-interface-md text-on-surface-variant">Jordan Smith</td>
+<td class="px-6 py-4 font-interface-md text-interface-md text-on-surface-variant">Oct 22, 2024</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="edit">edit</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Post 3 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container overflow-hidden shrink-0">
+<img alt="Post Thumbnail" class="w-full h-full object-cover" data-alt="A minimalist workspace featuring an open notebook with elegant handwriting, a luxury fountain pen, and a ceramic coffee cup. The scene is bathed in soft, warm afternoon sunlight casting long, gentle shadows across a light wood surface. The mood is calm and contemplative, emphasizing the human element of writing and creative thought within a professional digital environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6oRT43X4-CFop51NkpJt25Z6f2iQAO09YxWvr5GAQ7LTelig-j27X4md1GyNWQ73HlQnEp_7Ec7t70X-ekUqsPY23cWle1fTt_KYD3IRxmr4bCQZ-RxOfxhNE7zR9AYBEUUQAlI4RJlT8W1Mjvq88i-RDVPo_yA2kcHbTf6genD9mGbzQbfQIdqW3AbTjTHxuMR6SkFpqZ5pxPfgVa7pUMiJIcm1aqpnustA3xJ75gUyHImeNufm5W-c4JngkpI-TfFQGS81GZWQ"/>
+</div>
+<span class="font-interface-md text-interface-md text-on-surface font-semibold truncate max-w-[240px]">The Art of Long-form Digital Storytelling</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="bg-primary-fixed text-on-primary-fixed text-[12px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">Published</span>
+</td>
+<td class="px-6 py-4">
+<span class="bg-[#EBF3FF] text-primary text-[12px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">Editorial</span>
+</td>
+<td class="px-6 py-4 font-interface-md text-interface-md text-on-surface-variant">Alex Rivera</td>
+<td class="px-6 py-4 font-interface-md text-interface-md text-on-surface-variant">Oct 18, 2024</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="edit">edit</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Post 4 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container overflow-hidden shrink-0">
+<img alt="Post Thumbnail" class="w-full h-full object-cover" data-alt="A wide-angle shot of a modern, open-concept creative office space during the golden hour. Large floor-to-ceiling windows reveal a blurred cityscape outside, while the interior features clean lines, white walls, and designer furniture. The lighting is warm and inviting, highlighting a professional yet expansive workspace. The style is architectural and clean, aligning with high-end corporate identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiI5s7MHYQZ6geb6lMltMXPG9XqgfM_z9GCPa_Gmv0XI_evY-1TXPVdFr8dUjILTCwQpSjQ6i8Rum6VfpXhMPJtU-DE7LVTLNsQSIj7PZ8SU-moKq1WtJ4sdsuxMw4P8oYiPp-xujgAZ8P3uuVFR7QzVyqUmvwoWBI64fXPb_qH-Rq3bPGE53IBYiITYX5A-Hfxlce002ISt_lbFK_HYNhruIjDIgymMORi41_4S65xTwXMw182jsUe2VuURbJ8YKaqcL0Et3ZbbI"/>
+</div>
+<span class="font-interface-md text-interface-md text-on-surface font-semibold truncate max-w-[240px]">Building a Remote Writing Culture</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="bg-primary-fixed text-on-primary-fixed text-[12px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">Published</span>
+</td>
+<td class="px-6 py-4">
+<span class="bg-[#EBF3FF] text-primary text-[12px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">Lifestyle</span>
+</td>
+<td class="px-6 py-4 font-interface-md text-interface-md text-on-surface-variant">Casey Chen</td>
+<td class="px-6 py-4 font-interface-md text-interface-md text-on-surface-variant">Oct 15, 2024</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="edit">edit</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<!-- Pagination -->
+<div class="px-6 py-4 bg-surface-container-low flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="font-caption text-caption text-on-surface-variant">Showing 1 to 4 of 48 posts</p>
+<div class="flex items-center gap-1">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-highest rounded-lg transition-colors disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined" data-icon="chevron_left">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-primary text-on-primary font-interface-md text-interface-md">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-highest font-interface-md text-interface-md">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-highest font-interface-md text-interface-md">3</button>
+<span class="px-2 text-on-surface-variant">...</span>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-highest font-interface-md text-interface-md">12</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-highest rounded-lg transition-colors">
+<span class="material-symbols-outlined" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<footer class="mt-auto border-t border-outline-variant bg-surface-container-lowest py-8">
+<div class="max-w-container-max mx-auto px-margin-desktop flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="font-caption text-caption text-on-surface-variant">© 2024 Ink &amp; Insight. All rights reserved.</p>
+<div class="flex gap-6">
+<a class="font-caption text-caption text-on-surface-variant hover:text-on-surface transition-colors" href="#">Privacy Policy</a>
+<a class="font-caption text-caption text-on-surface-variant hover:text-on-surface transition-colors" href="#">Terms of Service</a>
+<a class="font-caption text-caption text-on-surface-variant hover:text-on-surface transition-colors" href="#">RSS Feed</a>
+</div>
+</div>
+</footer>
+</main>
+</body></html>

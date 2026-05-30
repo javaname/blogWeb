@@ -1,0 +1,83 @@
+server:
+  port: 3000
+
+database:
+  path: "data/blog.db"
+
+redis:
+  addr: "127.0.0.1:6379"
+  password: ""
+  db: 0
+  pool_size: 10
+
+session:
+  secret: "replace-with-random-32-byte-secret"
+  max_age: 86400
+  idle_timeout: 7200
+
+rate_limit:
+  login_ip_window_sec: 600
+  login_ip_max_attempts: 20
+  login_user_fail_threshold: 5
+  login_user_cooldown_sec: 900
+  registration_ip_window_sec: 600
+  registration_ip_max_requests: 5
+  registration_email_window_sec: 600
+  registration_email_max_requests: 3
+  like_ip_window_sec: 60
+  like_ip_max_requests: 60
+  like_article_window_sec: 600
+  like_article_max_actions: 20
+  comment_ip_window_sec: 60
+  comment_ip_max_requests: 10
+  comment_article_window_sec: 600
+  comment_article_max_actions: 5
+
+upload:
+  dir: "public/uploads"
+  max_size: 5242880
+  allowed_types:
+    - image/jpeg
+    - image/png
+    - image/gif
+    - image/webp
+  allow_svg: false
+  reencode: true
+
+admin:
+  init_username: "admin"
+  init_password: "replace-with-secure-password"
+
+email:
+  smtp_host: "smtp.163.com"
+  smtp_port: 465
+  username: "your-account@163.com"
+  password: "replace-with-netease-mail-auth-code"
+  from: "your-account@163.com"
+  verification_ttl_sec: 600
+
+site:
+  title: "墨韵洞察"
+  description: "关注设计、系统与有意识数字工作的安静编辑型博客"
+  base_url: "https://example.com"
+
+mcp:
+  enabled: true
+  stdio_enabled: true
+  stdio_write_enabled: false
+  http_enabled: false
+  http_addr: "127.0.0.1:3001"
+  http_path: "/mcp"
+  auth_mode: "pre_shared_token"
+  require_origin_check: true
+  allowed_origins:
+    - "https://chatgpt.com"
+    - "https://chat.openai.com"
+  stateless_http: true
+  protocol_versions:
+    - "2025-11-25"
+  rate_limit:
+    read_per_minute: 120
+    write_per_minute: 30
+    publish_per_10min: 10
+    upload_per_10min: 10

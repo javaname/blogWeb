@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<title>{{ categoryName .category.Slug .category.Name }} &mdash; {{ .site.title }}</title>
+<meta name="description" content="{{ .site.description }}">
+{{ template "head" . }}
+</head>
+<body class="bg-background text-on-surface" data-page="category">
+{{ template "topnav" . }}
+
+<main class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pt-10 pb-20">
+  <section class="mb-12 pb-8 border-b border-outline-variant">
+    <p class="text-primary font-label-sm text-label-sm uppercase tracking-wider mb-3">分类</p>
+    <h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg leading-tight mb-4">{{ categoryName .category.Slug .category.Name }}</h1>
+    <p class="font-interface-md text-interface-md text-on-surface-variant">收录于「{{ categoryName .category.Slug .category.Name }}」分类下的精选文章。</p>
+  </section>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+    <div class="lg:col-span-8 space-y-12">
+      <div class="flex items-center justify-between">
+        <h2 class="font-headline-md text-headline-md text-on-surface">{{ if .articles }}{{ len .articles }} 篇文章{{ else }}暂无文章{{ end }}</h2>
+      </div>
+
+      {{ if .articles }}
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {{ range .articles }}
+        <article class="bg-surface-container-low rounded-lg border border-outline-variant overflow-hidden flex flex-col hover:shadow-lg transition-all hover:-translate-y-1" data-article-slug="{{ .Slug }}">
+          <a href="/articles/{{ .Slug }}" class="aspect-video overflow-hidden bg-surface-container-high block">
+            {{ if .CoverImage }}
+            <img alt="{{ .Title }}" class="w-full h-full object-cover" src="{{ .CoverImage }}">
+            {{ else }}
+            <div class="w-full h-full flex items-center justify-center text-on-surface-variant">
+              <span class="material-symbols-outlined text-[48px] opacity-40">image</span>
+            </div>
+            {{ end }}
+          </a>
+          <div class="p-6 flex-grow flex flex-col">
+            <div class="mb-3 flex items-center gap-2 flex-wrap">
+              {{ if .Category }}
+              <a href="/categories/{{ .Category.Slug }}" class="bg-tertiary-fixed text-on-tertiary-fixed px-2 py-0.5 rounded text-caption font-label-sm">{{ categoryName .Category.Slug .Category.Name }}</a>
+              {{ end }}
+              {{ if .IsPinned }}
+              <span class="bg-primary-container text-on-primary-container px-2 py-0.5 rounded text-caption font-label-sm">精选</span>
+              {{ end }}
+            </div>
+            <h3 class="font-headline-md text-headline-md mb-3 leading-snug"><a href="/articles/{{ .Slug }}" class="hover:text-primary transition-colors">{{ .Title }}</a></h3>
+            <p class="font-interface-md text-interface-md text-on-surface-variant mb-6 line-clamp-2">{{ .Excerpt }}</p>
+            <div class="mt-auto flex items-center justify-between">
+              <span class="text-caption font-caption text-on-surface-variant">{{ if .Author }}作者：{{ authorName .Author.Username }}{{ end }} &middot; {{ .ReadTimeMin }} 分钟阅读</span>
+              <button class="like-button flex items-center gap-1 text-on-surface-variant hover:text-error transition-colors" type="button" data-like-button data-slug="{{ .Slug }}" aria-label="喜欢文章">
+                <span class="material-symbols-outlined text-[20px] like-icon">favorite_border</span>
+                <span class="like-count text-caption font-caption">{{ .LikeCount }}</span>
+              </button>
+            </div>
+          </div>
+        </article>
+        {{ end }}
+      </div>
+      {{ else }}
+      <div class="text-center py-20">
+        <span class="material-symbols-outlined text-[64px] text-on-surface-variant opacity-40">article</span>
+        <p class="font-interface-md text-interface-md text-on-surface-variant mt-4">该分类下暂无文章。</p>
+      </div>
+      {{ end }}
+    </div>
+
+    <aside class="lg:col-span-4 space-y-8">
+      {{ template "sidebar_newsletter" . }}
+      {{ template "sidebar_categories" . }}
+    </aside>
+  </div>
+</main>
+
+{{ template "sitefooter" . }}
+<script src="/assets/site.js" defer></script>
+</body>
+</html>

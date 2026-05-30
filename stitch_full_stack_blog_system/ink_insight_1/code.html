@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Source+Serif+4:ital,wght@0,400;0,600;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+        .reading-container {
+            max-width: 720px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#ffdcc6",
+                        "surface-container-highest": "#e1e3e4",
+                        "inverse-on-surface": "#f0f1f2",
+                        "surface-variant": "#e1e3e4",
+                        "outline-variant": "#c2c6d6",
+                        "on-secondary-container": "#636262",
+                        "background": "#f8f9fa",
+                        "on-surface-variant": "#424754",
+                        "on-background": "#191c1d",
+                        "error": "#ba1a1a",
+                        "primary-container": "#2170e4",
+                        "primary-fixed-dim": "#adc6ff",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed": "#001a42",
+                        "tertiary-container": "#b75b00",
+                        "surface-container": "#edeeef",
+                        "on-tertiary-container": "#fffbff",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#e2dfde",
+                        "on-tertiary-fixed": "#311400",
+                        "tertiary-fixed-dim": "#ffb786",
+                        "on-tertiary": "#ffffff",
+                        "surface-dim": "#d9dadb",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "tertiary": "#924700",
+                        "primary-fixed": "#d8e2ff",
+                        "outline": "#727785",
+                        "on-primary-container": "#fefcff",
+                        "secondary-fixed": "#e5e2e1",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "on-primary-fixed-variant": "#004395",
+                        "on-error-container": "#93000a",
+                        "surface-container-high": "#e7e8e9",
+                        "on-tertiary-fixed-variant": "#723600",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#adc6ff",
+                        "inverse-surface": "#2e3132",
+                        "secondary": "#5f5e5e",
+                        "surface-bright": "#f8f9fa",
+                        "surface-container-low": "#f3f4f5",
+                        "surface-tint": "#005ac2",
+                        "surface": "#f8f9fa",
+                        "on-primary": "#ffffff",
+                        "on-surface": "#191c1d",
+                        "primary": "#0058be",
+                        "error-container": "#ffdad6",
+                        "on-secondary-fixed-variant": "#474746"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-max": "1200px",
+                        "base": "8px",
+                        "margin-desktop": "40px",
+                        "article-max": "720px",
+                        "gutter": "24px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "interface-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "article-body-mobile": ["Source Serif 4"],
+                        "display-lg": ["Inter"],
+                        "caption": ["Inter"],
+                        "article-body": ["Source Serif 4"],
+                        "headline-md": ["Inter"],
+                        "display-lg-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "interface-md": ["16px", {"lineHeight": "24px", "fontWeight": "500"}],
+                        "label-sm": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "article-body-mobile": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "caption": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "article-body": ["20px", {"lineHeight": "32px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "display-lg-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface">
+<!-- Progress Bar -->
+<div class="fixed top-0 left-0 w-full h-1 bg-surface-container z-50">
+<div class="h-full bg-primary w-1/3"></div>
+</div>
+<!-- TopNavBar -->
+<header class="bg-surface-container-lowest dark:bg-inverse-surface border-b border-outline-variant dark:border-outline shadow-sm sticky top-0 z-40">
+<div class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto">
+<div class="font-display-lg text-display-lg font-bold text-on-surface dark:text-inverse-on-surface">
+                Ink &amp; Insight
+            </div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="font-interface-md text-interface-md text-primary dark:text-primary-fixed-dim font-bold border-b-2 border-primary pb-1" href="#">Latest</a>
+<a class="font-interface-md text-interface-md text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim transition-colors duration-200" href="#">Categories</a>
+<a class="font-interface-md text-interface-md text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim transition-colors duration-200" href="#">About</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="hidden md:block text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">search</span>
+</button>
+<button class="font-interface-md text-interface-md text-on-surface-variant px-4 py-2 hover:text-primary transition-colors">Login</button>
+<button class="bg-primary text-on-primary px-6 py-2 rounded-lg font-interface-md text-interface-md hover:bg-opacity-90 transition-all active:scale-95">Subscribe</button>
+</div>
+</div>
+</header>
+<main class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pt-10 pb-20">
+<!-- Hero Section -->
+<section class="mb-20">
+<div class="relative group cursor-pointer overflow-hidden rounded-xl bg-surface-container-low border border-outline-variant transition-all hover:shadow-lg">
+<div class="grid md:grid-cols-2 gap-0">
+<div class="relative aspect-[4/3] md:aspect-auto overflow-hidden">
+<img alt="Digital Transformation" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="A sophisticated wide shot of a minimalist home office at dusk, featuring a high-end laptop open on a dark wood desk. The lighting is soft and cinematic, with warm ambient glows from a designer desk lamp and cool blue moonlight filtering through a large window. The color palette centers on modern blues and neutral grays, creating a quiet, intellectual, and professional blogging environment. The atmosphere is serene and deeply focused." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAI4_mDOf_OND9MzhiF6NQ18p5xXI8_yFm3Oz1Lt5xdXofQe6nSAh2akV7Ipum_bCa56QlZqw_53BgIFF5B3RqIRlWyOG06MB2eVyk2DNI9SQFg56W-FZyYQzvC1CS7ORpU9YsRrWXLXFdQU9GJDUoT6BfKuE_sLcVp4kzndCDzu_10poBGi9dbrLezJySs-77S94A-psTzhWoEzJcoFYEb2f7ly0lfgUzYKx8d-lnsV5N3eVdGzfkjcXvP6hcULCh9PEAcQBHuIvo"/>
+<div class="absolute top-4 left-4">
+<span class="bg-primary-container text-on-primary-container px-3 py-1 rounded-full text-label-sm font-label-sm">Featured</span>
+</div>
+</div>
+<div class="p-8 md:p-12 flex flex-col justify-center">
+<div class="flex items-center gap-3 mb-6">
+<span class="text-primary font-label-sm text-label-sm uppercase tracking-wider">Technology</span>
+<span class="text-outline text-label-sm font-label-sm">•</span>
+<span class="text-on-surface-variant text-label-sm font-label-sm">May 12, 2024</span>
+</div>
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg mb-6 leading-tight">The Quiet Revolution of Minimalist Digital Workspaces</h1>
+<p class="font-interface-md text-interface-md text-on-surface-variant mb-8 line-clamp-3">In an era of digital noise, the movement toward cognitive clarity through physical and digital minimalism is more than a trend—it's a survival strategy for the modern intellectual.</p>
+<div class="flex items-center gap-4">
+<img alt="Arthur Vance" class="w-10 h-10 rounded-full object-cover" data-alt="A professional headshot of a middle-aged man with kind eyes and short-cropped salt-and-pepper hair, wearing a high-quality charcoal turtleneck. The lighting is soft and directional, typical of a professional studio portrait, with a clean, neutral gray background. The overall aesthetic is polished, trustworthy, and sophisticated, matching a high-end editorial blog style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQrxWno4rprocssYKQDgOI58aqmjZfPxYj2Il2BNthqHCiBj1WimLHwEQyy0y1Ef_7pNUgEzpSnkwO_R9KQtSc-v77DGRr4VyhArXj7VwOXixDDFxumCX7sepCZwRnHgdLdKcjxfcfOqaUOJy843mdzkQH2EXeFttHBCImgnIiZljMnO8zZyEwCuhVLts52D7HYI4KNpZH2NcfdCBw7d6VWtvPids-9belS0loYGeBxAwsrpuBqppNhXeUGotEBOwFWH6_eu3hXPY"/>
+<div>
+<p class="font-interface-md text-interface-md font-bold">Arthur Vance</p>
+<p class="text-caption font-caption text-on-surface-variant">Senior Editor</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Content Grid & Sidebar -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+<!-- Article Grid -->
+<div class="lg:col-span-8 space-y-12">
+<div class="flex items-center justify-between border-b border-outline-variant pb-4">
+<h2 class="font-headline-md text-headline-md text-on-surface">Recent Stories</h2>
+<div class="flex gap-2">
+<button class="p-2 hover:bg-surface-container rounded-full transition-colors"><span class="material-symbols-outlined">grid_view</span></button>
+<button class="p-2 hover:bg-surface-container rounded-full transition-colors"><span class="material-symbols-outlined text-primary">view_list</span></button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Card 1 -->
+<article class="bg-surface-container-low rounded-lg border border-outline-variant overflow-hidden flex flex-col hover:shadow-lg transition-all hover:-translate-y-1">
+<div class="aspect-video overflow-hidden">
+<img alt="Architecture" class="w-full h-full object-cover" data-alt="A clean, minimalist architectural photograph of a white concrete building against a crystal clear blue sky. The composition emphasizes geometric lines and sharp shadows, creating a high-contrast editorial look. The bright daylight creates a modern and expansive feel, with a color palette of pristine whites and deep sky blues. The mood is one of architectural rigor and clarity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJtZf4VmRunu_aCa_E-Iy6a_6OGdM2XuzDMA-uNaY_uCwC6Nsv8t1ojPwwJFBZURUcXY7mlVo5NX1_9qfNF7xo-WuGr2IvSP6fNR9TGhDWyf39pkLT0b27NhFRS4MDkOBYKiNbXhHQ__OrWLXsRVtJe-Rv-PS9Saw4UrFVnvCA6FYiNmQ_mDAFozi3A4NQ1sPnvMUlpqn3ELWcw6QS0-gmvsT36IEqB4MA14-9uePvX1p_VgnnnwKvrTeyy5vx_fnelQwTMvX44MA"/>
+</div>
+<div class="p-6 flex-grow flex flex-col">
+<div class="mb-3">
+<span class="bg-tertiary-fixed text-on-tertiary-fixed px-2 py-0.5 rounded text-caption font-label-sm">Design</span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-3 leading-snug">Rethinking Urban Flow: Minimalism in Architecture</h3>
+<p class="font-interface-md text-interface-md text-on-surface-variant mb-6 line-clamp-2">How modern architects are stripping away the non-essential to create spaces that breathe.</p>
+<div class="mt-auto flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="text-caption font-caption text-on-surface-variant">By Sarah Chen</span>
+</div>
+<span class="text-caption font-caption text-on-surface-variant">6 min read</span>
+</div>
+</div>
+</article>
+<!-- Card 2 -->
+<article class="bg-surface-container-low rounded-lg border border-outline-variant overflow-hidden flex flex-col hover:shadow-lg transition-all hover:-translate-y-1">
+<div class="aspect-video overflow-hidden">
+<img alt="Journaling" class="w-full h-full object-cover" data-alt="A close-up, top-down view of a handcrafted leather notebook and a fountain pen resting on a marble tabletop. Beside it sits a ceramic cup of black coffee with steam rising in soft curls. The lighting is soft and morning-fresh, highlighting the textures of the paper and leather. The scene uses a palette of soft whites, warm leathers, and charcoal accents to convey a sense of quiet morning productivity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAvguDNdD-THF5V9mdlqhuy7ID7FeDWrh28UvCiBdRtZEtGmt6Q5J1HmSp_wIrHi_BmUN73CbWW7uSJn9oBbw8n0o_FIMv9SB7gdXTWVoQXR7XGfiVMIOb0RglzWo9SGyapqTbmk53SKcMMMcKZUQlPJZdMXecQ43tOvfxYe3b9z5u6DZopD1giO7G8LnPbYRoM6a3n07uHeLDOQta6UEArdxEgnfPtDF2EQv1V2e0seqWlfDR9krQwr7Cybr98R-CKF3TANRCzFSk"/>
+</div>
+<div class="p-6 flex-grow flex flex-col">
+<div class="mb-3">
+<span class="bg-tertiary-fixed text-on-tertiary-fixed px-2 py-0.5 rounded text-caption font-label-sm">Lifestyle</span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-3 leading-snug">The Art of Slow Writing in a Fast World</h3>
+<p class="font-interface-md text-interface-md text-on-surface-variant mb-6 line-clamp-2">Reclaiming the lost luxury of long-form thought and hand-written journals.</p>
+<div class="mt-auto flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="text-caption font-caption text-on-surface-variant">By Julian Moss</span>
+</div>
+<span class="text-caption font-caption text-on-surface-variant">12 min read</span>
+</div>
+</div>
+</article>
+<!-- Card 3 -->
+<article class="bg-surface-container-low rounded-lg border border-outline-variant overflow-hidden flex flex-col hover:shadow-lg transition-all hover:-translate-y-1">
+<div class="aspect-video overflow-hidden">
+<img alt="Coffee" class="w-full h-full object-cover" data-alt="A moody, high-contrast photograph of a minimalist cafe interior. A single, sleek black chair sits next to a small wooden table, illuminated by a single spotlight from above. The rest of the room is in deep shadow, creating an intimate and sophisticated vibe. The color palette is dominated by deep blacks, rich wood tones, and sharp highlights, perfectly capturing a modern, high-end editorial style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZ83KdpvbLP2KfiklXkLIS57pl1_ACpeX7sBy9ACjWZeUM90yjtQp2Dk3-Wr5avpNafRuJydxgv0dYk0BWcJkRN0loOIfwITtOQYcTJMB5GoNWog5r82lVo8dgbgLo54q819JfMVumKb9el2QnuMvU_3XebqpEMlYMl8uTiYyRtggBnAqXatXdFRywc8uUdM6mcbJrILo4sqC7Po4_h8Qi5pWJ9QVsngYsXCHdxq30E5hTC21nl3aWn8HBJk6SlwBS3MeEmKSJI0g"/>
+</div>
+<div class="p-6 flex-grow flex flex-col">
+<div class="mb-3">
+<span class="bg-tertiary-fixed text-on-tertiary-fixed px-2 py-0.5 rounded text-caption font-label-sm">Culture</span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-3 leading-snug">Silence as the New Status Symbol</h3>
+<p class="font-interface-md text-interface-md text-on-surface-variant mb-6 line-clamp-2">Why the most valuable commodity in the 21st century is uninterrupted attention.</p>
+<div class="mt-auto flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="text-caption font-caption text-on-surface-variant">By Elena Rossi</span>
+</div>
+<span class="text-caption font-caption text-on-surface-variant">8 min read</span>
+</div>
+</div>
+</article>
+<!-- Card 4 -->
+<article class="bg-surface-container-low rounded-lg border border-outline-variant overflow-hidden flex flex-col hover:shadow-lg transition-all hover:-translate-y-1">
+<div class="aspect-video overflow-hidden">
+<img alt="Productivity" class="w-full h-full object-cover" data-alt="An abstract digital composition featuring floating, translucent geometric glass panes in shades of soft blue and deep navy. The lighting is diffused and atmospheric, creating a sense of depth and intellectual complexity. The style is clean, modern, and tech-forward, using a restricted palette to focus on texture and light. It represents the intersection of technology and human cognition in a calm, focused manner." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAK8u_SEHBIFZ4syF6mBfg6V8sF8hgazju1aVR2E9-apo6UivDdl7ZMtx_wgPykHUagPBJkBBRsdtKRNnFIphThwLNgSOTDwLA0RWBkYMHfg3JYQkLZTbcZPAN2JzOZEn3LO5S_J8gwqUjln7K7tpQQsnYDVDU9E411uOUmuFHd5jWhXjE75U0ehckPUimxawJU2DccAFbWe11s46mkgOEP0e-ihWtnlyPFhnN0KJOGFIxbdOSRdPqcGqUZb2ISH18JYgaeNnbhHaU"/>
+</div>
+<div class="p-6 flex-grow flex flex-col">
+<div class="mb-3">
+<span class="bg-tertiary-fixed text-on-tertiary-fixed px-2 py-0.5 rounded text-caption font-label-sm">Tech</span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-3 leading-snug">The Algorithm vs. The Intuition</h3>
+<p class="font-interface-md text-interface-md text-on-surface-variant mb-6 line-clamp-2">Finding the balance between data-driven decisions and human instinct.</p>
+<div class="mt-auto flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="text-caption font-caption text-on-surface-variant">By David Wright</span>
+</div>
+<span class="text-caption font-caption text-on-surface-variant">10 min read</span>
+</div>
+</div>
+</article>
+</div>
+<!-- Pagination -->
+<div class="flex items-center justify-center gap-2 pt-8">
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container transition-colors"><span class="material-symbols-outlined">chevron_left</span></button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-on-primary font-bold">1</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container transition-colors font-bold">2</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container transition-colors font-bold">3</button>
+<span class="px-2 text-on-surface-variant">...</span>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container transition-colors"><span class="material-symbols-outlined">chevron_right</span></button>
+</div>
+</div>
+<!-- Sidebar -->
+<aside class="lg:col-span-4 space-y-10">
+<!-- Newsletter Signup -->
+<div class="bg-primary-container p-8 rounded-xl text-on-primary-container shadow-sm border border-primary">
+<h3 class="font-headline-md text-headline-md mb-4">The Weekly Insight</h3>
+<p class="font-interface-md text-interface-md mb-6 opacity-90">Deep dives into design, technology, and the pursuit of focused living. No fluff, just rigor.</p>
+<form class="space-y-4">
+<input class="w-full px-4 py-3 rounded-lg bg-surface-container-lowest text-on-surface border-none focus:ring-2 focus:ring-on-primary-container placeholder:text-outline-variant font-interface-md text-interface-md" placeholder="email@address.com" type="email"/>
+<button class="w-full bg-on-primary-container text-primary-container py-3 rounded-lg font-bold hover:bg-opacity-90 transition-all font-interface-md text-interface-md">Subscribe Now</button>
+</form>
+<p class="text-caption font-caption mt-4 opacity-70 text-center">Join 12,000+ readers. Opt-out anytime.</p>
+</div>
+<!-- Categories -->
+<div class="p-8 rounded-xl bg-surface-container-low border border-outline-variant">
+<h3 class="font-interface-md text-interface-md font-bold mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">category</span> Categories
+                    </h3>
+<ul class="space-y-4">
+<li class="flex justify-between items-center group cursor-pointer">
+<span class="font-interface-md text-interface-md text-on-surface-variant group-hover:text-primary transition-colors">Digital Minimalism</span>
+<span class="text-caption font-caption bg-surface-container px-2 py-0.5 rounded-full text-on-surface-variant group-hover:bg-primary-container group-hover:text-on-primary-container transition-all">24</span>
+</li>
+<li class="flex justify-between items-center group cursor-pointer">
+<span class="font-interface-md text-interface-md text-on-surface-variant group-hover:text-primary transition-colors">Modern Design</span>
+<span class="text-caption font-caption bg-surface-container px-2 py-0.5 rounded-full text-on-surface-variant group-hover:bg-primary-container group-hover:text-on-primary-container transition-all">18</span>
+</li>
+<li class="flex justify-between items-center group cursor-pointer">
+<span class="font-interface-md text-interface-md text-on-surface-variant group-hover:text-primary transition-colors">Productivity Tech</span>
+<span class="text-caption font-caption bg-surface-container px-2 py-0.5 rounded-full text-on-surface-variant group-hover:bg-primary-container group-hover:text-on-primary-container transition-all">12</span>
+</li>
+<li class="flex justify-between items-center group cursor-pointer">
+<span class="font-interface-md text-interface-md text-on-surface-variant group-hover:text-primary transition-colors">Urban Architecture</span>
+<span class="text-caption font-caption bg-surface-container px-2 py-0.5 rounded-full text-on-surface-variant group-hover:bg-primary-container group-hover:text-on-primary-container transition-all">9</span>
+</li>
+<li class="flex justify-between items-center group cursor-pointer">
+<span class="font-interface-md text-interface-md text-on-surface-variant group-hover:text-primary transition-colors">Philosophy</span>
+<span class="text-caption font-caption bg-surface-container px-2 py-0.5 rounded-full text-on-surface-variant group-hover:bg-primary-container group-hover:text-on-primary-container transition-all">15</span>
+</li>
+</ul>
+</div>
+<!-- Popular Tags -->
+<div class="p-8 rounded-xl bg-surface-container-low border border-outline-variant">
+<h3 class="font-interface-md text-interface-md font-bold mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">sell</span> Trending Tags
+                    </h3>
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1 bg-surface-container text-on-surface-variant rounded-full text-caption font-label-sm cursor-pointer hover:bg-primary hover:text-on-primary transition-all">#Focus</span>
+<span class="px-3 py-1 bg-surface-container text-on-surface-variant rounded-full text-caption font-label-sm cursor-pointer hover:bg-primary hover:text-on-primary transition-all">#AI</span>
+<span class="px-3 py-1 bg-surface-container text-on-surface-variant rounded-full text-caption font-label-sm cursor-pointer hover:bg-primary hover:text-on-primary transition-all">#Workplace</span>
+<span class="px-3 py-1 bg-surface-container text-on-surface-variant rounded-full text-caption font-label-sm cursor-pointer hover:bg-primary hover:text-on-primary transition-all">#Typography</span>
+<span class="px-3 py-1 bg-surface-container text-on-surface-variant rounded-full text-caption font-label-sm cursor-pointer hover:bg-primary hover:text-on-primary transition-all">#Health</span>
+<span class="px-3 py-1 bg-surface-container text-on-surface-variant rounded-full text-caption font-label-sm cursor-pointer hover:bg-primary hover:text-on-primary transition-all">#Minimal</span>
+<span class="px-3 py-1 bg-surface-container text-on-surface-variant rounded-full text-caption font-label-sm cursor-pointer hover:bg-primary hover:text-on-primary transition-all">#Creativity</span>
+</div>
+</div>
+</aside>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest dark:bg-inverse-surface border-t border-outline-variant py-12 mt-20">
+<div class="max-w-container-max mx-auto px-margin-desktop flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="flex flex-col gap-2 items-center md:items-start">
+<div class="font-headline-md text-headline-md font-bold text-on-surface">Ink &amp; Insight</div>
+<p class="font-caption text-caption text-on-surface-variant max-w-[300px] text-center md:text-left">
+                    Exploring the intersection of modern design and intentional living through deep long-form analysis.
+                </p>
+</div>
+<div class="flex flex-col md:flex-row items-center gap-8">
+<nav class="flex gap-6">
+<a class="font-caption text-caption text-on-surface-variant hover:text-on-surface transition-colors" href="#">Privacy Policy</a>
+<a class="font-caption text-caption text-on-surface-variant hover:text-on-surface transition-colors" href="#">Terms of Service</a>
+<a class="font-caption text-caption text-on-surface-variant hover:text-on-surface transition-colors" href="#">RSS Feed</a>
+<a class="font-caption text-caption text-on-surface-variant hover:text-on-surface transition-colors" href="#">Sitemap</a>
+</nav>
+<div class="flex gap-4">
+<button class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center hover:bg-primary hover:text-on-primary transition-all"><span class="material-symbols-outlined text-[20px]">share</span></button>
+<button class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center hover:bg-primary hover:text-on-primary transition-all"><span class="material-symbols-outlined text-[20px]">mail</span></button>
+</div>
+</div>
+</div>
+<div class="max-w-container-max mx-auto px-margin-desktop mt-8 pt-8 border-t border-outline-variant text-center">
+<p class="font-caption text-caption text-on-surface-variant">© 2024 Ink &amp; Insight. All rights reserved.</p>
+</div>
+</footer>
+</body></html>
