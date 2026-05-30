@@ -257,3 +257,4 @@
   - `session-catchup.py` 本机路径不存在，已继续按现有计划文件恢复。
   - 一次 PowerShell regex 文件筛选写法错误，未影响代码。
   - Go golden JSON 工作区被 CRLF 化导致字节级 hash mismatch；已重写为 LF，并新增 `.gitattributes` 固定 `tests/golden/**/*.json text eol=lf`。
+- 已完成阶段提交并推送到远程：`48f1e46`（`main -> main`）。

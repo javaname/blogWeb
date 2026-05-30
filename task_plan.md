@@ -151,8 +151,8 @@ Stitch 项目：
 - [complete] 切片 4：读者互动限流与策略
   - [complete] 点赞/收藏/关注/订阅/评论限流
   - [complete] 评论敏感词完整策略
-- [in_progress] 切片 5：验证、文档记录、阶段提交与推送
+- [complete] 切片 5：验证、文档记录、阶段提交与推送
   - [complete] `cargo test --offline`
   - [complete] `go test ./internal/compat -run TestGenerateGoldenBaseline -count=1`
   - [complete] `go test ./... -count=1 -timeout=120s`
-  - [pending] 阶段提交与推送
+  - [complete] 阶段提交与推送：`48f1e46`
