@@ -323,3 +323,5 @@
   - `cargo test --offline --test public_pages_static`
   - `cargo test --offline`
   - `go test ./... -count=1 -timeout=120s`
+- 已完成阶段提交：`7eb70fa`（`复刻 Rust 公开页面模板结构`）。
+- 推送远程时 GitHub 连接连续失败：第一次 `Recv failure: Connection was reset`，第二次 `Could not connect to server`；待网络恢复后执行 `git push`。
