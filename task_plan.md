@@ -65,14 +65,14 @@ Stitch 项目：
 - [complete] 生成 Go golden baseline，并按 TDD 创建 Rust 后端骨架和首批兼容性测试
 - [complete] 切片 A 前半：配置默认合并、数据库迁移 check/apply、应用装配、`/healthz`
 - [complete] 切片 A 后半：CLI `db check/migrate`、SQLite pool 装配、启动时 check-only 基础流程
-- [in_progress] 切片 B：公开只读页面/API、模板渲染、文章列表、文章详情、分类页、静态资源
+- [complete] 切片 B：公开只读页面/API、模板渲染、文章列表、文章详情、分类页、静态资源
   - [complete] `GET /api/articles` 与 `GET /api/articles/:slug` 对齐当前 Go golden body
   - [complete] 分类筛选、keyword、隐藏草稿/未来发布、历史 slug 301
   - [complete] cursor 分页契约
   - [complete] 真实 Markdown renderer / sanitizer
   - [complete] 公开首页、文章页、分类页、assets/uploads 静态资源基础兼容
   - [complete] 文章页 approved 评论、一级回复和同分类相关文章基础展示
-  - [pending] 完整 Tera 模板复刻、页面 DOM/视觉细节对齐
+  - [complete] Go 模板级公开页面 DOM/交互钩子复刻（Rust renderer 实现）
 - [complete] 切片 C：后台认证与会话兼容
   - [complete] `POST /api/admin/login` 对齐 Go golden body 与 `admin_session` cookie 契约
   - [complete] `GET /api/admin/csrf-token` 未登录对齐 Go golden 401 body

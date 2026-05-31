@@ -94,6 +94,14 @@ struct PublicCategory {
     slug: String,
 }
 
+#[derive(Debug)]
+struct PublicCategoryWithCount {
+    id: i64,
+    name: String,
+    slug: String,
+    article_count: i64,
+}
+
 #[derive(Debug, Serialize)]
 struct PublicAuthor {
     id: i64,
@@ -108,18 +116,38 @@ struct PublicCommentNode {
     replies: Vec<PublicCommentNode>,
 }
 
-pub async fn home_page(State(state): State<PublicState>) -> Result<axum::response::Response> {
-    let articles = published_summaries(&state, ListQuery::default()).await?;
-    let mut html = String::from("<!doctype html><html lang=\"zh-CN\"><body><main>");
-    for article in articles.list {
-        html.push_str("<article><a href=\"/articles/");
-        html.push_str(&escape_html(&article.slug));
-        html.push_str("\">");
-        html.push_str(&escape_html(&article.title));
-        html.push_str("</a></article>");
-    }
-    html.push_str("</main></body></html>");
-    Ok(html_response(html))
+pub async fn home_page(
+    State(state): State<PublicState>,
+    Query(query): Query<ListQuery>,
+) -> Result<axum::response::Response> {
+    let keyword = query.keyword.clone().unwrap_or_default();
+    let cursor = query.cursor.clone().unwrap_or_default();
+    let categories = public_categories(&state).await?;
+    let articles = published_summaries(
+        &state,
+        ListQuery {
+            limit: Some(12),
+            category: None,
+            keyword: query.keyword,
+            cursor: query.cursor,
+        },
+    )
+    .await?;
+    let mut list = articles.list;
+    let hero = if keyword.trim().is_empty() && cursor.trim().is_empty() && !list.is_empty() {
+        Some(list.remove(0))
+    } else {
+        None
+    };
+    Ok(html_response(render_home_page(
+        &state.config,
+        hero.as_ref(),
+        &list,
+        &categories,
+        keyword.trim(),
+        articles.has_more,
+        &articles.next_cursor,
+    )))
 }
 
 pub async fn article_page(
@@ -130,60 +158,16 @@ pub async fn article_page(
     let Some(detail) = detail else {
         return Err(AppError::HttpStatus(404, "not_found".into()));
     };
+    let categories = public_categories(&state).await?;
     let comments = approved_comments(&state.db, detail.summary.id).await?;
     let related = related_articles(&state, &detail.summary).await?;
-    let mut html = String::from("<!doctype html><html lang=\"zh-CN\"><body><article>");
-    html.push_str("<h1>");
-    html.push_str(&escape_html(&detail.summary.title));
-    html.push_str("</h1><div class=\"article-html\">");
-    html.push_str(&detail.content_html);
-    html.push_str("</div></article>");
-    html.push_str("<section class=\"comments\"><h2>评论 <span>");
-    html.push_str(&comments.len().to_string());
-    html.push_str("</span></h2>");
-    if comments.is_empty() {
-        html.push_str("<p>成为第一个分享想法的人。</p>");
-    } else {
-        for comment in &comments {
-            html.push_str("<div class=\"comment\" data-comment-id=\"");
-            html.push_str(&comment.id.to_string());
-            html.push_str("\"><strong>");
-            html.push_str(&escape_html(&comment.author_name));
-            html.push_str("</strong><p>");
-            html.push_str(&escape_html(&comment.content));
-            html.push_str("</p>");
-            if !comment.replies.is_empty() {
-                html.push_str("<div class=\"comment-replies\">");
-                for reply in &comment.replies {
-                    html.push_str("<div class=\"comment reply\" data-comment-id=\"");
-                    html.push_str(&reply.id.to_string());
-                    html.push_str("\"><strong>");
-                    html.push_str(&escape_html(&reply.author_name));
-                    html.push_str("</strong><p>");
-                    html.push_str(&escape_html(&reply.content));
-                    html.push_str("</p></div>");
-                }
-                html.push_str("</div>");
-            }
-            html.push_str("</div>");
-        }
-    }
-    html.push_str("</section>");
-    if !related.is_empty() {
-        html.push_str("<section class=\"related\"><h2>相关文章</h2>");
-        for article in related {
-            html.push_str("<article><a href=\"/articles/");
-            html.push_str(&escape_html(&article.slug));
-            html.push_str("\">");
-            html.push_str(&escape_html(&article.title));
-            html.push_str("</a><p>");
-            html.push_str(&escape_html(&article.excerpt));
-            html.push_str("</p></article>");
-        }
-        html.push_str("</section>");
-    }
-    html.push_str("</body></html>");
-    Ok(html_response(html))
+    Ok(html_response(render_article_page(
+        &state.config,
+        &detail,
+        &comments,
+        &related,
+        &categories,
+    )))
 }
 
 pub async fn category_page(
@@ -195,25 +179,29 @@ pub async fn category_page(
         .fetch_optional(&state.db)
         .await?
         .ok_or_else(|| AppError::HttpStatus(404, "not_found".into()))?;
+    let category_id: i64 = category.try_get("id")?;
     let category_name: String = category.try_get("name")?;
+    let category_slug: String = category.try_get("slug")?;
     let articles = published_summaries(
         &state,
         ListQuery {
-            category: Some(slug),
+            category: Some(category_slug.clone()),
             ..ListQuery::default()
         },
     )
     .await?;
-    let mut html = String::from("<!doctype html><html lang=\"zh-CN\"><body><main><h1>");
-    html.push_str(&escape_html(&category_name));
-    html.push_str("</h1>");
-    for article in articles.list {
-        html.push_str("<article>");
-        html.push_str(&escape_html(&article.title));
-        html.push_str("</article>");
-    }
-    html.push_str("</main></body></html>");
-    Ok(html_response(html))
+    let categories = public_categories(&state).await?;
+    let category = PublicCategory {
+        id: category_id,
+        name: category_name,
+        slug: category_slug,
+    };
+    Ok(html_response(render_category_page(
+        &state.config,
+        &category,
+        &articles.list,
+        &categories,
+    )))
 }
 
 pub async fn serve_asset(
@@ -502,6 +490,32 @@ async fn lookup_current_slug(pool: &Pool<Sqlite>, old_slug: &str) -> Result<Opti
     Ok(slug)
 }
 
+async fn public_categories(state: &PublicState) -> Result<Vec<PublicCategoryWithCount>> {
+    let rows = sqlx::query(
+        "SELECT
+            categories.id,
+            categories.name,
+            categories.slug,
+            COUNT(articles.id) AS article_count
+         FROM categories
+         LEFT JOIN articles ON articles.category_id = categories.id
+         GROUP BY categories.id
+         ORDER BY categories.sort_order ASC, categories.id ASC",
+    )
+    .fetch_all(&state.db)
+    .await?;
+    rows.into_iter()
+        .map(|row| {
+            Ok(PublicCategoryWithCount {
+                id: row.try_get("id")?,
+                name: row.try_get("name")?,
+                slug: row.try_get("slug")?,
+                article_count: row.try_get("article_count")?,
+            })
+        })
+        .collect()
+}
+
 fn summary_from_row(row: &sqlx::sqlite::SqliteRow) -> Result<PublicArticleSummary> {
     let category_id: Option<i64> = row.try_get("category_id")?;
     let category = match category_id {
@@ -537,6 +551,261 @@ fn read_time_min(content: &str) -> i64 {
     (words / 300).max(1)
 }
 
+fn render_home_page(
+    config: &Config,
+    hero: Option<&PublicArticleSummary>,
+    articles: &[PublicArticleSummary],
+    categories: &[PublicCategoryWithCount],
+    keyword: &str,
+    has_more: bool,
+    next_cursor: &str,
+) -> String {
+    let mut html = document_start(
+        "home",
+        &config.site.title,
+        &config.site.description,
+        "bg-background text-on-surface",
+        false,
+    );
+    html.push_str(&topnav(config, keyword));
+    html.push_str("<main class=\"max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pt-10 pb-20\">");
+    if let Some(hero) = hero {
+        html.push_str("<section class=\"mb-20\"><a href=\"/articles/");
+        html.push_str(&escape_html(&hero.slug));
+        html.push_str("\" class=\"block group cursor-pointer\" data-article-slug=\"");
+        html.push_str(&escape_html(&hero.slug));
+        html.push_str("\"><div class=\"relative overflow-hidden rounded-xl bg-surface-container-low border border-outline-variant transition-all hover:shadow-lg\"><div class=\"grid md:grid-cols-2 gap-0\"><div class=\"relative aspect-[4/3] md:aspect-auto overflow-hidden bg-surface-container-high\">");
+        render_article_image(
+            &mut html,
+            hero,
+            "absolute inset-0 w-full h-full object-cover",
+        );
+        if hero.is_pinned {
+            html.push_str("<div class=\"absolute top-4 left-4\"><span class=\"bg-primary-container text-on-primary-container px-3 py-1 rounded-full text-label-sm font-label-sm\">精选</span></div>");
+        }
+        html.push_str("</div><div class=\"p-8 md:p-12 flex flex-col justify-center\"><div class=\"flex items-center gap-3 mb-6\">");
+        render_category_label(&mut html, hero.category.as_ref());
+        html.push_str("<span class=\"text-on-surface-variant text-label-sm font-label-sm\">");
+        html.push_str(&format_date(hero.published_at.as_deref()));
+        html.push_str("</span></div><h2 class=\"font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg mb-6 leading-tight group-hover:text-primary transition-colors\">");
+        html.push_str(&escape_html(&hero.title));
+        html.push_str("</h2><p class=\"font-interface-md text-interface-md text-on-surface-variant mb-8 line-clamp-3\">");
+        html.push_str(&escape_html(&hero.excerpt));
+        html.push_str("</p><div class=\"flex items-center gap-4\"><div class=\"w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold\">");
+        html.push_str(&author_initial(&hero.author.username));
+        html.push_str("</div><div><p class=\"font-interface-md text-interface-md font-bold\">");
+        html.push_str(&author_name(&hero.author.username));
+        html.push_str("</p><p class=\"text-caption font-caption text-on-surface-variant\">");
+        html.push_str(&hero.read_time_min.to_string());
+        html.push_str(" 分钟阅读</p></div></div><button class=\"like-button hidden\" type=\"button\" data-like-button data-slug=\"");
+        html.push_str(&escape_html(&hero.slug));
+        html.push_str("\" aria-label=\"喜欢文章\"><span class=\"like-count\">");
+        html.push_str(&hero.like_count.to_string());
+        html.push_str("</span></button></div></div></div></a></section>");
+    }
+    html.push_str("<div class=\"grid grid-cols-1 lg:grid-cols-12 gap-12\"><div class=\"lg:col-span-8 space-y-12\"><div class=\"flex items-center justify-between border-b border-outline-variant pb-4\"><div><h2 class=\"font-headline-md text-headline-md text-on-surface\">");
+    html.push_str(if keyword.is_empty() {
+        "最新文章"
+    } else {
+        "搜索结果"
+    });
+    html.push_str("</h2>");
+    if !keyword.is_empty() {
+        html.push_str(
+            "<p class=\"font-caption text-caption text-on-surface-variant mt-2\">关键词：",
+        );
+        html.push_str(&escape_html(keyword));
+        html.push_str("</p>");
+    }
+    html.push_str("</div>");
+    if !keyword.is_empty() {
+        html.push_str("<a class=\"font-caption text-caption text-primary hover:underline\" href=\"/\">清除搜索</a>");
+    }
+    html.push_str("</div>");
+    render_article_grid(&mut html, articles);
+    if articles.is_empty() && hero.is_none() {
+        html.push_str("<div class=\"text-center py-20\"><span class=\"material-symbols-outlined text-[64px] text-on-surface-variant opacity-40\">article</span><p class=\"font-interface-md text-interface-md text-on-surface-variant mt-4\">");
+        html.push_str(if keyword.is_empty() {
+            "暂无已发布文章，请稍后再来。"
+        } else {
+            "没有找到匹配的文章。"
+        });
+        html.push_str("</p></div>");
+    }
+    if has_more && !next_cursor.is_empty() {
+        html.push_str(
+            "<div class=\"flex items-center justify-center gap-4 pt-8\"><a href=\"/?cursor=",
+        );
+        html.push_str(&escape_html(next_cursor));
+        html.push_str("\" class=\"px-6 py-2 rounded-lg border border-outline-variant hover:bg-surface-container transition-colors font-interface-md text-interface-md flex items-center gap-2\">更早文章 <span class=\"material-symbols-outlined text-[20px]\">chevron_right</span></a></div>");
+    }
+    html.push_str("</div><aside class=\"lg:col-span-4 space-y-8\">");
+    html.push_str(&sidebar_newsletter());
+    html.push_str(&sidebar_categories(categories, None));
+    html.push_str("</aside></div></main>");
+    html.push_str(&site_footer(config));
+    html.push_str("<script src=\"/assets/site.js\" defer></script></body></html>");
+    html
+}
+
+fn render_article_page(
+    config: &Config,
+    detail: &PublicArticleDetail,
+    comments: &[PublicCommentNode],
+    related: &[PublicArticleSummary],
+    categories: &[PublicCategoryWithCount],
+) -> String {
+    let title = format!("{} &mdash; {}", detail.summary.title, config.site.title);
+    let mut html = document_start(
+        "article",
+        &title,
+        &detail.summary.excerpt,
+        "bg-surface-container-lowest text-on-surface antialiased",
+        true,
+    );
+    html.push_str("<div class=\"reading-progress\" id=\"reading-progress\"></div>");
+    html.push_str(&topnav(config, ""));
+    html.push_str("<main class=\"w-full\"><header class=\"w-full bg-surface-container-low pt-12 md:pt-20 pb-16\"><div class=\"max-w-article-max mx-auto px-margin-mobile md:px-0\"><div class=\"flex flex-wrap gap-2 mb-6\">");
+    render_category_pill(&mut html, detail.summary.category.as_ref());
+    if detail.summary.is_pinned {
+        html.push_str("<span class=\"bg-primary-container text-on-primary-container px-3 py-1 rounded-full text-caption font-interface-md uppercase tracking-wider\">精选</span>");
+    }
+    html.push_str("</div><h1 class=\"font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-on-surface mb-8 leading-tight\">");
+    html.push_str(&escape_html(&detail.summary.title));
+    html.push_str("</h1><div class=\"flex items-center gap-4 mb-12 flex-wrap\"><div class=\"w-12 h-12 rounded-full overflow-hidden bg-outline-variant\"><img class=\"w-full h-full object-cover\" src=\"");
+    html.push_str(&author_avatar(&detail.summary.author.username));
+    html.push_str("\" alt=\"");
+    html.push_str(&author_name(&detail.summary.author.username));
+    html.push_str(
+        "\"></div><div><p class=\"font-interface-md text-interface-md text-on-surface\">",
+    );
+    html.push_str(&author_name(&detail.summary.author.username));
+    html.push_str("</p><p class=\"font-caption text-caption text-on-surface-variant\">");
+    html.push_str(&format_date(detail.summary.published_at.as_deref()));
+    html.push_str(" &middot; ");
+    html.push_str(&detail.summary.read_time_min.to_string());
+    html.push_str(" 分钟阅读</p></div><div class=\"ml-auto flex gap-3 items-center\">");
+    html.push_str("<button class=\"like-button flex items-center gap-1 px-3 py-2 rounded-full text-on-surface-variant hover:text-error hover:bg-surface-container-high transition-colors");
+    if detail.user_liked {
+        html.push_str(" text-error");
+    }
+    html.push_str("\" type=\"button\" data-like-button data-slug=\"");
+    html.push_str(&escape_html(&detail.summary.slug));
+    html.push_str(
+        "\" aria-label=\"喜欢文章\"><span class=\"material-symbols-outlined like-icon\">",
+    );
+    html.push_str(if detail.user_liked {
+        "favorite"
+    } else {
+        "favorite_border"
+    });
+    html.push_str("</span><span class=\"like-count font-interface-md text-interface-md\">");
+    html.push_str(&detail.summary.like_count.to_string());
+    html.push_str("</span></button><button type=\"button\" class=\"p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors\" aria-label=\"分享\" data-share-page><span class=\"material-symbols-outlined\">share</span></button>");
+    html.push_str("<button type=\"button\" class=\"p-2 hover:bg-surface-container-high rounded-full transition-colors");
+    if detail.user_bookmarked {
+        html.push_str(" text-primary bookmarked");
+    } else {
+        html.push_str(" text-on-surface-variant");
+    }
+    html.push_str("\" aria-label=\"收藏\" data-bookmark-button data-slug=\"");
+    html.push_str(&escape_html(&detail.summary.slug));
+    html.push_str("\"><span class=\"material-symbols-outlined bookmark-icon\">");
+    html.push_str(if detail.user_bookmarked {
+        "bookmark"
+    } else {
+        "bookmark_border"
+    });
+    html.push_str("</span></button></div></div></div>");
+    if !detail.summary.cover_image.is_empty() {
+        html.push_str("<div class=\"max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop\"><div class=\"aspect-[21/9] w-full rounded-xl overflow-hidden shadow-sm bg-surface-container-high\"><img class=\"w-full h-full object-cover\" src=\"");
+        html.push_str(&escape_html(&detail.summary.cover_image));
+        html.push_str("\" alt=\"");
+        html.push_str(&escape_html(&detail.summary.title));
+        html.push_str("\"></div></div>");
+    }
+    html.push_str("</header><article class=\"max-w-article-max mx-auto px-margin-mobile md:px-0 py-16\"><div class=\"font-article-body-mobile md:font-article-body text-article-body-mobile md:text-article-body text-on-surface\"><div class=\"article-html\">");
+    html.push_str(&detail.content_html);
+    html.push_str("</div></div><section class=\"mt-20 pt-12 border-t border-outline-variant\"><div class=\"flex flex-col md:flex-row gap-8 items-center bg-surface-container-low p-8 rounded-xl\"><img class=\"w-24 h-24 rounded-full shrink-0 object-cover\" src=\"");
+    html.push_str(&author_avatar(&detail.summary.author.username));
+    html.push_str("\" alt=\"");
+    html.push_str(&author_name(&detail.summary.author.username));
+    html.push_str("\"><div class=\"text-center md:text-left\"><h4 class=\"font-headline-md text-headline-md mb-2\">作者：");
+    html.push_str(&author_name(&detail.summary.author.username));
+    html.push_str("</h4><p class=\"text-on-surface-variant mb-4\">");
+    html.push_str(&author_bio(&detail.summary.author.username));
+    html.push_str("</p><div class=\"flex justify-center md:justify-start gap-4\"><button class=\"text-primary font-bold hover:underline\" type=\"button\" data-follow-author data-author-id=\"");
+    html.push_str(&detail.summary.author.id.to_string());
+    html.push_str("\" data-author-name=\"");
+    html.push_str(&author_name(&detail.summary.author.username));
+    html.push_str("\" data-following=\"");
+    html.push_str(if detail.author_followed {
+        "true\">已关注 "
+    } else {
+        "false\">关注 "
+    });
+    html.push_str(&author_name(&detail.summary.author.username));
+    html.push_str("</button></div></div></div></section></article>");
+    html.push_str("<section class=\"bg-surface-container-low py-20\"><div class=\"max-w-article-max mx-auto px-margin-mobile md:px-0\"><h3 class=\"font-headline-md text-headline-md mb-8 flex items-center gap-3\">评论 <span class=\"bg-primary-container text-on-primary-container px-2 py-0.5 rounded text-caption\">");
+    html.push_str(&comments.len().to_string());
+    html.push_str("</span></h3>");
+    html.push_str(&comment_form(&detail.summary.slug));
+    render_comments(&mut html, comments);
+    html.push_str("</div></section>");
+    if !related.is_empty() {
+        html.push_str("<section class=\"py-20 bg-surface-container-lowest\"><div class=\"max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop\"><h3 class=\"font-headline-md text-headline-md mb-12\">相关文章</h3>");
+        render_related_grid(&mut html, related);
+        html.push_str("</div></section>");
+    }
+    html.push_str("</main>");
+    html.push_str(&site_footer(config));
+    html.push_str(&hidden_sidebar_fallback(categories));
+    html.push_str("<script src=\"/assets/site.js\" defer></script></body></html>");
+    html
+}
+
+fn render_category_page(
+    config: &Config,
+    category: &PublicCategory,
+    articles: &[PublicArticleSummary],
+    categories: &[PublicCategoryWithCount],
+) -> String {
+    let title = format!("{} &mdash; {}", category.name, config.site.title);
+    let mut html = document_start(
+        "category",
+        &title,
+        &config.site.description,
+        "bg-background text-on-surface",
+        false,
+    );
+    html.push_str(&topnav(config, ""));
+    html.push_str("<main class=\"max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pt-10 pb-20\"><section class=\"mb-12 pb-8 border-b border-outline-variant\"><p class=\"text-primary font-label-sm text-label-sm uppercase tracking-wider mb-3\">分类</p><h1 class=\"font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg leading-tight mb-4\">");
+    html.push_str(&escape_html(&category.name));
+    html.push_str(
+        "</h1><p class=\"font-interface-md text-interface-md text-on-surface-variant\">收录于「",
+    );
+    html.push_str(&escape_html(&category.name));
+    html.push_str("」分类下的精选文章。</p></section><div class=\"grid grid-cols-1 lg:grid-cols-12 gap-12\"><div class=\"lg:col-span-8 space-y-12\"><div class=\"flex items-center justify-between\"><h2 class=\"font-headline-md text-headline-md text-on-surface\">");
+    if articles.is_empty() {
+        html.push_str("暂无文章");
+    } else {
+        html.push_str(&articles.len().to_string());
+        html.push_str(" 篇文章");
+    }
+    html.push_str("</h2></div>");
+    render_article_grid(&mut html, articles);
+    if articles.is_empty() {
+        html.push_str("<div class=\"text-center py-20\"><span class=\"material-symbols-outlined text-[64px] text-on-surface-variant opacity-40\">article</span><p class=\"font-interface-md text-interface-md text-on-surface-variant mt-4\">该分类下暂无文章。</p></div>");
+    }
+    html.push_str("</div><aside class=\"lg:col-span-4 space-y-8\">");
+    html.push_str(&sidebar_newsletter());
+    html.push_str(&sidebar_categories(categories, Some(&category.slug)));
+    html.push_str("</aside></div></main>");
+    html.push_str(&site_footer(config));
+    html.push_str("<script src=\"/assets/site.js\" defer></script></body></html>");
+    html
+}
+
 fn html_response(html: String) -> axum::response::Response {
     let mut response = html.into_response();
     response.headers_mut().insert(
@@ -544,6 +813,312 @@ fn html_response(html: String) -> axum::response::Response {
         HeaderValue::from_static("text/html; charset=utf-8"),
     );
     response
+}
+
+fn document_start(
+    page: &str,
+    title: &str,
+    description: &str,
+    body_class: &str,
+    include_article_style: bool,
+) -> String {
+    let mut html = String::from("<!doctype html><html lang=\"zh-CN\"><head><title>");
+    html.push_str(&escape_html(title));
+    html.push_str("</title><meta name=\"description\" content=\"");
+    html.push_str(&escape_html(description));
+    html.push_str("\"><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap\" rel=\"stylesheet\"><link href=\"https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap\" rel=\"stylesheet\"><style>.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}body{font-family:'Inter',sans-serif;scroll-behavior:smooth}.reading-progress{position:fixed;top:0;left:0;height:4px;background-color:#0058be;z-index:100;width:0%;transition:width .1s linear}.article-html h1,.article-html h2,.article-html h3{font-family:'Inter',sans-serif;font-weight:600;color:#191c1d;margin-top:2.5rem;margin-bottom:1rem;line-height:1.3}.article-html h1{font-size:32px}.article-html h2{font-size:24px}.article-html h3{font-size:20px}.article-html p{margin-bottom:1.5rem}.article-html a{color:#0058be;text-decoration:underline}");
+    if include_article_style {
+        html.push_str(".article-html>p:first-child::first-letter{font-size:3.25rem;font-weight:700;line-height:1;margin-right:.75rem;float:left;color:#0058be}");
+    }
+    html.push_str("</style></head><body class=\"");
+    html.push_str(body_class);
+    html.push_str("\" data-page=\"");
+    html.push_str(page);
+    html.push_str("\">");
+    html
+}
+
+fn topnav(config: &Config, keyword: &str) -> String {
+    let mut html = String::from("<header class=\"bg-surface-container-lowest border-b border-outline-variant shadow-sm sticky top-0 z-40\"><div class=\"flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto\"><a href=\"/\" class=\"font-display-lg font-bold text-on-surface text-2xl md:text-3xl tracking-tight\">");
+    html.push_str(&escape_html(&config.site.title));
+    html.push_str("</a><nav class=\"hidden md:flex items-center gap-8\"><a class=\"font-interface-md text-interface-md text-primary font-bold border-b-2 border-primary pb-1\" href=\"/\">最新</a><a class=\"font-interface-md text-interface-md text-on-surface-variant hover:text-primary transition-colors duration-200\" href=\"#categories\">分类</a><a class=\"font-interface-md text-interface-md text-on-surface-variant hover:text-primary transition-colors duration-200\" href=\"#about\">关于</a></nav><div class=\"flex items-center gap-4\"><button type=\"button\" class=\"hidden md:block text-on-surface-variant hover:text-primary transition-colors p-2\" aria-label=\"搜索\" data-search-toggle><span class=\"material-symbols-outlined\">search</span></button><a href=\"/admin\" class=\"font-interface-md text-interface-md text-on-surface-variant px-4 py-2 hover:text-primary transition-colors\">登录</a><button type=\"button\" class=\"bg-primary text-on-primary px-6 py-2 rounded-lg font-interface-md text-interface-md hover:bg-opacity-90 transition-all active:scale-95\" data-newsletter-focus>订阅</button></div></div><div class=\"hidden border-t border-outline-variant bg-surface-container-lowest\" data-search-panel><form class=\"max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-4 flex flex-col sm:flex-row gap-3\" data-search-form><label class=\"sr-only\" for=\"site-search\">搜索文章</label><input id=\"site-search\" name=\"keyword\" class=\"flex-1 rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-3 font-interface-md text-interface-md text-on-surface placeholder:text-on-surface-variant focus:border-primary focus:ring-2 focus:ring-primary/20\" placeholder=\"搜索文章标题或摘要\" value=\"");
+    html.push_str(&escape_html(keyword));
+    html.push_str("\"><button type=\"submit\" class=\"bg-primary text-on-primary px-6 py-3 rounded-lg font-interface-md text-interface-md font-bold\">搜索</button></form></div></header>");
+    html
+}
+
+fn site_footer(config: &Config) -> String {
+    let mut html = String::from("<footer class=\"bg-surface-container-lowest border-t border-outline-variant py-12 mt-20\"><div class=\"max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop flex flex-col md:flex-row justify-between items-center gap-8\"><div class=\"flex flex-col gap-2 items-center md:items-start\"><div class=\"font-headline-md text-headline-md font-bold text-on-surface\">");
+    html.push_str(&escape_html(&config.site.title));
+    html.push_str("</div><p class=\"font-caption text-caption text-on-surface-variant max-w-[320px] text-center md:text-left\">");
+    html.push_str(&escape_html(&config.site.description));
+    html.push_str("</p></div><div class=\"flex flex-col md:flex-row items-center gap-8\"><nav class=\"flex gap-6\"><a class=\"font-caption text-caption text-on-surface-variant hover:text-on-surface transition-colors\" href=\"/\">首页</a><a class=\"font-caption text-caption text-on-surface-variant hover:text-on-surface transition-colors\" href=\"#categories\">分类</a><a class=\"font-caption text-caption text-on-surface-variant hover:text-on-surface transition-colors\" href=\"/admin\">后台</a></nav><div class=\"flex gap-4\"><button type=\"button\" class=\"w-10 h-10 rounded-full bg-surface-container flex items-center justify-center hover:bg-primary hover:text-on-primary transition-all\" aria-label=\"分享\" data-share-page><span class=\"material-symbols-outlined text-[20px]\">share</span></button><button type=\"button\" class=\"w-10 h-10 rounded-full bg-surface-container flex items-center justify-center hover:bg-primary hover:text-on-primary transition-all\" aria-label=\"邮件订阅\" data-newsletter-focus><span class=\"material-symbols-outlined text-[20px]\">mail</span></button></div></div></div><div class=\"max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop mt-8 pt-8 border-t border-outline-variant text-center\"><p class=\"font-caption text-caption text-on-surface-variant\">&copy; ");
+    html.push_str(&escape_html(&config.site.title));
+    html.push_str("。保留所有权利。</p></div></footer>");
+    html
+}
+
+fn sidebar_newsletter() -> String {
+    "<div id=\"newsletter\" class=\"bg-primary-container p-6 rounded-xl text-on-primary-container shadow-sm border border-primary\"><h3 class=\"font-headline-md text-headline-md mb-3\">每周洞察</h3><p class=\"font-interface-md text-interface-md mb-5 opacity-90\">精选设计、技术与有意识生活方式文章，每周送达。</p><form class=\"space-y-3\" aria-label=\"订阅邮件\" data-newsletter-form><input class=\"w-full px-4 py-3 rounded-lg bg-surface-container-lowest text-on-surface border-none focus:ring-2 focus:ring-on-primary-container placeholder:text-outline-variant font-interface-md text-interface-md\" placeholder=\"email@address.com\" type=\"email\" name=\"email\"><button type=\"submit\" class=\"w-full bg-on-primary-container text-primary-container py-3 rounded-lg font-bold font-interface-md text-interface-md\">订阅提醒</button><p class=\"text-caption font-caption opacity-80\" data-newsletter-message role=\"status\"></p></form></div>".to_string()
+}
+
+fn sidebar_categories(categories: &[PublicCategoryWithCount], current: Option<&str>) -> String {
+    let mut html = String::from("<div id=\"categories\" class=\"p-6 rounded-xl bg-surface-container-low border border-outline-variant\"><h3 class=\"font-interface-md text-interface-md font-bold mb-6 flex items-center gap-2\"><span class=\"material-symbols-outlined text-primary\">category</span> 分类</h3><ul class=\"space-y-3\"><li class=\"flex justify-between items-center group\"><a href=\"/\" class=\"font-interface-md text-interface-md text-on-surface-variant group-hover:text-primary transition-colors\">全部文章</a></li>");
+    for category in categories {
+        html.push_str("<li class=\"flex justify-between items-center group\" data-category-id=\"");
+        html.push_str(&category.id.to_string());
+        html.push_str("\"><a href=\"/categories/");
+        html.push_str(&escape_html(&category.slug));
+        html.push_str("\" class=\"font-interface-md text-interface-md group-hover:text-primary transition-colors ");
+        if current == Some(category.slug.as_str()) {
+            html.push_str("text-primary font-bold");
+        } else {
+            html.push_str("text-on-surface-variant");
+        }
+        html.push_str("\">");
+        html.push_str(&escape_html(&category.name));
+        html.push_str("</a><span class=\"text-caption font-caption bg-surface-container px-2 py-0.5 rounded-full text-on-surface-variant group-hover:bg-primary-container group-hover:text-on-primary-container transition-all\">");
+        html.push_str(&category.article_count.to_string());
+        html.push_str("</span></li>");
+    }
+    html.push_str("</ul></div>");
+    html
+}
+
+fn render_article_grid(html: &mut String, articles: &[PublicArticleSummary]) {
+    if articles.is_empty() {
+        return;
+    }
+    html.push_str("<div class=\"grid grid-cols-1 md:grid-cols-2 gap-8\">");
+    for article in articles {
+        html.push_str("<article class=\"bg-surface-container-low rounded-lg border border-outline-variant overflow-hidden flex flex-col hover:shadow-lg transition-all hover:-translate-y-1\" data-article-slug=\"");
+        html.push_str(&escape_html(&article.slug));
+        html.push_str("\"><a href=\"/articles/");
+        html.push_str(&escape_html(&article.slug));
+        html.push_str("\" class=\"aspect-video overflow-hidden bg-surface-container-high block\">");
+        render_article_image(html, article, "w-full h-full object-cover");
+        html.push_str("</a><div class=\"p-6 flex-grow flex flex-col\"><div class=\"mb-3 flex items-center gap-2 flex-wrap\">");
+        render_category_chip(html, article.category.as_ref());
+        if article.is_pinned {
+            html.push_str("<span class=\"bg-primary-container text-on-primary-container px-2 py-0.5 rounded text-caption font-label-sm\">精选</span>");
+        }
+        html.push_str("</div><h3 class=\"font-headline-md text-headline-md mb-3 leading-snug\"><a href=\"/articles/");
+        html.push_str(&escape_html(&article.slug));
+        html.push_str("\" class=\"hover:text-primary transition-colors\">");
+        html.push_str(&escape_html(&article.title));
+        html.push_str("</a></h3><p class=\"font-interface-md text-interface-md text-on-surface-variant mb-6 line-clamp-2\">");
+        html.push_str(&escape_html(&article.excerpt));
+        html.push_str("</p><div class=\"mt-auto flex items-center justify-between\"><span class=\"text-caption font-caption text-on-surface-variant\">作者：");
+        html.push_str(&author_name(&article.author.username));
+        html.push_str(" &middot; ");
+        html.push_str(&article.read_time_min.to_string());
+        html.push_str(" 分钟阅读</span><button class=\"like-button flex items-center gap-1 text-on-surface-variant hover:text-error transition-colors\" type=\"button\" data-like-button data-slug=\"");
+        html.push_str(&escape_html(&article.slug));
+        html.push_str("\" aria-label=\"喜欢文章\"><span class=\"material-symbols-outlined text-[20px] like-icon\">favorite_border</span><span class=\"like-count text-caption font-caption\">");
+        html.push_str(&article.like_count.to_string());
+        html.push_str("</span></button></div></div></article>");
+    }
+    html.push_str("</div>");
+}
+
+fn render_related_grid(html: &mut String, articles: &[PublicArticleSummary]) {
+    html.push_str("<div class=\"grid grid-cols-1 md:grid-cols-3 gap-gutter\">");
+    for article in articles {
+        html.push_str("<a href=\"/articles/");
+        html.push_str(&escape_html(&article.slug));
+        html.push_str("\" class=\"group cursor-pointer block\" data-article-slug=\"");
+        html.push_str(&escape_html(&article.slug));
+        html.push_str("\"><div class=\"aspect-[16/10] rounded-xl overflow-hidden mb-6 bg-surface-container-high transition-transform duration-300 group-hover:scale-[1.02]\">");
+        render_article_image(html, article, "w-full h-full object-cover");
+        html.push_str("</div>");
+        if let Some(category) = &article.category {
+            html.push_str("<span class=\"text-primary font-bold text-caption uppercase tracking-wider mb-2 block\">");
+            html.push_str(&escape_html(&category.name));
+            html.push_str("</span>");
+        }
+        html.push_str("<h4 class=\"font-headline-md text-headline-md mb-4 group-hover:text-primary transition-colors\">");
+        html.push_str(&escape_html(&article.title));
+        html.push_str("</h4><p class=\"text-on-surface-variant line-clamp-2\">");
+        html.push_str(&escape_html(&article.excerpt));
+        html.push_str("</p></a>");
+    }
+    html.push_str("</div>");
+}
+
+fn render_article_image(html: &mut String, article: &PublicArticleSummary, class_name: &str) {
+    if article.cover_image.is_empty() {
+        html.push_str("<div class=\"w-full h-full flex items-center justify-center text-on-surface-variant\"><span class=\"material-symbols-outlined text-[48px] opacity-40\">image</span></div>");
+    } else {
+        html.push_str("<img alt=\"");
+        html.push_str(&escape_html(&article.title));
+        html.push_str("\" class=\"");
+        html.push_str(class_name);
+        html.push_str("\" src=\"");
+        html.push_str(&escape_html(&article.cover_image));
+        html.push_str("\">");
+    }
+}
+
+fn render_category_label(html: &mut String, category: Option<&PublicCategory>) {
+    if let Some(category) = category {
+        html.push_str(
+            "<span class=\"text-primary font-label-sm text-label-sm uppercase tracking-wider\">",
+        );
+        html.push_str(&escape_html(&category.name));
+        html.push_str(
+            "</span><span class=\"text-outline text-label-sm font-label-sm\">&bull;</span>",
+        );
+    }
+}
+
+fn render_category_pill(html: &mut String, category: Option<&PublicCategory>) {
+    if let Some(category) = category {
+        html.push_str("<a href=\"/categories/");
+        html.push_str(&escape_html(&category.slug));
+        html.push_str("\" class=\"bg-primary-fixed text-on-primary-fixed px-3 py-1 rounded-full text-caption font-interface-md uppercase tracking-wider\">");
+        html.push_str(&escape_html(&category.name));
+        html.push_str("</a>");
+    }
+}
+
+fn render_category_chip(html: &mut String, category: Option<&PublicCategory>) {
+    if let Some(category) = category {
+        html.push_str("<a href=\"/categories/");
+        html.push_str(&escape_html(&category.slug));
+        html.push_str("\" class=\"bg-tertiary-fixed text-on-tertiary-fixed px-2 py-0.5 rounded text-caption font-label-sm\">");
+        html.push_str(&escape_html(&category.name));
+        html.push_str("</a>");
+    }
+}
+
+fn comment_form(slug: &str) -> String {
+    let mut html = String::from("<div class=\"bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant mb-12\"><form data-comment-form data-slug=\"");
+    html.push_str(&escape_html(slug));
+    html.push_str("\" aria-label=\"发表评论\"><input type=\"hidden\" name=\"parent_id\" data-comment-parent-id><div class=\"hidden mb-4 rounded-lg bg-primary-container px-4 py-3 text-on-primary-container text-caption font-caption\" data-reply-target>正在回复 <strong data-reply-author></strong><button type=\"button\" class=\"ml-3 font-bold underline\" data-reply-cancel>取消</button></div><div class=\"grid grid-cols-1 md:grid-cols-[180px_1fr] gap-4\"><label class=\"sr-only\" for=\"comment-author\">昵称</label><input id=\"comment-author\" name=\"author_name\" class=\"w-full bg-surface-container-lowest border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary font-interface-md text-interface-md text-on-surface placeholder-on-surface-variant\" placeholder=\"昵称\" maxlength=\"40\"><label class=\"sr-only\" for=\"comment-content\">评论内容</label><textarea id=\"comment-content\" name=\"content\" class=\"w-full bg-surface-container-lowest border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary font-interface-md text-interface-md text-on-surface placeholder-on-surface-variant\" placeholder=\"加入讨论...\" rows=\"3\" maxlength=\"500\" required></textarea></div><p class=\"mt-3 text-caption text-on-surface-variant\">评论需保持友善、理性，不得包含政治、暴力、血腥等敏感内容。</p><p class=\"mt-2 text-caption text-on-surface-variant\" data-comment-message role=\"status\"></p><div class=\"flex justify-end mt-4\"><button type=\"submit\" class=\"bg-primary text-on-primary px-8 py-2 rounded-lg font-interface-md\">发表评论</button></div></form></div>");
+    html
+}
+
+fn render_comments(html: &mut String, comments: &[PublicCommentNode]) {
+    if comments.is_empty() {
+        html.push_str("<div class=\"text-center py-8 text-on-surface-variant font-interface-md text-interface-md\">成为第一个分享想法的人。</div>");
+        return;
+    }
+    html.push_str("<div class=\"space-y-8\">");
+    for comment in comments {
+        html.push_str("<div class=\"flex gap-4\" data-comment-id=\"");
+        html.push_str(&comment.id.to_string());
+        html.push_str(
+            "\"><img class=\"w-10 h-10 rounded-full bg-outline-variant object-cover\" src=\"",
+        );
+        html.push_str(&author_avatar(&comment.author_name));
+        html.push_str("\" alt=\"");
+        html.push_str(&escape_html(&comment.author_name));
+        html.push_str("\"><div class=\"flex-1\"><div class=\"flex items-center gap-3 mb-1\"><span class=\"font-bold text-on-surface\">");
+        html.push_str(&escape_html(&comment.author_name));
+        html.push_str("</span><span class=\"text-caption text-on-surface-variant\">刚刚</span></div><p class=\"text-on-surface-variant mb-3\">");
+        html.push_str(&escape_html(&comment.content));
+        html.push_str("</p><button class=\"text-primary text-caption font-bold flex items-center gap-1\" type=\"button\" data-comment-reply data-comment-id=\"");
+        html.push_str(&comment.id.to_string());
+        html.push_str("\" data-comment-author=\"");
+        html.push_str(&escape_html(&comment.author_name));
+        html.push_str(
+            "\"><span class=\"material-symbols-outlined text-[16px]\">reply</span> 回复</button>",
+        );
+        if !comment.replies.is_empty() {
+            html.push_str("<div class=\"mt-5 space-y-5 border-l border-outline-variant pl-5\">");
+            for reply in &comment.replies {
+                html.push_str("<div class=\"flex gap-3\" data-comment-id=\"");
+                html.push_str(&reply.id.to_string());
+                html.push_str(
+                    "\"><img class=\"w-8 h-8 rounded-full bg-outline-variant object-cover\" src=\"",
+                );
+                html.push_str(&author_avatar(&reply.author_name));
+                html.push_str("\" alt=\"");
+                html.push_str(&escape_html(&reply.author_name));
+                html.push_str("\"><div><div class=\"flex items-center gap-3 mb-1\"><span class=\"font-bold text-on-surface\">");
+                html.push_str(&escape_html(&reply.author_name));
+                html.push_str("</span><span class=\"text-caption text-on-surface-variant\">刚刚</span></div><p class=\"text-on-surface-variant\">");
+                html.push_str(&escape_html(&reply.content));
+                html.push_str("</p></div></div>");
+            }
+            html.push_str("</div>");
+        }
+        html.push_str("</div></div>");
+    }
+    html.push_str("</div>");
+}
+
+fn hidden_sidebar_fallback(categories: &[PublicCategoryWithCount]) -> String {
+    let mut html = String::from("<div class=\"hidden\" aria-hidden=\"true\">");
+    html.push_str(&sidebar_newsletter());
+    html.push_str(&sidebar_categories(categories, None));
+    html.push_str("</div>");
+    html
+}
+
+fn format_date(value: Option<&str>) -> String {
+    let Some(value) = value else {
+        return String::new();
+    };
+    let date = value.split('T').next().unwrap_or(value);
+    let mut parts = date.split('-');
+    let (Some(year), Some(month), Some(day)) = (parts.next(), parts.next(), parts.next()) else {
+        return escape_html(value);
+    };
+    format!(
+        "{}年{}月{}日",
+        year,
+        month.trim_start_matches('0'),
+        day.trim_start_matches('0')
+    )
+}
+
+fn author_name(username: &str) -> String {
+    match username {
+        "admin" => "编辑部".into(),
+        value if value.trim().is_empty() => "匿名作者".into(),
+        value => escape_html(value),
+    }
+}
+
+fn author_initial(username: &str) -> String {
+    author_name(username)
+        .chars()
+        .next()
+        .map(|value| value.to_string())
+        .unwrap_or_else(|| "A".into())
+}
+
+fn author_avatar(username: &str) -> String {
+    let seed = if username.trim().is_empty() {
+        "anonymous"
+    } else {
+        username.trim()
+    };
+    format!(
+        "https://api.dicebear.com/7.x/initials/svg?seed={}",
+        escape_url_component(seed)
+    )
+}
+
+fn author_bio(username: &str) -> String {
+    if username == "admin" {
+        "关注内容系统、产品工程与可持续创作流程。".into()
+    } else {
+        "分享设计、技术与生活方式观察。".into()
+    }
+}
+
+fn escape_url_component(value: &str) -> String {
+    value
+        .bytes()
+        .flat_map(|byte| match byte {
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => {
+                vec![byte as char]
+            }
+            _ => format!("%{byte:02X}").chars().collect(),
+        })
+        .collect()
 }
 
 async fn serve_file(root: PathBuf, path: String) -> Result<axum::response::Response> {

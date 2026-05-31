@@ -84,8 +84,23 @@ async fn home_page_renders_public_articles_as_html() {
         "text/html; charset=utf-8"
     );
     let body = body_text(response).await;
+    assert!(body.contains("data-page=\"home\""), "{body}");
+    assert!(body.contains("data-search-toggle"), "{body}");
+    assert!(body.contains("data-search-form"), "{body}");
+    assert!(body.contains("data-newsletter-form"), "{body}");
+    assert!(body.contains("id=\"categories\""), "{body}");
+    assert!(body.contains("<footer"), "{body}");
     assert!(body.contains("Rust Migration Baseline"), "{body}");
     assert!(body.contains("/articles/rust-migration-baseline"), "{body}");
+    assert!(
+        body.contains("data-article-slug=\"rust-migration-baseline\""),
+        "{body}"
+    );
+    assert!(body.contains("data-like-button"), "{body}");
+    assert!(
+        body.contains("data-slug=\"rust-migration-baseline\""),
+        "{body}"
+    );
 }
 
 #[tokio::test]
@@ -102,6 +117,23 @@ async fn article_page_renders_sanitized_html_without_escaping() {
 
     assert_eq!(response.status(), StatusCode::OK);
     let body = body_text(response).await;
+    assert!(body.contains("data-page=\"article\""), "{body}");
+    assert!(body.contains("id=\"reading-progress\""), "{body}");
+    assert!(
+        body.contains("data-like-button data-slug=\"rust-migration-baseline\""),
+        "{body}"
+    );
+    assert!(
+        body.contains("data-bookmark-button data-slug=\"rust-migration-baseline\""),
+        "{body}"
+    );
+    assert!(body.contains("data-follow-author"), "{body}");
+    assert!(
+        body.contains("data-comment-form data-slug=\"rust-migration-baseline\""),
+        "{body}"
+    );
+    assert!(body.contains("data-comment-parent-id"), "{body}");
+    assert!(body.contains("data-comment-message"), "{body}");
     assert!(body.contains("<h1>Baseline</h1>"), "{body}");
     assert!(!body.contains("<script>"), "{body}");
     assert!(!body.contains("&lt;h1&gt;Baseline"), "{body}");
@@ -124,6 +156,8 @@ async fn article_page_renders_approved_comments_replies_and_related_articles() {
     assert!(body.contains("评论"), "{body}");
     assert!(body.contains("第一条已通过评论"), "{body}");
     assert!(body.contains("这是回复内容"), "{body}");
+    assert!(body.contains("data-comment-reply"), "{body}");
+    assert!(body.contains("data-comment-author=\"Alice\""), "{body}");
     assert!(!body.contains("这条待审核不应出现"), "{body}");
     assert!(body.contains("相关文章"), "{body}");
     assert!(body.contains("Related Rust Story"), "{body}");
@@ -145,8 +179,20 @@ async fn category_page_only_renders_matching_category_articles() {
 
     assert_eq!(response.status(), StatusCode::OK);
     let body = body_text(response).await;
+    assert!(body.contains("data-page=\"category\""), "{body}");
+    assert!(
+        body.contains("收录于「Technology」分类下的精选文章。"),
+        "{body}"
+    );
+    assert!(body.contains("2 篇文章"), "{body}");
+    assert!(body.contains("data-newsletter-form"), "{body}");
+    assert!(body.contains("id=\"categories\""), "{body}");
     assert!(body.contains("Technology"), "{body}");
     assert!(body.contains("Rust Migration Baseline"), "{body}");
+    assert!(
+        body.contains("data-article-slug=\"rust-migration-baseline\""),
+        "{body}"
+    );
     assert!(!body.contains("Design Systems"), "{body}");
 }
 

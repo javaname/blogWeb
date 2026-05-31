@@ -310,3 +310,16 @@
 - 已核对前台 SSR 路由和模板：`/`、`/articles/:slug`、`/categories/:slug`；搜索通过 `/?keyword=...` 实现。
 - 一致性结论：后台核心管理原型功能基本一致；前台首页/文章详情/分类文章页/搜索/订阅/点赞/收藏/关注/评论能力部分一致；独立关于页、作者主页、分类浏览页等远端原型页面尚未作为真实路由落地。
 - 已更新 `task_plan.md` 与 `findings.md` 记录本次快照和结论。
+
+## 2026-05-31 Rust 公开页面模板级复刻
+
+- 已按 TDD 扩展 `tests/public_pages_static.rs`，新增 DOM 级断言覆盖：
+  - 首页 `data-page="home"`、搜索面板、订阅表单、分类侧栏、页脚、文章卡片/hero 的 `data-article-slug` 和点赞钩子。
+  - 文章页 `data-page="article"`、阅读进度条、点赞/收藏/关注、评论表单、回复按钮、相关文章。
+  - 分类页 `data-page="category"`、分类说明、文章数、订阅表单、分类侧栏、文章卡片钩子。
+- 已观察 RED：当前 Rust 公开页面只输出最小 HTML，缺少 Go 模板级共同布局和交互 data 属性。
+- 已重构 `src/http_public.rs` 的公开页面 HTML renderer：保留原有 SQLite 查询和 JSON API，补齐 topnav、footer、newsletter/sidebar categories、hero/card、article header、评论表单、评论回复、作者卡片、相关文章等 DOM 结构。
+- 已验证通过：
+  - `cargo test --offline --test public_pages_static`
+  - `cargo test --offline`
+  - `go test ./... -count=1 -timeout=120s`
