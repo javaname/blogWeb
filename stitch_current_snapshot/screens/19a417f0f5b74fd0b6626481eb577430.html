@@ -1,0 +1,335 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Settings - Ink &amp; Insight Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:wght@400;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed-dim": "#adc6ff",
+                    "primary-container": "#2170e4",
+                    "on-surface-variant": "#424754",
+                    "tertiary-fixed-dim": "#ffb786",
+                    "surface-bright": "#f8f9fa",
+                    "inverse-surface": "#2e3132",
+                    "on-secondary-fixed-variant": "#474746",
+                    "inverse-primary": "#adc6ff",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "on-error": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "on-tertiary": "#ffffff",
+                    "on-tertiary-container": "#fffbff",
+                    "on-primary-container": "#fefcff",
+                    "on-secondary-container": "#636262",
+                    "inverse-on-surface": "#f0f1f2",
+                    "outline": "#727785",
+                    "on-tertiary-fixed": "#311400",
+                    "secondary-fixed": "#e5e2e1",
+                    "on-error-container": "#93000a",
+                    "surface-container-high": "#e7e8e9",
+                    "surface": "#f8f9fa",
+                    "on-secondary": "#ffffff",
+                    "on-surface": "#191c1d",
+                    "outline-variant": "#c2c6d6",
+                    "surface-dim": "#d9dadb",
+                    "surface-container": "#edeeef",
+                    "secondary-container": "#e2dfde",
+                    "primary": "#0058be",
+                    "on-secondary-fixed": "#1c1b1b",
+                    "surface-tint": "#005ac2",
+                    "background": "#f8f9fa",
+                    "on-background": "#191c1d",
+                    "primary-fixed": "#d8e2ff",
+                    "secondary": "#5f5e5e",
+                    "on-tertiary-fixed-variant": "#723600",
+                    "on-primary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "tertiary": "#924700",
+                    "tertiary-fixed": "#ffdcc6",
+                    "on-primary-fixed": "#001a42",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-low": "#f3f4f5",
+                    "surface-container-highest": "#e1e3e4",
+                    "tertiary-container": "#b75b00",
+                    "surface-variant": "#e1e3e4",
+                    "on-primary-fixed-variant": "#004395"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "container-max": "1200px",
+                    "base": "8px",
+                    "article-max": "720px",
+                    "margin-mobile": "16px",
+                    "gutter": "24px",
+                    "margin-desktop": "40px"
+            },
+            "fontFamily": {
+                    "label-sm": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "interface-md": ["Inter"],
+                    "caption": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "article-body-mobile": ["Source Serif 4"],
+                    "article-body": ["Source Serif 4"],
+                    "display-lg-mobile": ["Inter"]
+            },
+            "fontSize": {
+                    "label-sm": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "interface-md": ["16px", {"lineHeight": "24px", "fontWeight": "500"}],
+                    "caption": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "article-body-mobile": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "article-body": ["20px", {"lineHeight": "32px", "fontWeight": "400"}],
+                    "display-lg-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body { background-color: theme('colors.surface'); color: theme('colors.on-surface'); }
+    </style>
+</head>
+<body class="flex min-h-screen">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-[280px] shadow-sm bg-surface-container-low flex flex-col gap-base p-margin-mobile z-20">
+<div class="mb-8 px-4">
+<h1 class="font-headline-md text-headline-md font-bold text-on-surface">Admin Console</h1>
+<p class="font-caption text-caption text-on-surface-variant mt-1">Content Manager</p>
+</div>
+<button class="bg-primary hover:bg-on-primary-fixed-variant text-on-primary font-interface-md text-interface-md rounded-lg py-2 px-4 mb-6 transition-colors shadow-sm flex items-center justify-center gap-2 w-full">
+<span class="material-symbols-outlined">add</span>
+            New Post
+        </button>
+<ul class="flex flex-col gap-2 flex-grow">
+<li><a class="text-on-surface-variant hover:bg-surface-container-high rounded-lg px-4 py-2 flex items-center gap-3 transition-all duration-200" href="#"><span class="material-symbols-outlined">dashboard</span><span class="font-interface-md text-interface-md">Dashboard</span></a></li>
+<li><a class="text-on-surface-variant hover:bg-surface-container-high rounded-lg px-4 py-2 flex items-center gap-3 transition-all duration-200" href="#"><span class="material-symbols-outlined">article</span><span class="font-interface-md text-interface-md">Posts</span></a></li>
+<li><a class="text-on-surface-variant hover:bg-surface-container-high rounded-lg px-4 py-2 flex items-center gap-3 transition-all duration-200" href="#"><span class="material-symbols-outlined">category</span><span class="font-interface-md text-interface-md">Categories</span></a></li>
+<li><a class="text-on-surface-variant hover:bg-surface-container-high rounded-lg px-4 py-2 flex items-center gap-3 transition-all duration-200" href="#"><span class="material-symbols-outlined">comment</span><span class="font-interface-md text-interface-md">Comments</span></a></li>
+<li><a class="bg-primary-container text-on-primary-container font-bold rounded-lg px-4 py-2 flex items-center gap-3 opacity-80" href="#"><span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings</span><span class="font-interface-md text-interface-md">Settings</span></a></li>
+</ul>
+<div class="mt-auto px-4 py-2 flex items-center gap-3 border-t border-outline-variant pt-4">
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-on-secondary-container">person</span>
+</div>
+<span class="font-interface-md text-interface-md text-on-surface">Admin User</span>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 ml-[280px] flex flex-col min-h-screen">
+<!-- TopNavBar Admin -->
+<header class="docked full-width top-0 sticky bg-surface-container-low flat no shadows z-10">
+<div class="flex justify-end items-center w-full px-margin-desktop py-2 h-16">
+<div class="flex items-center gap-6">
+<span class="font-caption text-caption text-on-surface-variant">Last saved: 2 minutes ago</span>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface transition-colors" href="#">Reset</a>
+<button class="bg-primary hover:bg-on-primary-fixed-variant text-on-primary font-interface-md text-interface-md rounded-lg py-2 px-6 transition-colors shadow-sm">Save Changes</button>
+<div class="h-6 w-px bg-outline-variant mx-2"></div>
+<button class="text-on-surface-variant hover:bg-surface-container-high rounded-full p-2 transition-all duration-200 hover:scale-90">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-container-high rounded-full p-2 transition-all duration-200 hover:scale-90">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center ml-2">
+<span class="material-symbols-outlined text-on-secondary-container">account_circle</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<main class="flex-1 p-margin-desktop bg-surface">
+<div class="max-w-container-max mx-auto flex gap-gutter">
+<!-- Settings Forms Column -->
+<div class="flex-1 flex flex-col gap-8">
+<!-- Site Identity -->
+<section class="bg-surface-container-lowest rounded-xl p-8 border border-outline-variant shadow-[0px_1px_3px_rgba(0,0,0,0.05)]">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-6 border-b border-outline-variant pb-2">Site Identity</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="flex flex-col gap-2">
+<label class="font-label-sm text-label-sm text-on-surface">Site Title</label>
+<input class="font-interface-md text-interface-md p-3 border border-outline-variant rounded-lg bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow" type="text" value="Ink &amp; Insight">
+</div>
+<div class="flex flex-col gap-2">
+<label class="font-label-sm text-label-sm text-on-surface">Base URL</label>
+<input class="font-interface-md text-interface-md p-3 border border-outline-variant rounded-lg bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow" type="url" value="https://inkandinsight.blog">
+</div>
+<div class="flex flex-col gap-2 md:col-span-2">
+<label class="font-label-sm text-label-sm text-on-surface">Short Description</label>
+<textarea class="font-interface-md text-interface-md p-3 border border-outline-variant rounded-lg bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow" rows="2">Thoughts, essays, and notes on design and technology.</textarea>
+</div>
+<div class="flex flex-col gap-2">
+<label class="font-label-sm text-label-sm text-on-surface">Support Email</label>
+<input class="font-interface-md text-interface-md p-3 border border-outline-variant rounded-lg bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow" type="email" value="hello@inkandinsight.blog">
+</div>
+<div class="flex flex-col gap-2">
+<label class="font-label-sm text-label-sm text-on-surface">Default Locale</label>
+<select class="font-interface-md text-interface-md p-3 border border-outline-variant rounded-lg bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow appearance-none">
+<option>English (US)</option>
+<option>English (UK)</option>
+<option>Spanish</option>
+</select>
+</div>
+<div class="flex flex-col gap-2 md:col-span-2">
+<label class="font-label-sm text-label-sm text-on-surface">Timezone</label>
+<select class="font-interface-md text-interface-md p-3 border border-outline-variant rounded-lg bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow appearance-none">
+<option>UTC - Coordinated Universal Time</option>
+<option>PST - Pacific Standard Time</option>
+<option>EST - Eastern Standard Time</option>
+</select>
+</div>
+</div>
+</section>
+<!-- Publishing -->
+<section class="bg-surface-container-lowest rounded-xl p-8 border border-outline-variant shadow-[0px_1px_3px_rgba(0,0,0,0.05)]">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-6 border-b border-outline-variant pb-2">Publishing</h2>
+<div class="flex flex-col gap-6">
+<div class="flex items-center justify-between">
+<div>
+<h3 class="font-interface-md text-interface-md text-on-surface font-medium">Default Post Status</h3>
+<p class="font-caption text-caption text-on-surface-variant">What state should new posts be created in?</p>
+</div>
+<select class="font-interface-md text-interface-md p-2 border border-outline-variant rounded-lg bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary">
+<option>Draft</option>
+<option>Published</option>
+</select>
+</div>
+<div class="h-px bg-outline-variant/30 w-full"></div>
+<div class="flex items-center justify-between">
+<div>
+<h3 class="font-interface-md text-interface-md text-on-surface font-medium">Posts per Page</h3>
+<p class="font-caption text-caption text-on-surface-variant">Number of articles shown on index pages.</p>
+</div>
+<input class="font-interface-md text-interface-md w-24 p-2 border border-outline-variant rounded-lg bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary text-center" type="number" value="10">
+</div>
+<div class="h-px bg-outline-variant/30 w-full"></div>
+<div class="flex items-center justify-between">
+<div>
+<h3 class="font-interface-md text-interface-md text-on-surface font-medium">Featured Article Banner</h3>
+<p class="font-caption text-caption text-on-surface-variant">Highlight the most recent featured post on the homepage.</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox">
+<div class="w-11 h-6 bg-surface-container-high peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="h-px bg-outline-variant/30 w-full"></div>
+<div class="flex items-center justify-between">
+<div>
+<h3 class="font-interface-md text-interface-md text-on-surface font-medium">Enable RSS Feed</h3>
+<p class="font-caption text-caption text-on-surface-variant">Generate a public RSS feed for syndication.</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox">
+<div class="w-11 h-6 bg-surface-container-high peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</section>
+<!-- Moderation -->
+<section class="bg-surface-container-lowest rounded-xl p-8 border border-outline-variant shadow-[0px_1px_3px_rgba(0,0,0,0.05)]">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-6 border-b border-outline-variant pb-2">Moderation</h2>
+<div class="flex flex-col gap-6">
+<div class="flex items-center justify-between">
+<div>
+<h3 class="font-interface-md text-interface-md text-on-surface font-medium">Require Approval</h3>
+<p class="font-caption text-caption text-on-surface-variant">Comments must be manually approved before publishing.</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox">
+<div class="w-11 h-6 bg-surface-container-high peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="flex items-center justify-between">
+<div>
+<h3 class="font-interface-md text-interface-md text-on-surface font-medium">Email Notifications</h3>
+<p class="font-caption text-caption text-on-surface-variant">Send an email to admin when a new comment is posted.</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox">
+<div class="w-11 h-6 bg-surface-container-high peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="flex flex-col gap-2 mt-2">
+<label class="font-label-sm text-label-sm text-on-surface">Spam Keywords List</label>
+<p class="font-caption text-caption text-on-surface-variant mb-1">Comments containing these words will be automatically trashed. (Comma separated)</p>
+<textarea class="font-interface-md text-interface-md p-3 border border-outline-variant rounded-lg bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow text-on-surface" rows="3">viagra, crypto, free money, click here</textarea>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Sidebar (Alerts/System) -->
+<div class="w-[320px] flex flex-col gap-6 flex-shrink-0 hidden lg:flex">
+<!-- System Status Panel -->
+<div class="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant shadow-[0px_1px_3px_rgba(0,0,0,0.05)]">
+<h3 class="font-label-sm text-label-sm text-on-surface uppercase tracking-wider mb-4">System Status</h3>
+<ul class="flex flex-col gap-4">
+<li class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline-variant text-[20px]">cloud_done</span>
+<span class="font-caption text-caption text-on-surface">Daily Backup</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-[#10b981]"></span>
+</li>
+<li class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline-variant text-[20px]">speed</span>
+<span class="font-caption text-caption text-on-surface">Redis Cache</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-[#10b981]"></span>
+</li>
+<li class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline-variant text-[20px]">mail</span>
+<span class="font-caption text-caption text-on-surface">SMTP Relay</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-error"></span>
+</li>
+</ul>
+</div>
+<!-- Integrations -->
+<div class="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant shadow-[0px_1px_3px_rgba(0,0,0,0.05)]">
+<h3 class="font-label-sm text-label-sm text-on-surface uppercase tracking-wider mb-4">Integrations</h3>
+<div class="flex flex-col gap-4">
+<div class="flex flex-col gap-2">
+<label class="font-caption text-caption text-on-surface font-medium">Google Analytics Key</label>
+<input class="font-caption text-caption p-2 border border-outline-variant rounded-lg bg-surface-container-lowest focus:outline-none focus:ring-1 focus:ring-primary" placeholder="G-XXXXXXXXXX" type="text">
+</div>
+<div class="flex flex-col gap-2">
+<label class="font-caption text-caption text-on-surface font-medium">Deploy Webhook URL</label>
+<input class="font-caption text-caption p-2 border border-outline-variant rounded-lg bg-surface-container-lowest focus:outline-none focus:ring-1 focus:ring-primary text-on-surface-variant" disabled="" placeholder="https://api.vercel.com/v1/..." type="url" value="https://api.vercel.com/v1/deploy/xyz">
+</div>
+</div>
+</div>
+<!-- Alerts -->
+<div class="bg-error-container rounded-xl p-4 border border-error/20 flex gap-3 items-start">
+<span class="material-symbols-outlined text-on-error-container">warning</span>
+<div>
+<h4 class="font-label-sm text-label-sm text-on-error-container">Missing Credentials</h4>
+<p class="font-caption text-caption text-on-error-container/80 mt-1">SMTP credentials are not configured. Outgoing system emails (like password resets) will fail.</p>
+</div>
+</div>
+<div class="bg-surface-container-high rounded-xl p-4 border border-outline-variant/50 flex gap-3 items-start">
+<span class="material-symbols-outlined text-on-surface-variant">info</span>
+<div>
+<h4 class="font-label-sm text-label-sm text-on-surface">Unsaved Changes</h4>
+<p class="font-caption text-caption text-on-surface-variant mt-1">You have modified 2 fields in 'Site Identity' that haven't been saved yet.</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

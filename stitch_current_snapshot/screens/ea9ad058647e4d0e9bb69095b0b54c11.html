@@ -1,0 +1,512 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>分类管理 - Ink &amp; Insight Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:wght@400;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "error": "#ba1a1a",
+                      "surface-dim": "#d9dadb",
+                      "on-tertiary-fixed": "#311400",
+                      "inverse-primary": "#adc6ff",
+                      "on-primary-fixed-variant": "#004395",
+                      "error-container": "#ffdad6",
+                      "secondary-container": "#e2dfde",
+                      "on-background": "#191c1d",
+                      "on-error-container": "#93000a",
+                      "on-secondary-container": "#636262",
+                      "on-primary-container": "#fefcff",
+                      "on-error": "#ffffff",
+                      "surface-container-highest": "#e1e3e4",
+                      "on-tertiary-container": "#fffbff",
+                      "on-surface-variant": "#424754",
+                      "surface": "#f8f9fa",
+                      "primary-container": "#2170e4",
+                      "tertiary-container": "#b75b00",
+                      "tertiary-fixed": "#ffdcc6",
+                      "on-primary-fixed": "#001a42",
+                      "on-tertiary-fixed-variant": "#723600",
+                      "inverse-on-surface": "#f0f1f2",
+                      "background": "#f8f9fa",
+                      "primary": "#0058be",
+                      "on-surface": "#191c1d",
+                      "secondary": "#5f5e5e",
+                      "surface-container-low": "#f3f4f5",
+                      "surface-container-lowest": "#ffffff",
+                      "primary-fixed": "#d8e2ff",
+                      "on-primary": "#ffffff",
+                      "outline-variant": "#c2c6d6",
+                      "on-tertiary": "#ffffff",
+                      "tertiary-fixed-dim": "#ffb786",
+                      "on-secondary-fixed-variant": "#474746",
+                      "primary-fixed-dim": "#adc6ff",
+                      "tertiary": "#924700",
+                      "surface-variant": "#e1e3e4",
+                      "secondary-fixed": "#e5e2e1",
+                      "on-secondary-fixed": "#1c1b1b",
+                      "surface-tint": "#005ac2",
+                      "secondary-fixed-dim": "#c8c6c5",
+                      "inverse-surface": "#2e3132",
+                      "surface-container-high": "#e7e8e9",
+                      "surface-bright": "#f8f9fa",
+                      "outline": "#727785",
+                      "surface-container": "#edeeef",
+                      "on-secondary": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-max": "1200px",
+                      "margin-mobile": "16px",
+                      "base": "8px",
+                      "gutter": "24px",
+                      "margin-desktop": "40px",
+                      "article-max": "720px"
+              },
+              "fontFamily": {
+                      "display-lg-mobile": [
+                              "Inter"
+                      ],
+                      "label-sm": [
+                              "Inter"
+                      ],
+                      "interface-md": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "article-body": [
+                              "Source Serif 4"
+                      ],
+                      "caption": [
+                              "Inter"
+                      ],
+                      "article-body-mobile": [
+                              "Source Serif 4"
+                      ],
+                      "display-lg": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "display-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "interface-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "article-body": [
+                              "20px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "caption": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "article-body-mobile": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-interface-md text-interface-md h-screen overflow-hidden flex">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-[280px] bg-surface-container-low shadow-sm flex flex-col gap-base p-margin-mobile z-20 border-r border-outline-variant">
+<div class="mb-8 px-4 py-2">
+<h1 class="font-headline-md text-headline-md font-bold text-on-surface">Admin Console</h1>
+<p class="font-caption text-caption text-on-surface-variant">Content Manager</p>
+</div>
+<button class="bg-primary text-on-primary font-interface-md text-interface-md font-bold rounded-lg px-4 py-3 flex items-center justify-center gap-2 mb-6 hover:bg-primary-container hover:text-on-primary-container transition-colors duration-200">
+<span class="material-symbols-outlined" style="font-size: 20px;">add</span>
+            New Post
+        </button>
+<div class="flex flex-col gap-2 flex-grow">
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-lg px-4 py-2 flex items-center gap-3 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-weight="fill" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="font-interface-md text-interface-md">Dashboard</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-lg px-4 py-2 flex items-center gap-3 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-weight="fill" style="font-variation-settings: 'FILL' 1;">article</span>
+<span class="font-interface-md text-interface-md">Posts</span>
+</a>
+<a class="bg-primary-container text-on-primary-container font-bold rounded-lg px-4 py-2 flex items-center gap-3 transition-all duration-200 opacity-80" href="#">
+<span class="material-symbols-outlined" data-weight="fill" style="font-variation-settings: 'FILL' 1;">category</span>
+<span class="font-interface-md text-interface-md">Categories</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-lg px-4 py-2 flex items-center gap-3 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-weight="fill" style="font-variation-settings: 'FILL' 1;">comment</span>
+<span class="font-interface-md text-interface-md">Comments</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-lg px-4 py-2 flex items-center gap-3 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-weight="fill" style="font-variation-settings: 'FILL' 1;">settings</span>
+<span class="font-interface-md text-interface-md">Settings</span>
+</a>
+</div>
+<div class="mt-auto px-4 py-2 flex items-center gap-3 border-t border-outline-variant pt-4">
+<div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden">
+<img alt="Admin Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvzfTVi5UBtAh8MaEkYFdGILn4PNPN6TX73fzV-rdih8HZtKT5rXlpCyYtC8jfFEnB9FqZ3aXkgcWnEyysWx2Vy1UXj7zFy3i1XStY96qIE6XAmi8-cAjIHroa5tuNM_l0IFUtC5myX10f2hs3pNEwy1lHaebCiyRGZO9utkW6M1sHbRn2k6q7FrVWW2P3USIkjOKt6fQyizInpRBfhjtaOB6sTVJ-CheY-V934iJ3TOqBocFH_2ipQ32CyXZ_5Og9C4K5l3bWxvw">
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface">Admin User</span>
+<span class="font-caption text-caption text-on-surface-variant">admin@inkinsight.com</span>
+</div>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col ml-[280px] h-full relative z-10">
+<!-- TopNavBar -->
+<header class="docked full-width top-0 sticky bg-surface-container-low flex justify-end items-center w-full px-margin-desktop py-2 h-16 border-b border-outline-variant z-20">
+<div class="flex items-center gap-4 text-primary font-interface-md text-interface-md">
+<button class="text-on-surface-variant hover:bg-surface-container-high rounded-full p-2 transition-transform duration-200 hover:scale-90 flex items-center justify-center">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-container-high rounded-full p-2 transition-transform duration-200 hover:scale-90 flex items-center justify-center">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden ml-2 cursor-pointer border border-outline-variant">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAS1xaS18B5BDTJYf0sIknyGD4VBvGYEwNY6axliRLl7YNB-8pmJjgCVYHByVSAyXZZMnJ3sbwUqtUA0mlwdNtzPSOzYRwQmtSIwbF2NOxeFEu-zK6_TBJgLzGcY8Q-YsMm5XIWKvWY2msditrNvpZDJQ735eJb_aLgwdVj-F84mMJ82r0wPZXbf1O6mKZ1cZNNOSwiDWBv407V5V3_XFFrV2r1P7JRMlWneN0XHAq28hLwcfPUvCSrorNqmMyUJ-klV6AqmJycOUg">
+</div>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 overflow-y-auto p-margin-desktop bg-surface">
+<!-- Header Section -->
+<div class="flex justify-between items-end mb-8 max-w-[1400px] mx-auto">
+<div>
+<h2 class="font-headline-md text-headline-md font-bold text-on-surface mb-2">Category Management</h2>
+<p class="font-interface-md text-interface-md text-on-surface-variant">Organize and prioritize editorial topics for the public blog.</p>
+</div>
+<button class="bg-primary text-on-primary font-label-sm text-label-sm rounded-lg px-4 py-2 flex items-center gap-2 hover:bg-primary-container hover:text-on-primary-container transition-colors duration-200 shadow-sm border border-transparent">
+<span class="material-symbols-outlined" style="font-size: 18px;">add</span>
+                    New Category
+                </button>
+</div>
+<!-- Content Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter max-w-[1400px] mx-auto">
+<!-- Left Sidebar: Category Form (Col 1-4) -->
+<div class="lg:col-span-4 flex flex-col gap-6">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-6 shadow-[0px_1px_3px_rgba(0,0,0,0.05)]">
+<h3 class="font-label-sm text-label-sm text-on-surface font-bold mb-6 border-b border-outline-variant pb-4">Edit Category: Technology</h3>
+<form class="flex flex-col gap-5">
+<!-- Field: Name -->
+<div class="flex flex-col gap-1.5">
+<label class="font-caption text-caption text-on-surface-variant" for="cat-name">Name</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-DEFAULT px-3 py-2 font-interface-md text-interface-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" id="cat-name" type="text" value="Technology">
+</div>
+<!-- Field: Slug -->
+<div class="flex flex-col gap-1.5">
+<label class="font-caption text-caption text-on-surface-variant" for="cat-slug">Slug</label>
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 font-interface-md text-interface-md text-on-surface-variant opacity-50">/</span>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-DEFAULT pl-6 pr-3 py-2 font-interface-md text-interface-md text-on-surface font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" id="cat-slug" type="text" value="technology">
+</div>
+<p class="font-caption text-caption text-on-surface-variant mt-1">Used in URL: /category/technology</p>
+</div>
+<!-- Field: Description -->
+<div class="flex flex-col gap-1.5">
+<label class="font-caption text-caption text-on-surface-variant" for="cat-desc">Description</label>
+<textarea class="w-full bg-surface-container-lowest border border-outline-variant rounded-DEFAULT px-3 py-2 font-interface-md text-interface-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none" id="cat-desc" rows="3">Latest trends in software, hardware, and digital innovation.</textarea>
+</div>
+<!-- Field: Display Order -->
+<div class="flex flex-col gap-1.5">
+<label class="font-caption text-caption text-on-surface-variant" for="cat-order">Display Order</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-DEFAULT px-3 py-2 font-interface-md text-interface-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" id="cat-order" min="1" type="number" value="1">
+</div>
+<!-- Field: Visible Toggle -->
+<div class="flex items-center justify-between mt-2">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface">Visible</span>
+<span class="font-caption text-caption text-on-surface-variant">Show in public nav</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox">
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<!-- Actions -->
+<div class="flex gap-3 mt-6 pt-6 border-t border-outline-variant">
+<button class="flex-1 bg-primary text-on-primary font-label-sm text-label-sm rounded-lg py-2 hover:bg-primary-container transition-colors border border-transparent shadow-sm" type="button">Save Changes</button>
+<button class="flex-1 bg-surface-container-lowest text-on-surface font-label-sm text-label-sm rounded-lg py-2 border border-outline-variant hover:bg-surface-container-low transition-colors" type="button">Cancel</button>
+</div>
+</form>
+</div>
+<!-- Helper Note -->
+<div class="bg-surface-container-low border border-outline-variant rounded-lg p-4 flex gap-3 items-start shadow-sm">
+<span class="material-symbols-outlined text-primary" style="font-size: 20px;">info</span>
+<p class="font-caption text-caption text-on-surface-variant leading-relaxed">
+                            Tip: Categories appear in the public navigation and footer based on their display order and visibility settings.
+                        </p>
+</div>
+</div>
+<!-- Right Main Panel: Categories Table (Col 5-12) -->
+<div class="lg:col-span-8 flex flex-col">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg shadow-[0px_1px_3px_rgba(0,0,0,0.05)] overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant font-caption text-caption text-on-surface-variant uppercase tracking-wider">
+<th class="px-4 py-3 font-medium">Category Name</th>
+<th class="px-4 py-3 font-medium">Slug</th>
+<th class="px-4 py-3 font-medium text-center">Articles</th>
+<th class="px-4 py-3 font-medium text-center">Order</th>
+<th class="px-4 py-3 font-medium text-center">Visibility</th>
+<th class="px-4 py-3 font-medium">Last Updated</th>
+<th class="px-4 py-3 font-medium text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="font-interface-md text-interface-md divide-y divide-outline-variant">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-lowest transition-colors group bg-surface-container-low/30">
+<td class="px-4 py-4 text-on-surface font-medium flex items-center gap-2">
+                                            Technology
+                                        </td>
+<td class="px-4 py-4 text-on-surface-variant font-mono text-sm">technology</td>
+<td class="px-4 py-4 text-center">
+<span class="inline-flex items-center justify-center px-2 py-1 bg-surface-container-highest text-on-surface text-xs rounded-full font-medium">24</span>
+</td>
+<td class="px-4 py-4 text-center">
+<div class="flex items-center justify-center gap-1">
+<span class="text-on-surface">1</span>
+<div class="flex flex-col text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="hover:text-primary leading-none"><span class="material-symbols-outlined text-[14px]">expand_less</span></button>
+<button class="hover:text-primary leading-none"><span class="material-symbols-outlined text-[14px]">expand_more</span></button>
+</div>
+</div>
+</td>
+<td class="px-4 py-4 text-center">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-surface-container-low text-primary text-xs rounded-full font-medium border border-primary/20">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                                                Visible
+                                            </span>
+</td>
+<td class="px-4 py-4 text-on-surface-variant text-sm">2024-05-12</td>
+<td class="px-4 py-4 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container-low rounded transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-1.5 text-on-surface-variant/30 cursor-not-allowed rounded" disabled="" title="Cannot delete category with articles">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="px-4 py-4 text-on-surface font-medium">Design</td>
+<td class="px-4 py-4 text-on-surface-variant font-mono text-sm">design</td>
+<td class="px-4 py-4 text-center">
+<span class="inline-flex items-center justify-center px-2 py-1 bg-surface-container-highest text-on-surface text-xs rounded-full font-medium">18</span>
+</td>
+<td class="px-4 py-4 text-center">
+<div class="flex items-center justify-center gap-1">
+<span class="text-on-surface">2</span>
+<div class="flex flex-col text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="hover:text-primary leading-none"><span class="material-symbols-outlined text-[14px]">expand_less</span></button>
+<button class="hover:text-primary leading-none"><span class="material-symbols-outlined text-[14px]">expand_more</span></button>
+</div>
+</div>
+</td>
+<td class="px-4 py-4 text-center">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-surface-container-low text-primary text-xs rounded-full font-medium border border-primary/20">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                                                Visible
+                                            </span>
+</td>
+<td class="px-4 py-4 text-on-surface-variant text-sm">2024-05-10</td>
+<td class="px-4 py-4 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container-low rounded transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-1.5 text-on-surface-variant/30 cursor-not-allowed rounded" disabled="" title="Cannot delete category with articles">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="px-4 py-4 text-on-surface font-medium">Engineering</td>
+<td class="px-4 py-4 text-on-surface-variant font-mono text-sm">engineering</td>
+<td class="px-4 py-4 text-center">
+<span class="inline-flex items-center justify-center px-2 py-1 bg-surface-container-highest text-on-surface text-xs rounded-full font-medium">12</span>
+</td>
+<td class="px-4 py-4 text-center">
+<div class="flex items-center justify-center gap-1">
+<span class="text-on-surface">3</span>
+<div class="flex flex-col text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="hover:text-primary leading-none"><span class="material-symbols-outlined text-[14px]">expand_less</span></button>
+<button class="hover:text-primary leading-none"><span class="material-symbols-outlined text-[14px]">expand_more</span></button>
+</div>
+</div>
+</td>
+<td class="px-4 py-4 text-center">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-surface-container-low text-primary text-xs rounded-full font-medium border border-primary/20">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                                                Visible
+                                            </span>
+</td>
+<td class="px-4 py-4 text-on-surface-variant text-sm">2024-05-08</td>
+<td class="px-4 py-4 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container-low rounded transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-1.5 text-on-surface-variant/30 cursor-not-allowed rounded" disabled="" title="Cannot delete category with articles">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="px-4 py-4 text-on-surface font-medium">Product</td>
+<td class="px-4 py-4 text-on-surface-variant font-mono text-sm">product</td>
+<td class="px-4 py-4 text-center">
+<span class="inline-flex items-center justify-center px-2 py-1 bg-surface-container-highest text-on-surface text-xs rounded-full font-medium">15</span>
+</td>
+<td class="px-4 py-4 text-center">
+<div class="flex items-center justify-center gap-1">
+<span class="text-on-surface">4</span>
+<div class="flex flex-col text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="hover:text-primary leading-none"><span class="material-symbols-outlined text-[14px]">expand_less</span></button>
+<button class="hover:text-primary leading-none"><span class="material-symbols-outlined text-[14px]">expand_more</span></button>
+</div>
+</div>
+</td>
+<td class="px-4 py-4 text-center">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-surface-container-low text-primary text-xs rounded-full font-medium border border-primary/20">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                                                Visible
+                                            </span>
+</td>
+<td class="px-4 py-4 text-on-surface-variant text-sm">2024-05-05</td>
+<td class="px-4 py-4 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container-low rounded transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-1.5 text-on-surface-variant/30 cursor-not-allowed rounded" disabled="" title="Cannot delete category with articles">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="px-4 py-4 text-on-surface font-medium text-on-surface-variant">Notes</td>
+<td class="px-4 py-4 text-on-surface-variant font-mono text-sm">notes</td>
+<td class="px-4 py-4 text-center">
+<span class="inline-flex items-center justify-center px-2 py-1 bg-surface-container-low text-on-surface-variant text-xs rounded-full font-medium">0</span>
+</td>
+<td class="px-4 py-4 text-center">
+<div class="flex items-center justify-center gap-1">
+<span class="text-on-surface-variant">5</span>
+<div class="flex flex-col text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="hover:text-primary leading-none"><span class="material-symbols-outlined text-[14px]">expand_less</span></button>
+<button class="hover:text-primary leading-none text-on-surface-variant/30 cursor-not-allowed" disabled=""><span class="material-symbols-outlined text-[14px]">expand_more</span></button>
+</div>
+</div>
+</td>
+<td class="px-4 py-4 text-center">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-surface-container-low text-on-surface-variant text-xs rounded-full font-medium border border-outline-variant/50">
+<span class="w-1.5 h-1.5 rounded-full bg-outline-variant"></span>
+                                                Hidden
+                                            </span>
+</td>
+<td class="px-4 py-4 text-on-surface-variant text-sm">2024-05-01</td>
+<td class="px-4 py-4 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container-low rounded transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-1.5 text-on-surface-variant hover:text-error hover:bg-error-container rounded transition-colors" title="Delete">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

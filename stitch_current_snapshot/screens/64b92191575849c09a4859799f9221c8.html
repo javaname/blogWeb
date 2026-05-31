@@ -1,0 +1,414 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>发布文章 - Ink &amp; Insight Admin</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&amp;display=swap" rel="stylesheet">
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-fixed-variant": "#723600",
+                    "surface-variant": "#e1e3e4",
+                    "on-secondary": "#ffffff",
+                    "tertiary": "#924700",
+                    "surface-dim": "#d9dadb",
+                    "secondary-fixed": "#e5e2e1",
+                    "on-surface-variant": "#424754",
+                    "on-secondary-container": "#636262",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "on-primary-fixed-variant": "#004395",
+                    "on-error-container": "#93000a",
+                    "secondary": "#5f5e5e",
+                    "surface-container-high": "#e7e8e9",
+                    "surface-tint": "#005ac2",
+                    "on-secondary-fixed": "#1c1b1b",
+                    "surface-container-low": "#f3f4f5",
+                    "outline": "#727785",
+                    "on-tertiary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "inverse-on-surface": "#f0f1f2",
+                    "secondary-container": "#e2dfde",
+                    "inverse-primary": "#adc6ff",
+                    "tertiary-fixed-dim": "#ffb786",
+                    "primary-fixed": "#d8e2ff",
+                    "on-tertiary-container": "#fffbff",
+                    "primary-container": "#2170e4",
+                    "primary": "#0058be",
+                    "surface-container-highest": "#e1e3e4",
+                    "on-primary-fixed": "#001a42",
+                    "primary-fixed-dim": "#adc6ff",
+                    "tertiary-container": "#b75b00",
+                    "background": "#f8f9fa",
+                    "on-tertiary-fixed": "#311400",
+                    "on-error": "#ffffff",
+                    "tertiary-fixed": "#ffdcc6",
+                    "surface-container": "#edeeef",
+                    "outline-variant": "#c2c6d6",
+                    "inverse-surface": "#2e3132",
+                    "on-background": "#191c1d",
+                    "error-container": "#ffdad6",
+                    "on-secondary-fixed-variant": "#474746",
+                    "error": "#ba1a1a",
+                    "surface": "#f8f9fa",
+                    "on-primary-container": "#fefcff",
+                    "surface-bright": "#f8f9fa",
+                    "on-surface": "#191c1d"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "24px",
+                    "margin-mobile": "16px",
+                    "container-max": "1200px",
+                    "article-max": "720px",
+                    "margin-desktop": "40px",
+                    "base": "8px"
+            },
+            "fontFamily": {
+                    "label-sm": ["Inter"],
+                    "interface-md": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "caption": ["Inter"],
+                    "article-body": ["Source Serif 4"],
+                    "article-body-mobile": ["Source Serif 4"],
+                    "display-lg-mobile": ["Inter"],
+                    "display-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "label-sm": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "interface-md": ["16px", {"lineHeight": "24px", "fontWeight": "500"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "caption": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                    "article-body": ["20px", {"lineHeight": "32px", "fontWeight": "400"}],
+                    "article-body-mobile": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "display-lg-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body { background-color: #f3f4f5; } /* Fallback surface-container-low */
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); }
+    </style>
+</head>
+<body class="bg-surface-container-low text-on-surface font-interface-md flex min-h-screen antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- SideNavBar (from JSON) -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-surface-container-low border-r border-outline-variant shadow-sm flex flex-col gap-base p-margin-desktop z-40">
+<!-- Brand / Header -->
+<div class="mb-8">
+<h1 class="font-headline-md text-headline-md font-bold text-on-surface">Admin Console</h1>
+<p class="font-caption text-caption text-on-surface-variant mt-1">Content Manager</p>
+</div>
+<!-- CTA -->
+<button class="bg-primary text-on-primary font-interface-md text-interface-md font-bold rounded-lg px-4 py-3 mb-6 w-full flex justify-center items-center gap-2 hover:opacity-90 transition-opacity shadow-sm">
+<span class="material-symbols-outlined text-[20px]">add</span>
+            New Post
+        </button>
+<!-- Navigation Links -->
+<nav class="flex flex-col gap-2">
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-lg px-4 py-2 flex items-center gap-3 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-interface-md text-interface-md">Dashboard</span>
+</a>
+<!-- Active State Applied -->
+<a class="bg-primary-container text-on-primary-container font-bold rounded-lg px-4 py-2 flex items-center gap-3 transition-all duration-200 hover:opacity-80" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">article</span>
+<span class="font-interface-md text-interface-md">Posts</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-lg px-4 py-2 flex items-center gap-3 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">category</span>
+<span class="font-interface-md text-interface-md">Categories</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-lg px-4 py-2 flex items-center gap-3 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">comment</span>
+<span class="font-interface-md text-interface-md">Comments</span>
+</a>
+</nav>
+<div class="mt-auto">
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-lg px-4 py-2 flex items-center gap-3 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-interface-md text-interface-md">Settings</span>
+</a>
+</div>
+</aside>
+<!-- Main Workspace -->
+<div class="flex-1 ml-[280px] flex flex-col min-w-0">
+<!-- Top Editor Header -->
+<header class="sticky top-0 z-30 bg-surface-container-low/90 backdrop-blur-md border-b border-outline-variant/50 h-16 px-margin-desktop flex justify-between items-center w-full">
+<!-- Breadcrumbs -->
+<div class="flex items-center gap-2 text-on-surface-variant font-interface-md text-interface-md">
+<a class="hover:text-primary transition-colors" href="#">Articles</a>
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+<span class="text-on-surface font-semibold">New article</span>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-6">
+<span class="font-caption text-caption text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">cloud_done</span>
+                    Autosaved at 14:32
+                </span>
+<div class="flex items-center gap-3">
+<button class="px-4 py-2 rounded-lg border border-outline-variant text-on-surface hover:bg-surface-container-high transition-colors font-label-sm text-label-sm flex items-center gap-2 bg-surface-container-lowest">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+                        Preview
+                    </button>
+<button class="px-4 py-2 rounded-lg border border-outline-variant text-on-surface hover:bg-surface-container-high transition-colors font-label-sm text-label-sm bg-surface-container-lowest">
+                        Save Draft
+                    </button>
+<button class="px-5 py-2 rounded-lg bg-primary text-on-primary hover:bg-surface-tint transition-colors font-label-sm text-label-sm shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">send</span>
+                        Publish
+                    </button>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 p-margin-desktop">
+<div class="max-w-container-max mx-auto grid grid-cols-12 gap-gutter items-start">
+<!-- Left Column: Editor Core (Wide) -->
+<div class="col-span-12 xl:col-span-8 flex flex-col gap-6">
+<!-- Title Input -->
+<div class="bg-surface-container-lowest rounded-xl p-8 border border-outline-variant shadow-sm flex flex-col gap-4">
+<input class="w-full bg-transparent border-none outline-none focus:ring-0 font-display-lg text-display-lg placeholder-secondary-fixed-dim text-on-surface p-0" placeholder="Article Title" type="text" value="The Art of Slow Writing">
+<!-- Slug Field -->
+<div class="flex items-center gap-2 group">
+<span class="font-interface-md text-interface-md text-outline">inkandinsight.com/</span>
+<input class="flex-1 bg-transparent border-b border-transparent focus:border-primary outline-none font-interface-md text-interface-md text-on-surface py-1 transition-colors" type="text" value="art-of-slow-writing">
+<span class="material-symbols-outlined text-primary text-[18px] opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" title="Regenerate slug">refresh</span>
+</div>
+</div>
+<!-- Rich Text Editor Block -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm flex flex-col overflow-hidden">
+<!-- Toolbar -->
+<div class="flex items-center gap-1 p-2 border-b border-outline-variant bg-surface-container px-4 overflow-x-auto">
+<button class="p-1.5 rounded hover:bg-surface-variant text-on-surface-variant transition-colors"><span class="material-symbols-outlined">format_bold</span></button>
+<button class="p-1.5 rounded hover:bg-surface-variant text-on-surface-variant transition-colors"><span class="material-symbols-outlined">format_italic</span></button>
+<button class="p-1.5 rounded hover:bg-surface-variant text-on-surface-variant transition-colors"><span class="material-symbols-outlined">format_underlined</span></button>
+<div class="w-px h-6 bg-outline-variant mx-1"></div>
+<button class="p-1.5 rounded hover:bg-surface-variant text-on-surface-variant transition-colors"><span class="material-symbols-outlined">format_h1</span></button>
+<button class="p-1.5 rounded hover:bg-surface-variant text-on-surface-variant transition-colors"><span class="material-symbols-outlined">format_h2</span></button>
+<button class="p-1.5 rounded hover:bg-surface-variant text-on-surface-variant transition-colors"><span class="material-symbols-outlined">format_quote</span></button>
+<div class="w-px h-6 bg-outline-variant mx-1"></div>
+<button class="p-1.5 rounded hover:bg-surface-variant text-on-surface-variant transition-colors"><span class="material-symbols-outlined">link</span></button>
+<button class="p-1.5 rounded hover:bg-surface-variant text-on-surface-variant transition-colors"><span class="material-symbols-outlined">image</span></button>
+<div class="w-px h-6 bg-outline-variant mx-1"></div>
+<button class="p-1.5 rounded hover:bg-surface-variant text-on-surface-variant transition-colors"><span class="material-symbols-outlined">format_list_bulleted</span></button>
+<button class="p-1.5 rounded hover:bg-surface-variant text-on-surface-variant transition-colors"><span class="material-symbols-outlined">format_list_numbered</span></button>
+</div>
+<!-- Body Area (Simulated) -->
+<div class="p-8 min-h-[500px] outline-none font-article-body text-article-body text-on-surface cursor-text">
+<p class="mb-6">In an era dictated by algorithms demanding daily content, the sheer act of taking your time to write feels like a radical rebellion. We are constantly pressured to produce, to react, to be the first to offer a take on the morning's news. But what is lost in this frantic sprint?</p>
+<h2 class="font-headline-md text-headline-md mb-4 mt-8">The Erosion of Nuance</h2>
+<p class="mb-6">When we write quickly, we lean on cliches. We grab the first thought that floats to the surface, rather than diving deep for the pearl. Slow writing forces us to sit with discomfort. It demands that we interrogate our own initial assumptions before committing them to the permanent record of the internet.</p>
+<blockquote class="border-l-4 border-primary pl-6 py-2 my-8 italic text-on-surface-variant">
+                                "The difference between the almost right word and the right word is really a large matter—'tis the difference between the lightning bug and the lightning."
+                            </blockquote>
+<p>Consider the architecture of a well-crafted sentence. It doesn't arrive fully formed. It is chipped away from a block of rough marble. This process requires not just time, but mental space—a commodity increasingly rare in our hyper-connected workspaces.</p>
+</div>
+</div>
+<!-- Excerpt & Tags -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<!-- Excerpt -->
+<div class="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant shadow-sm flex flex-col gap-3">
+<label class="font-label-sm text-label-sm text-on-surface flex items-center justify-between">
+                                Excerpt
+                                <span class="font-caption text-caption text-on-surface-variant font-normal">Optional</span>
+</label>
+<textarea class="w-full border border-outline-variant rounded-lg p-3 bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none font-interface-md text-interface-md text-on-surface resize-none" placeholder="A brief summary for article cards and RSS feeds..." rows="3">Why stepping back from the content treadmill produces better, more lasting work.</textarea>
+</div>
+<!-- Tags -->
+<div class="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant shadow-sm flex flex-col gap-3">
+<label class="font-label-sm text-label-sm text-on-surface">Tags</label>
+<div class="border border-outline-variant rounded-lg p-2 bg-surface flex flex-wrap gap-2 items-center min-h-[52px]">
+<!-- Chips -->
+<span class="bg-primary-fixed text-on-primary-fixed text-[13px] font-medium px-3 py-1 rounded-full flex items-center gap-1">
+                                    Writing
+                                    <button class="hover:text-error transition-colors"><span class="material-symbols-outlined text-[14px]">close</span></button>
+</span>
+<span class="bg-primary-fixed text-on-primary-fixed text-[13px] font-medium px-3 py-1 rounded-full flex items-center gap-1">
+                                    Productivity
+                                    <button class="hover:text-error transition-colors"><span class="material-symbols-outlined text-[14px]">close</span></button>
+</span>
+<input class="flex-1 min-w-[100px] bg-transparent border-none outline-none text-[14px] p-1" placeholder="Add a tag..." type="text">
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Settings & Metadata (Narrow) -->
+<div class="col-span-12 xl:col-span-4 flex flex-col gap-6">
+<!-- Publishing Card -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+<div class="border-b border-outline-variant p-4 bg-surface-container/30 flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant">tune</span>
+<h3 class="font-label-sm text-label-sm text-on-surface">Publishing details</h3>
+</div>
+<div class="p-5 flex flex-col gap-5">
+<!-- Status -->
+<div class="flex justify-between items-center">
+<span class="font-interface-md text-interface-md text-on-surface-variant">Status</span>
+<span class="bg-surface-container-high text-on-surface px-3 py-1 rounded-md font-label-sm text-[13px] flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-outline"></span> Draft
+                                </span>
+</div>
+<!-- Category -->
+<div class="flex flex-col gap-2">
+<label class="font-interface-md text-interface-md text-on-surface-variant">Category</label>
+<div class="relative">
+<select class="w-full appearance-none border border-outline-variant rounded-lg p-2.5 bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none font-interface-md text-interface-md text-on-surface pr-10">
+<option>Craft &amp; Technique</option>
+<option>Industry News</option>
+<option>Opinion</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+</div>
+</div>
+<!-- Publish Date -->
+<div class="flex flex-col gap-2">
+<label class="font-interface-md text-interface-md text-on-surface-variant">Publish date</label>
+<div class="relative">
+<input class="w-full border border-outline-variant rounded-lg p-2.5 bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none font-interface-md text-interface-md text-on-surface" type="datetime-local">
+</div>
+</div>
+<hr class="border-outline-variant/50">
+<!-- Pin to Top -->
+<div class="flex justify-between items-center">
+<label class="font-interface-md text-interface-md text-on-surface cursor-pointer select-none" for="pin-toggle">Pin to Top</label>
+<div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+<input class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-outline-variant z-10 transition-transform duration-200 checked:translate-x-5 checked:border-primary" id="pin-toggle" name="toggle" type="checkbox">
+<label class="toggle-label block overflow-hidden h-5 rounded-full bg-surface-container-high cursor-pointer transition-colors duration-200" for="pin-toggle"></label>
+</div>
+</div>
+<!-- Visibility -->
+<div class="flex flex-col gap-2">
+<label class="font-interface-md text-interface-md text-on-surface-variant">Visibility</label>
+<div class="flex gap-4">
+<label class="flex items-center gap-2 cursor-pointer">
+<input checked="" class="text-primary focus:ring-primary w-4 h-4" name="visibility" type="radio">
+<span class="font-interface-md text-interface-md">Public</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer">
+<input class="text-primary focus:ring-primary w-4 h-4" name="visibility" type="radio">
+<span class="font-interface-md text-interface-md text-on-surface-variant">Private</span>
+</label>
+</div>
+</div>
+<!-- Author -->
+<div class="flex flex-col gap-2 mt-2">
+<label class="font-interface-md text-interface-md text-on-surface-variant">Author</label>
+<div class="flex items-center gap-3 border border-outline-variant rounded-lg p-2 bg-surface cursor-pointer hover:border-outline transition-colors">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-[14px]">
+                                        AW
+                                    </div>
+<span class="font-interface-md text-interface-md font-medium">Admin Writer</span>
+<span class="material-symbols-outlined ml-auto text-on-surface-variant">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Cover Image Card -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+<div class="border-b border-outline-variant p-4 bg-surface-container/30 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant">image</span>
+<h3 class="font-label-sm text-label-sm text-on-surface">Cover Image</h3>
+</div>
+<button class="text-primary text-[13px] font-semibold hover:underline">Upload new</button>
+</div>
+<div class="p-5 flex flex-col gap-4">
+<!-- Thumbnail Preview -->
+<div class="w-full aspect-video rounded-lg overflow-hidden border border-outline-variant relative group bg-surface">
+<img alt="Cover preview" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A high-quality, professional photograph of an antique typewriter resting on a solid oak desk, bathed in soft, natural morning light coming from a nearby window. The scene is styled for a modern editorial blog, emphasizing focus, craftsmanship, and the analog roots of writing. The color palette features warm wood tones, deep charcoal metal, and bright white paper, creating a clean, light-mode aesthetic that feels both nostalgic and contemporary." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPmRciSYPKz-L-pcAYA7W6Hn9Jrhp_m51jWSAyWRfpAZ_-EFRkzPfUPQbX73bZY-RsosV5AIZ_c1FKOrHSKdOZbD2R09s7AkQlOadxTK5iva256Z0WDl8aQ-EN1p95BF8lKvs73eWQjYPY8y_See9IDRkCwsLJzA2iCJqxK_HsSGzPEA8-KpTS-EGLal2D8X1YnKHwPaOWT_IfoQ8F-JKSWPi6Mr2sb3zHLslM0PAS1Gi1KsoOAaCfM4z1YRCZDHyQcbQzFCIFvig">
+<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<button class="bg-white text-on-surface px-3 py-1.5 rounded-md font-label-sm text-[13px] flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[16px]">edit</span> Replace
+                                    </button>
+</div>
+</div>
+<!-- URL Input -->
+<div class="flex flex-col gap-1">
+<label class="font-caption text-caption text-on-surface-variant">Image URL</label>
+<input class="w-full border border-outline-variant rounded-md p-2 bg-surface text-[13px] text-on-surface outline-none focus:border-primary" type="text" value="https://images.unsplash.com/photo-1455390582262...">
+</div>
+<!-- Alt Text -->
+<div class="flex flex-col gap-1">
+<label class="font-caption text-caption text-on-surface-variant">Alt Text</label>
+<input class="w-full border border-outline-variant rounded-md p-2 bg-surface text-[13px] text-on-surface outline-none focus:border-primary" placeholder="Describe the image for screen readers" type="text" value="Antique typewriter on wooden desk">
+</div>
+</div>
+</div>
+<!-- SEO Settings Card -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+<div class="border-b border-outline-variant p-4 bg-surface-container/30 flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant">search</span>
+<h3 class="font-label-sm text-label-sm text-on-surface">SEO Meta</h3>
+</div>
+<div class="p-5 flex flex-col gap-4">
+<!-- SEO Title -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-end">
+<label class="font-interface-md text-interface-md text-on-surface-variant">SEO Title</label>
+<span class="font-caption text-caption text-outline">23 / 60</span>
+</div>
+<input class="w-full border border-outline-variant rounded-md p-2 bg-surface text-[14px] text-on-surface outline-none focus:border-primary" type="text" value="The Art of Slow Writing">
+</div>
+<!-- Meta Description -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-end">
+<label class="font-interface-md text-interface-md text-on-surface-variant">Meta Description</label>
+<span class="font-caption text-caption text-primary">82 / 160</span>
+</div>
+<textarea class="w-full border border-outline-variant rounded-md p-2 bg-surface text-[14px] text-on-surface outline-none focus:border-primary resize-none" rows="3">Why stepping back from the content treadmill produces better, more lasting work.</textarea>
+</div>
+</div>
+</div>
+<!-- Reader Preview Widget -->
+<div class="mt-4 p-4 rounded-xl border border-outline-variant border-dashed flex flex-col gap-3">
+<p class="font-caption text-caption text-on-surface-variant uppercase tracking-wider font-semibold">Frontend Card Preview</p>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-4 shadow-sm flex flex-col gap-2">
+<span class="text-[11px] font-bold text-primary tracking-wider uppercase">Craft &amp; Technique</span>
+<h4 class="font-headline-md text-[18px] leading-tight font-bold text-on-surface">The Art of Slow Writing</h4>
+<p class="font-article-body text-[14px] leading-relaxed text-on-surface-variant line-clamp-2">Why stepping back from the content treadmill produces better, more lasting work.</p>
+<div class="text-[12px] text-outline mt-2">Just now • 4 min read</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Toggle Switch CSS specific to this layout -->
+<style>
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #0058be; /* primary */
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #d8e2ff; /* primary-fixed */
+        }
+        .toggle-checkbox {
+            right: 0;
+            z-index: 1;
+            border-color: #c2c6d6;
+        }
+        .toggle-label {
+            width: 40px;
+        }
+    </style>
+</body></html>

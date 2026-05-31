@@ -98,3 +98,21 @@
 - 本地 fake SMTP 需要 `email.allow_insecure=true`，避免在生产配置中意外降级为明文 SMTP。
 - `lettre` 会把中文邮件标题按 RFC 2047 编码，测试不能断言明文中文 Subject。
 - 邮箱注册前端已经存在于 `client/src/pages/Login.jsx`，并通过 `client/src/utils/adminApi.js` 调用 `/api/auth/register/code` 和 `/api/auth/register`；i18n 文案也已存在于 zh-CN/en-US。
+
+## 2026-05-31 Stitch 远端快照与前端一致性
+
+- 重新配置后的 Stitch MCP 服务可通过 Codex config 中 `mcp_servers.stitch` 的 `url` 与 `headers` 调用；内置 `mcp__stitch` 工具本轮仍返回 `Auth required`，已改用本地 PowerShell 脚本直接调用 HTTP MCP。
+- 本轮远端快照保存到 `stitch_current_snapshot/`：
+  - `get_project.raw.json`
+  - `list_screens.raw.json`
+  - `screens.summary.json`
+  - `screens/*.raw.json`
+  - `screens/*.html`
+  - `screens/*.png`
+- 当前远端 `Full-stack Blog System` 列出 14 个 screen：搜索结果、博客首页、Technology 分类页、发布文章、后台控制台、作者主页、文章详情、分类浏览、系统设置、管理员登录、关于我们、评论管理、文章管理、分类管理。
+- 当前 React 后台路由只覆盖 `/admin` 下的管理端：`/login`、`/dashboard`、`/posts`、`/articles/new`、`/articles/:id`、`/categories`、`/comments`、`/settings`。
+- 后台核心原型功能与当前前端基本一致：登录/注册验证码、控制台统计和趋势、文章搜索/筛选/分页、发布/编辑文章、封面上传、分类增删改排序、评论搜索/筛选/审核/删除、站点设置保存、主题/语言切换。
+- 前台不在 React app 中，而是后端模板/SSR：`/`、`/articles/:slug`、`/categories/:slug`；搜索通过首页 `keyword` query 实现，不是独立 `/search` 路由。
+- 前台交互由 `public/assets/site.js` 支撑：搜索面板、订阅、点赞、收藏、关注作者、分享、阅读进度、评论和评论回复。
+- 当前前台与 Stitch 原型部分一致：首页、文章详情、分类文章页、搜索结果的核心阅读/交互能力存在；但独立 `关于我们`、`作者主页`、`分类浏览` 页面未落地为真实路由。导航里的分类/关于仍是锚点 `#categories`、`#about`，不是原型中的独立页面。
+- 当前远端列表不包含之前生成记录中的标签文章列表、文章归档、404 页面、媒体库、用户与权限、数据分析；如果这些仍是产品目标，需要重新确认是否在 Stitch 项目中被删除、隐藏或未同步。

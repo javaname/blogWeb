@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>About Us | Ink &amp; Insight</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-surface-variant": "#424754",
+                      "background": "#f8f9fa",
+                      "on-tertiary-fixed-variant": "#723600",
+                      "surface-container-low": "#f3f4f5",
+                      "on-primary-fixed-variant": "#004395",
+                      "on-error": "#ffffff",
+                      "surface-variant": "#e1e3e4",
+                      "on-background": "#191c1d",
+                      "on-secondary-fixed-variant": "#474746",
+                      "surface-bright": "#f8f9fa",
+                      "on-primary": "#ffffff",
+                      "inverse-surface": "#2e3132",
+                      "surface-container": "#edeeef",
+                      "secondary-container": "#e2dfde",
+                      "primary": "#0058be",
+                      "error-container": "#ffdad6",
+                      "on-secondary": "#ffffff",
+                      "primary-fixed-dim": "#adc6ff",
+                      "inverse-primary": "#adc6ff",
+                      "tertiary-fixed": "#ffdcc6",
+                      "on-primary-fixed": "#001a42",
+                      "on-tertiary-fixed": "#311400",
+                      "secondary-fixed-dim": "#c8c6c5",
+                      "secondary-fixed": "#e5e2e1",
+                      "surface": "#f8f9fa",
+                      "surface-container-highest": "#e1e3e4",
+                      "on-surface": "#191c1d",
+                      "error": "#ba1a1a",
+                      "on-secondary-container": "#636262",
+                      "outline-variant": "#c2c6d6",
+                      "tertiary-fixed-dim": "#ffb786",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary-fixed": "#1c1b1b",
+                      "surface-container-high": "#e7e8e9",
+                      "surface-dim": "#d9dadb",
+                      "surface-tint": "#005ac2",
+                      "primary-fixed": "#d8e2ff",
+                      "on-primary-container": "#fefcff",
+                      "surface-container-lowest": "#ffffff",
+                      "inverse-on-surface": "#f0f1f2",
+                      "tertiary-container": "#b75b00",
+                      "tertiary": "#924700",
+                      "outline": "#727785",
+                      "on-error-container": "#93000a",
+                      "secondary": "#5f5e5e",
+                      "primary-container": "#2170e4",
+                      "on-tertiary-container": "#fffbff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-mobile": "16px",
+                      "gutter": "24px",
+                      "margin-desktop": "40px",
+                      "base": "8px",
+                      "container-max": "1200px",
+                      "article-max": "720px"
+              },
+              "fontFamily": {
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "label-sm": [
+                              "Inter"
+                      ],
+                      "article-body-mobile": [
+                              "Source Serif 4"
+                      ],
+                      "article-body": [
+                              "Source Serif 4"
+                      ],
+                      "interface-md": [
+                              "Inter"
+                      ],
+                      "caption": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "display-lg-mobile": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "article-body-mobile": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "article-body": [
+                              "20px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "interface-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "caption": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+</head>
+<body class="bg-background text-on-background font-interface-md antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar -->
+<header class="bg-surface-container-lowest dark:bg-inverse-surface border-b border-outline-variant dark:border-outline shadow-sm sticky w-full top-0 z-50">
+<div class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto">
+<a class="font-display-lg text-display-lg-mobile md:text-display-lg font-bold text-on-surface dark:text-inverse-on-surface tracking-tight" href="#">
+                Ink &amp; Insight
+            </a>
+<!-- Desktop Navigation -->
+<nav class="hidden md:flex items-center gap-gutter">
+<a class="font-interface-md text-interface-md text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim transition-colors duration-200" href="#">Categories</a>
+<a class="font-interface-md text-interface-md text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim transition-colors duration-200" href="#">Latest</a>
+<a class="font-interface-md text-interface-md text-primary dark:text-primary-fixed-dim font-bold border-b-2 border-primary pb-1 active:scale-95 transition-transform" href="#">About</a>
+</nav>
+<div class="flex items-center gap-base md:gap-gutter">
+<button aria-label="Search" class="text-on-surface-variant hover:text-primary transition-colors duration-200 flex items-center justify-center p-2 rounded-full hover:bg-surface-container-high">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+<a class="hidden md:inline-flex font-label-sm text-label-sm text-on-surface hover:text-primary transition-colors duration-200" href="#">Login</a>
+<button class="bg-primary hover:bg-[#004395] text-on-primary font-label-sm text-label-sm px-6 py-2 rounded-full transition-colors duration-200 shadow-[0px_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1)] active:scale-95">
+                    Subscribe
+                </button>
+<!-- Mobile Menu Toggle -->
+<button aria-label="Menu" class="md:hidden text-on-surface-variant p-2">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+</div>
+</div>
+</header>
+<main class="w-full">
+<!-- Hero Section -->
+<section class="max-w-article-max mx-auto px-margin-mobile md:px-0 py-20 text-center">
+<h1 class="font-display-lg text-display-lg-mobile md:text-display-lg text-on-surface mb-6">About Ink &amp; Insight</h1>
+<p class="font-article-body text-article-body-mobile md:text-article-body text-on-surface-variant max-w-2xl mx-auto">
+                Exploring the intersection of modern design and deep analysis. We believe that clarity in thought leads to elegant solutions in technology and product.
+            </p>
+</section>
+<!-- Image Banner -->
+<section class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop mb-20">
+<div class="w-full h-64 md:h-96 rounded-xl overflow-hidden bg-surface-container-high relative">
+<img alt="Minimalist modern office space" class="w-full h-full object-cover" data-alt="A bright, minimalist office space bathed in soft, natural daylight entering from large windows. The aesthetic is clean and high-key, aligning with a light-mode editorial design. Desks are arranged thoughtfully with plenty of negative space, accented by subtle hints of primary blue in the decor. The mood is focused, serene, and professional." src="https://lh3.googleusercontent.com/aida-public/AB6AXuARCQq4TEWNlLIkJP2RbNoBwnZSBRlq4g9Y9cqQ2UKOZR6L6NMljc3QvvXqiz8W4y1jMKVsP9354Aidypb5MzwY1kkj3oSCrnj1UesrFvxv8tgg46FX0Ab6XvTzr8DR3jBhF7hnfm_G_tTQAMmY_AOG6emvlW3Fm-4-IQbKLlpVHJvhLEK3jw4gWR4XizxiTWR5FKA29SwCiziWR3dW1aCX16yuH_WMzH1oznQig4UG6iXl3MEGBt00mXZIiLNABL38_xdET-dGf0k"/>
+</div>
+</section>
+<!-- Principles & Topics -->
+<section class="max-w-article-max mx-auto px-margin-mobile md:px-0 py-10">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface mb-6 border-b border-surface-container-highest pb-2">Editorial Principles</h2>
+<ul class="space-y-6">
+<li>
+<h3 class="font-label-sm text-label-sm text-primary mb-1 uppercase tracking-wider">Depth over Speed</h3>
+<p class="font-article-body text-[16px] leading-[24px] text-on-surface-variant">We prioritize thorough analysis and nuanced perspectives over breaking news.</p>
+</li>
+<li>
+<h3 class="font-label-sm text-label-sm text-primary mb-1 uppercase tracking-wider">Human-Centric</h3>
+<p class="font-article-body text-[16px] leading-[24px] text-on-surface-variant">Technology is contextualized through its impact on human experience and behavior.</p>
+</li>
+<li>
+<h3 class="font-label-sm text-label-sm text-primary mb-1 uppercase tracking-wider">Clarity</h3>
+<p class="font-article-body text-[16px] leading-[24px] text-on-surface-variant">Complex ideas communicated with precision and accessible language.</p>
+</li>
+</ul>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface mb-6 border-b border-surface-container-highest pb-2">Topics Covered</h2>
+<div class="flex flex-wrap gap-2">
+<span class="bg-[#EBF3FF] text-primary px-3 py-1 rounded-full font-caption text-caption uppercase tracking-wider">Design</span>
+<span class="bg-[#EBF3FF] text-primary px-3 py-1 rounded-full font-caption text-caption uppercase tracking-wider">Technology</span>
+<span class="bg-[#EBF3FF] text-primary px-3 py-1 rounded-full font-caption text-caption uppercase tracking-wider">Product</span>
+<span class="bg-[#EBF3FF] text-primary px-3 py-1 rounded-full font-caption text-caption uppercase tracking-wider">Culture</span>
+<span class="bg-[#EBF3FF] text-primary px-3 py-1 rounded-full font-caption text-caption uppercase tracking-wider">Architecture</span>
+<span class="bg-[#EBF3FF] text-primary px-3 py-1 rounded-full font-caption text-caption uppercase tracking-wider">Systems</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Credibility Strip -->
+<section class="bg-surface-container-low py-16 my-20">
+<div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
+<div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+<div>
+<div class="font-display-lg text-display-lg-mobile md:text-display-lg text-primary mb-2">1,284</div>
+<div class="font-interface-md text-interface-md text-on-surface-variant">Articles Published</div>
+</div>
+<div>
+<div class="font-display-lg text-display-lg-mobile md:text-display-lg text-primary mb-2">48.5K</div>
+<div class="font-interface-md text-interface-md text-on-surface-variant">Weekly Readers</div>
+</div>
+<div>
+<div class="font-display-lg text-display-lg-mobile md:text-display-lg text-primary mb-2">8</div>
+<div class="font-interface-md text-interface-md text-on-surface-variant">Core Categories</div>
+</div>
+<div>
+<div class="font-display-lg text-display-lg-mobile md:text-display-lg text-primary mb-2">5+</div>
+<div class="font-interface-md text-interface-md text-on-surface-variant">Years Online</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Meet the Editorial Board -->
+<section class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-10 mb-20">
+<h2 class="font-display-lg text-display-lg-mobile md:text-display-lg text-on-surface text-center mb-16">Meet the Editorial Board</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- Profile 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-[0px_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1)] hover:-translate-y-0.5 transition-all duration-300">
+<img alt="Arthur Vance" class="w-20 h-20 rounded-full object-cover mb-4" data-alt="A professional headshot of a middle-aged man with short dark hair, wearing a casual gray sweater. The background is a clean, neutral white wall, providing a high-key, minimalist aesthetic. The lighting is soft and flattering, emphasizing a calm and authoritative mood. Subtle cool tones align with the overarching blue and light gray palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmfOs-dKObZiaIt_-yL8veVW2l_kj2OqHs-u-MS48-VU1WU5FArwsMWF0cq2YQ5fhzkpHPdU_-tWlPOvDaeVGCxgmLeupR5d5w-c6vSnR_zEUGpoT9A85QxLE7CNQNoGpgNZg_HZCq5sLI1fMIeylwCy9ueFn2L0rY-2P7D83ucPDXXvGISceM1ugqNK9To7tDxP9mcl0BJLSvuU8bKEpJlNJRJnwKg4eSqNSM_bujgrwSccET3HDkrCaaL3PLhbXwSKnjbtAoEMg"/>
+<h3 class="font-headline-md text-[20px] leading-[28px] text-on-surface font-semibold mb-1">Arthur Vance</h3>
+<p class="font-caption text-caption text-primary uppercase tracking-wider mb-4">Senior Editor</p>
+<p class="font-article-body text-[16px] leading-[24px] text-on-surface-variant">Deep dive on digital minimalism and the impact of reduced cognitive load in software design.</p>
+</div>
+<!-- Profile 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-[0px_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1)] hover:-translate-y-0.5 transition-all duration-300">
+<img alt="Sarah Jenkins" class="w-20 h-20 rounded-full object-cover mb-4" data-alt="A professional headshot of a young woman with shoulder-length brown hair, wearing a simple white blouse. She is smiling gently against a very light, almost white background. The bright, high-key lighting creates a fresh and approachable mood, consistent with a clean, modern editorial style. Small accents of subtle blue enhance the image." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2Tx7LfxJ8RqN2Uxii8iLVj0cgD9xVezX9rYb-2ew0njhY7WLnmgL9oSih15txYzNZo-Cd4ZYvuF3kru087P_q4DymuRqP5XW8WZM9t8LLJiQu4iYyKNMQtlE7ubRa53Z1z7CG5ggrKj2Jilerwvrb1oRi_DJzAhmLCrW_K0G8T_Sun35gev2Vjhz8AqOy3WdrmQgww77774Hade84HPRYBF1hASgMaqzTTY2BPDiFOcu2zJsOG4-fIyWi9g8mRgyh763I3CYQ0PY"/>
+<h3 class="font-headline-md text-[20px] leading-[28px] text-on-surface font-semibold mb-1">Sarah Jenkins</h3>
+<p class="font-caption text-caption text-primary uppercase tracking-wider mb-4">Design Strategist</p>
+<p class="font-article-body text-[16px] leading-[24px] text-on-surface-variant">Focus on urban flow, accessible patterns, and how physical spaces inform digital interfaces.</p>
+</div>
+<!-- Profile 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-[0px_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1)] hover:-translate-y-0.5 transition-all duration-300">
+<img alt="David Wright" class="w-20 h-20 rounded-full object-cover mb-4" data-alt="A professional portrait of a young man with glasses and a slight beard, wearing a dark blue shirt. He is looking slightly off-camera against a soft, light gray background. The lighting is crisp and clear, creating a thoughtful and intelligent atmosphere. The deep blue of his shirt ties directly into the primary brand color." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAd6ItvYW26jVelBfFvs2glCKBaunXDjzpzlGx2Xj90m-ovU13EbA434BNU3eQSbOjQ-diFGcrY3ph2mNtk9PFS--l7Z0AX5XxbeXnSGO8TtuZR4gRt1NQ4hQ-kEqFQ3dq3MpjddzI6QcF6oW5v6QDeggVZHWhJa-KKHOEvJDHbIKyx31iwJiRRIXK4lzsnGs8RXR6Sfc2Pln4J321jCFvkQFuTfibcdW5i7KeAp3BKGXV_Mw5jlBHAMoSjRDN7AR6zK0isfrOWwZA"/>
+<h3 class="font-headline-md text-[20px] leading-[28px] text-on-surface font-semibold mb-1">David Wright</h3>
+<p class="font-caption text-caption text-primary uppercase tracking-wider mb-4">Tech Lead</p>
+<p class="font-article-body text-[16px] leading-[24px] text-on-surface-variant">Exploring the future of frontend architecture, performance optimization, and semantic web standards.</p>
+</div>
+</div>
+</section>
+<!-- Logistics Section -->
+<section class="max-w-article-max mx-auto px-margin-mobile md:px-0 py-10 mb-20 border-t border-surface-container-highest">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-12 mt-10">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface mb-4">Publishing Cadence</h2>
+<p class="font-article-body text-[16px] leading-[24px] text-on-surface-variant">
+                        We respect your inbox and your time. New long-form stories and analyses are published strictly every <strong>Tuesday</strong> and <strong>Thursday</strong> morning.
+                    </p>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface mb-4">Submissions</h2>
+<p class="font-article-body text-[16px] leading-[24px] text-on-surface-variant mb-4">
+                        We occasionally accept guest posts that align with our editorial principles. If you have a unique perspective on design or tech, we'd love to hear it.
+                    </p>
+<a class="inline-flex items-center gap-2 text-primary hover:text-[#004395] font-label-sm text-label-sm transition-colors duration-200" href="#">
+                        Pitch Guidelines <span class="material-symbols-outlined text-[16px]" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest dark:bg-inverse-surface border-t border-outline-variant full-width py-12 mt-20">
+<div class="max-w-container-max mx-auto px-margin-desktop flex flex-col md:flex-row justify-between items-center gap-4">
+<div class="font-headline-md text-headline-md font-bold text-on-surface">
+                Ink &amp; Insight
+            </div>
+<nav class="flex flex-wrap justify-center gap-6">
+<a class="font-caption text-caption text-on-surface-variant hover:text-on-surface transition-colors" href="#">Privacy Policy</a>
+<a class="font-caption text-caption text-on-surface-variant hover:text-on-surface transition-colors" href="#">Terms of Service</a>
+<a class="font-caption text-caption text-on-surface-variant hover:text-on-surface transition-colors" href="#">RSS Feed</a>
+<a class="font-caption text-caption text-on-surface-variant hover:text-on-surface transition-colors" href="#">Sitemap</a>
+</nav>
+<div class="font-caption text-caption text-on-surface-variant">
+                © 2024 Ink &amp; Insight. All rights reserved.
+            </div>
+</div>
+</footer>
+</body></html>

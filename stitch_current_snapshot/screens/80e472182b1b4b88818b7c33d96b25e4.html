@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sarah Jenkins - Author Profile - Ink &amp; Insight</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary": "#924700",
+                      "on-secondary-fixed-variant": "#474746",
+                      "error": "#ba1a1a",
+                      "on-surface": "#191c1d",
+                      "on-background": "#191c1d",
+                      "background": "#f8f9fa",
+                      "inverse-surface": "#2e3132",
+                      "inverse-on-surface": "#f0f1f2",
+                      "error-container": "#ffdad6",
+                      "on-tertiary-container": "#fffbff",
+                      "outline-variant": "#c2c6d6",
+                      "surface-dim": "#d9dadb",
+                      "primary": "#0058be",
+                      "secondary-container": "#e2dfde",
+                      "inverse-primary": "#adc6ff",
+                      "surface-container-high": "#e7e8e9",
+                      "on-primary-fixed": "#001a42",
+                      "secondary-fixed-dim": "#c8c6c5",
+                      "on-error-container": "#93000a",
+                      "on-secondary-fixed": "#1c1b1b",
+                      "on-surface-variant": "#424754",
+                      "on-error": "#ffffff",
+                      "on-secondary-container": "#636262",
+                      "on-primary-container": "#fefcff",
+                      "surface-tint": "#005ac2",
+                      "secondary-fixed": "#e5e2e1",
+                      "surface-container-lowest": "#ffffff",
+                      "surface": "#f8f9fa",
+                      "on-secondary": "#ffffff",
+                      "primary-fixed": "#d8e2ff",
+                      "tertiary-fixed": "#ffdcc6",
+                      "surface-bright": "#f8f9fa",
+                      "on-primary-fixed-variant": "#004395",
+                      "on-primary": "#ffffff",
+                      "on-tertiary-fixed": "#311400",
+                      "tertiary-container": "#b75b00",
+                      "outline": "#727785",
+                      "on-tertiary": "#ffffff",
+                      "surface-variant": "#e1e3e4",
+                      "surface-container": "#edeeef",
+                      "on-tertiary-fixed-variant": "#723600",
+                      "primary-fixed-dim": "#adc6ff",
+                      "secondary": "#5f5e5e",
+                      "tertiary-fixed-dim": "#ffb786",
+                      "surface-container-highest": "#e1e3e4",
+                      "primary-container": "#2170e4",
+                      "surface-container-low": "#f3f4f5"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-desktop": "40px",
+                      "container-max": "1200px",
+                      "article-max": "720px",
+                      "margin-mobile": "16px",
+                      "gutter": "24px",
+                      "base": "8px"
+              },
+              "fontFamily": {
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "article-body-mobile": [
+                              "Source Serif 4"
+                      ],
+                      "article-body": [
+                              "Source Serif 4"
+                      ],
+                      "label-sm": [
+                              "Inter"
+                      ],
+                      "display-lg-mobile": [
+                              "Inter"
+                      ],
+                      "interface-md": [
+                              "Inter"
+                      ],
+                      "caption": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "article-body-mobile": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "article-body": [
+                              "20px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "interface-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "caption": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+</head>
+<body class="bg-background text-on-background min-h-screen font-interface-md antialiased selection:bg-primary selection:text-on-primary">
+<!-- TopNavBar -->
+<nav class="bg-surface-container-lowest text-primary font-interface-md text-interface-md docked full-width top-0 border-b border-outline-variant shadow-sm z-50 sticky">
+<div class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto">
+<div class="flex items-center gap-8">
+<!-- Brand Logo -->
+<a class="font-display-lg text-display-lg font-bold text-on-surface" href="#">
+                    Ink &amp; Insight
+                </a>
+<!-- Navigation Links -->
+<div class="hidden md:flex items-center gap-6 ml-8">
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">Categories</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">Latest</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">About</a>
+</div>
+</div>
+<!-- Search and Actions -->
+<div class="flex items-center gap-6">
+<!-- Search -->
+<div class="relative hidden lg:block w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" style="font-size: 20px;">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container rounded-full border border-outline-variant text-interface-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Search articles..." type="text"/>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors duration-200 font-interface-md hidden sm:block">Login</button>
+<button class="bg-primary hover:bg-primary-container text-on-primary hover:text-on-primary-container px-6 py-2 rounded-full font-interface-md transition-all duration-200 shadow-sm active:scale-95">Subscribe</button>
+</div>
+</div>
+</div>
+</nav>
+<main class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pt-12 pb-24 grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Author Profile Header - Spans Full Width on Mobile, Left Column on Desktop -->
+<div class="col-span-1 lg:col-span-12 flex flex-col md:flex-row gap-8 items-start mb-16 pb-12 border-b border-outline-variant">
+<!-- Avatar -->
+<div class="w-32 h-32 md:w-48 md:h-48 flex-shrink-0 relative rounded-full overflow-hidden shadow-sm border border-outline-variant">
+<img alt="Sarah Jenkins, Professional Woman" class="w-full h-full object-cover object-center" data-alt="A portrait of a professional female writer with a calm demeanor. She is standing outdoors in a bright, clean urban setting. The lighting is soft and natural, creating a high-key light mode aesthetic. The background is slightly blurred with subtle architectural elements. She wears professional yet approachable attire." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzGiVCJAbxzWQ4muptyfsPTfVLMm7uZY-kkmece7-_OjeO9K_5ZsRdIHlD_KyAQR256dKaFOozIkfglDXTVNBgykGwXPes7LmDzMpdu7-I9_XY_A_PCJLHGof5w8BODgllxudeEjoWvP7494zsEVOvLhZ9kir8dCOZlso_VVShAoVwlPV6-3jJk0p28NFBQyNPwhYw8_AC8Qy6wc0cn5yXONmkIjXYqiuAtIPS1sv3gpSw4U5BxBpw8yViUXYoS_iJb1pepJACteU"/>
+</div>
+<!-- Profile Info -->
+<div class="flex-1 flex flex-col gap-4">
+<div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
+<div>
+<h1 class="font-display-lg text-display-lg text-on-surface mb-2">Sarah Jenkins</h1>
+<p class="font-interface-md text-interface-md text-on-surface-variant mb-2">Senior Editor &amp; Design Strategist</p>
+<div class="flex items-center gap-4 text-on-surface-variant font-caption text-caption mb-4">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">location_on</span> London, UK</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">article</span> 42 Articles</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">group</span> 15.2K Followers</span>
+</div>
+</div>
+<div class="flex flex-col sm:flex-row gap-3">
+<button class="bg-primary hover:bg-primary-container text-on-primary hover:text-on-primary-container px-6 py-2 rounded-full font-interface-md transition-all duration-200 shadow-sm active:scale-95 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[20px]">person_add</span> Follow
+                        </button>
+<div class="flex gap-2 justify-center sm:justify-start">
+<button aria-label="Twitter" class="w-10 h-10 rounded-full border border-outline-variant flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"></path></svg>
+</button>
+<button aria-label="LinkedIn" class="w-10 h-10 rounded-full border border-outline-variant flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"></path></svg>
+</button>
+<button aria-label="Personal Site" class="w-10 h-10 rounded-full border border-outline-variant flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[20px]">language</span>
+</button>
+</div>
+</div>
+</div>
+<div class="font-article-body text-article-body text-on-surface-variant max-w-3xl leading-relaxed">
+                    Focusing on the intersection of human behavior, digital systems, and urban flow. Crafting narratives that bridge the gap between complex technology and everyday human experience.
+                </div>
+<!-- Chips -->
+<div class="flex flex-wrap gap-2 mt-2">
+<span class="px-3 py-1 bg-surface-container-low border border-outline-variant rounded-full font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wide">Design Systems</span>
+<span class="px-3 py-1 bg-surface-container-low border border-outline-variant rounded-full font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wide">Accessibility</span>
+<span class="px-3 py-1 bg-surface-container-low border border-outline-variant rounded-full font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wide">Product Strategy</span>
+<span class="px-3 py-1 bg-surface-container-low border border-outline-variant rounded-full font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wide">Urban Interfaces</span>
+</div>
+</div>
+</div>
+<!-- Main Content Area -->
+<div class="col-span-1 lg:col-span-8 flex flex-col gap-8">
+<!-- Tabs -->
+<div class="flex border-b border-outline-variant gap-8 overflow-x-auto no-scrollbar">
+<button class="text-primary font-bold border-b-2 border-primary pb-3 font-interface-md text-interface-md whitespace-nowrap">Latest</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors pb-3 font-interface-md text-interface-md whitespace-nowrap border-b-2 border-transparent">Popular</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors pb-3 font-interface-md text-interface-md whitespace-nowrap border-b-2 border-transparent">Comments</button>
+</div>
+<!-- Article List -->
+<div class="flex flex-col gap-6">
+<!-- Article 1 -->
+<article class="group flex flex-col sm:flex-row gap-6 p-4 -mx-4 rounded-xl hover:bg-surface-container-lowest hover:shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1)] transition-all duration-300 border border-transparent hover:border-outline-variant bg-transparent cursor-pointer">
+<div class="w-full sm:w-48 h-32 flex-shrink-0 rounded-lg overflow-hidden bg-surface-container">
+<img alt="Minimalist Architecture" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" data-alt="A clean, minimalist architectural structure with stark geometric lines against a clear blue sky. The building is made of smooth white concrete. The lighting is bright and high-key, creating sharp but subtle shadows. The aesthetic is modern, clinical, and precise, fitting a bright editorial layout." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzWmonP3wUvWBbqLnmUkKOVML46lX0rxvvcYSt0OrXw7W1OHI-Q4yNufSjQUWUo44egXMbsBoM1Q_FUu9jEnD2PCg7hAi4DmM_NTHCy7MRnbTAtLNnFr0ecenQqoywBOEGyYNCliXAr-Gr9BnSIqhl1T9XpjPKIWesMVd2705B4HLwznijTkffS3zIgmZ1__FQMtO5QC2Ss-bmRba2T38g3csYoUBT_-NXobZJlER2uUqKa_upo-2Hg0eh5-DvOz0yzvFeR7qeZDc"/>
+</div>
+<div class="flex flex-col justify-between py-1">
+<div>
+<div class="flex items-center gap-2 mb-2">
+<span class="font-label-sm text-label-sm text-primary uppercase tracking-wider">Design</span>
+<span class="text-on-surface-variant text-[10px]">•</span>
+<span class="font-caption text-caption text-on-surface-variant">Oct 24, 2024</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-on-surface group-hover:text-primary transition-colors line-clamp-2">Rethinking Urban Flow: Minimalism in Architecture</h2>
+</div>
+<div class="flex items-center gap-4 mt-4 font-caption text-caption text-on-surface-variant">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">schedule</span> 6 min read</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">forum</span> 12 comments</span>
+</div>
+</div>
+</article>
+<hr class="border-outline-variant border-t"/>
+<!-- Article 2 -->
+<article class="group flex flex-col sm:flex-row gap-6 p-4 -mx-4 rounded-xl hover:bg-surface-container-lowest hover:shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1)] transition-all duration-300 border border-transparent hover:border-outline-variant bg-transparent cursor-pointer">
+<div class="w-full sm:w-48 h-32 flex-shrink-0 rounded-lg overflow-hidden bg-surface-container">
+<img alt="Digital Interface" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" data-alt="A close-up shot of a modern, clean digital interface displayed on a high-resolution screen. The screen shows data visualizations and minimalist typography in a light theme environment. The lighting is soft and ambient, emphasizing the crispness of the design elements. A person's hand is slightly out of focus in the foreground." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQGSTzT12OFC3Qo-xP0uJF5iZx8nNEW-Xdh8tJyHz_RnaAkST6piZ6myBJMYtIVDcU2K1q9lKuUeQz4QYydiQ8KStBXFXwiJIBTTXMQiJ2ywsPyFidiipxVgmMsAVFUW1cCnscKm_-Lt24FgLmfPEscYpMPMZ33aKjiQbjX50q7Tli6OF2XT5EdfpyYMXLtKEfhDXbTbtQQf36EfyEjUdDPT5lBNbmS_xhD2vcN2cxPYsKvkZeuqhy31oFAYSwUIcNzmA3ESFCI2E"/>
+</div>
+<div class="flex flex-col justify-between py-1">
+<div>
+<div class="flex items-center gap-2 mb-2">
+<span class="font-label-sm text-label-sm text-primary uppercase tracking-wider">UX Research</span>
+<span class="text-on-surface-variant text-[10px]">•</span>
+<span class="font-caption text-caption text-on-surface-variant">Oct 12, 2024</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-on-surface group-hover:text-primary transition-colors line-clamp-2">The Psychology of the Digital Interface</h2>
+</div>
+<div class="flex items-center gap-4 mt-4 font-caption text-caption text-on-surface-variant">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">schedule</span> 8 min read</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">forum</span> 8 comments</span>
+</div>
+</div>
+</article>
+<hr class="border-outline-variant border-t"/>
+<!-- Article 3 -->
+<article class="group flex flex-col sm:flex-row gap-6 p-4 -mx-4 rounded-xl hover:bg-surface-container-lowest hover:shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1)] transition-all duration-300 border border-transparent hover:border-outline-variant bg-transparent cursor-pointer">
+<div class="w-full sm:w-48 h-32 flex-shrink-0 rounded-lg overflow-hidden bg-surface-container">
+<img alt="Accessible Interface" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" data-alt="A bright, accessible web interface being designed on a modern laptop. The screen shows high-contrast elements and clear typography. The workspace is minimal and well-lit with natural daylight spilling across a clean white desk. The overall mood is focused and highly professional." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxWl2gv6q3BOPVjU7yGh3NOWiAClFPWM73-4EBvNRUmVDyINrsbExalK9XERvFuFt5j3TBBUGNTgU6qTE9ugAqkymTgn8KyRDwEGlCc4vnfNeQ4_tqyncSWDGZEeIzC81zC4sooLr7ZSpEa8h0g9uq3kCZl9IATpmvLSNnqvBasWm19LQHwLajHhejsfZ7EA9p0qlGu4WsDVFEEZlPm7RMsOnYQpQpLS2Ob5VBkobh9s3G5D8hPLAXEbufROGWvMv4TiE7o7GEwkM"/>
+</div>
+<div class="flex flex-col justify-between py-1">
+<div>
+<div class="flex items-center gap-2 mb-2">
+<span class="font-label-sm text-label-sm text-primary uppercase tracking-wider">Design</span>
+<span class="text-on-surface-variant text-[10px]">•</span>
+<span class="font-caption text-caption text-on-surface-variant">Sept 28, 2024</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-on-surface group-hover:text-primary transition-colors line-clamp-2">Accessible Interface Patterns for 2024</h2>
+</div>
+<div class="flex items-center gap-4 mt-4 font-caption text-caption text-on-surface-variant">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">schedule</span> 10 min read</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">forum</span> 24 comments</span>
+</div>
+</div>
+</article>
+<div class="pt-4 flex justify-center">
+<button class="px-6 py-2 border border-outline-variant rounded-full text-on-surface font-interface-md text-interface-md hover:bg-surface-container-low transition-colors">Load More Articles</button>
+</div>
+</div>
+</div>
+<!-- Sidebar -->
+<aside class="col-span-1 lg:col-span-4 flex flex-col gap-8 lg:pl-8 lg:border-l border-outline-variant">
+<!-- Newsletter Widget -->
+<div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant shadow-sm">
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-primary text-[28px]">mark_email_read</span>
+<h3 class="font-headline-md text-headline-md text-on-surface">Join Sarah's Newsletter</h3>
+</div>
+<p class="font-interface-md text-interface-md text-on-surface-variant mb-6">Get weekly insights on design systems and urban interfaces delivered straight to your inbox.</p>
+<form class="flex flex-col gap-3">
+<input class="w-full px-4 py-3 bg-surface-container-lowest rounded-lg border border-outline-variant text-interface-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Your email address" type="email"/>
+<button class="w-full bg-primary hover:bg-primary-container text-on-primary hover:text-on-primary-container px-6 py-3 rounded-lg font-interface-md font-bold transition-all duration-200 shadow-sm active:scale-95" type="submit">Subscribe</button>
+</form>
+</div>
+<!-- Featured Article -->
+<div class="flex flex-col gap-4">
+<h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest border-b border-outline-variant pb-2">Featured Read</h3>
+<article class="group cursor-pointer">
+<div class="w-full h-48 rounded-lg overflow-hidden bg-surface-container mb-3 shadow-sm border border-outline-variant">
+<img alt="Future of Minimalist Design" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" data-alt="A highly stylized, minimalist conceptual art piece showing floating, smooth geometric spheres in a bright, pure white space. The lighting is diffuse and perfectly even, creating a sense of futuristic tranquility. The overall aesthetic is ultra-modern, clean, and representative of high-end editorial design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCF2LZysLEHR4LweK3Cw-sbTJqzArjjXjtL0S3eaBKo6uI-ifyT2Ht6E9e5z9BYEDF-ED8szwyET7NkSAQpMoAQBAd73w8H3-AqebH1euRYLhgvBCs20U6MH7AKIyK3U_tMs_a9A4_zmDCI0h0E9_s-KF5WV9_2Pp-kLxNpQN5kBUgZfRTq0lqzW16nDL0bKfvsORVLtD5nGg9TbDj57rV69N--wXTmR259pw6ps3dYaMr8BxgoMVvjwuYyH8dgWOswdHjs4ZKPnBc"/>
+</div>
+<h4 class="font-headline-md text-headline-md text-on-surface group-hover:text-primary transition-colors mb-2">The Future of Minimalist Interface Design</h4>
+<p class="font-caption text-caption text-on-surface-variant line-clamp-2">Exploring how reductive design principles will shape the next generation of complex digital ecosystems.</p>
+</article>
+</div>
+<!-- Meet the Team -->
+<div class="flex flex-col gap-4 mt-4">
+<h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest border-b border-outline-variant pb-2">Other Contributors</h3>
+<ul class="flex flex-col gap-4">
+<li class="flex items-center gap-3 group cursor-pointer">
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant">
+<img alt="Arthur Vance" class="w-full h-full object-cover" data-alt="A portrait of a male writer with glasses, looking professional and friendly. The background is a bright, softly lit office environment. The lighting is high-key and pleasant. He is wearing a smart casual outfit, fitting for a modern digital workspace." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCi2QtRfASjWsgiEIp6AkMFNGxTQ5nS71zUxmyn8ngWP1ENFzOne3ZK0JsNxLbDEGm8YwED6RMk9O7QFmUOeRUS5ZZls421aceFQSZG42NvzJ9lgw2xrNzOJSZ0tirZ4x04f-mIDhT8MNbDQKFIsKF_Gmyn5iv8Nfpte6L7rY3EHHmn8IDVzBfDE0iz9YRa96PMRw1a-Wm65d1mHxFhFr7D4Sk5WwmYPmdNRjHp7qKSpncrjD2oKbyRq_VUddrBNUH_pNl4qdFxgpI"/>
+</div>
+<div>
+<p class="font-interface-md text-interface-md text-on-surface group-hover:text-primary transition-colors">Arthur Vance</p>
+<p class="font-caption text-caption text-on-surface-variant">Technical Writer</p>
+</div>
+</li>
+<li class="flex items-center gap-3 group cursor-pointer">
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant">
+<img alt="David Wright" class="w-full h-full object-cover" data-alt="A portrait of a male professional with short hair, smiling subtly. The background is a bright, minimalist studio setting with neutral tones. The lighting emphasizes a clean, editorial look. He wears a dark, simple shirt that contrasts nicely with the light background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-aRcZq8dgV04hgubAqcqqGJkf2p6OPxLpSRfra1Doe_1EheFt4EQtgRiK5V7_TkHRM7ybxaZi9KJzVyWdQMOTBZPpIgSxgo655QuDIk3bY83HCAF6H9rEGcvu8gdavamz9jPr5y28pnOB_C0NrL50UuAZyQNYRgfRAVdeMGuo1fQ39XP2m4b1CkyeUI7np5dJIr0tOp437ZELcgyWFQ7FQswFLyDTTvcYx-FfMm21pSLVBfGwVxDzUridSzpxlexGN3zXQkrGMO0"/>
+</div>
+<div>
+<p class="font-interface-md text-interface-md text-on-surface group-hover:text-primary transition-colors">David Wright</p>
+<p class="font-caption text-caption text-on-surface-variant">Frontend Architect</p>
+</div>
+</li>
+</ul>
+</div>
+</aside>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest text-primary font-caption text-caption full-width py-12 mt-20 border-t border-outline-variant flat">
+<div class="max-w-container-max mx-auto px-margin-desktop flex flex-col md:flex-row justify-between items-center gap-4">
+<div class="font-headline-md text-headline-md font-bold text-on-surface">
+                Ink &amp; Insight
+            </div>
+<div class="text-on-surface-variant">
+                © 2024 Ink &amp; Insight. All rights reserved.
+            </div>
+<div class="flex items-center gap-6">
+<a class="text-on-surface-variant hover:text-on-surface transition-colors" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors" href="#">Terms of Service</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors" href="#">RSS Feed</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors" href="#">Sitemap</a>
+</div>
+</div>
+</footer>
+</body></html>

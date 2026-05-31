@@ -158,3 +158,18 @@ Stitch 项目：
   - [complete] `go test ./internal/compat -run TestGenerateGoldenBaseline -count=1`
   - [complete] `go test ./... -count=1 -timeout=120s`
   - [complete] 阶段提交与推送：`48f1e46`
+
+# 新增阶段：远端 Stitch 快照与前端一致性审计
+
+目标：重新拉取当前 Stitch 远端项目数据保存到本地，并判断当前项目前端功能是否与远端原型一致。
+
+当前状态：
+- [complete] 通过重新配置后的 Stitch MCP HTTP 配置拉取远端项目和 screen 列表。
+- [complete] 保存 14 个远端 screen 的详情、HTML 和截图到 `stitch_current_snapshot/`。
+- [complete] 抽取当前 React 后台路由和后端 SSR 前台路由。
+- [complete] 完成功能一致性判断。
+
+结论：
+- 后台管理核心原型功能基本一致：登录/邮箱注册、控制台、文章管理、发布/编辑文章、分类管理、评论管理、系统设置均有对应 React 路由和真实 API。
+- 前台核心阅读功能部分一致：博客首页、文章详情、分类文章页、搜索结果、订阅、点赞、收藏、关注作者、评论/回复通过服务端模板和 `public/assets/site.js` 支撑。
+- 远端原型中仍有当前前端未完整落地的独立页面或入口：`关于我们`、`作者主页`、独立 `分类浏览` 页面，以及原型历史记录中提到但当前远端列表未出现的标签文章列表、归档、404、媒体库、用户与权限、数据分析。

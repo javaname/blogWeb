@@ -292,3 +292,21 @@
   - `cargo test --offline --test admin_read`
   - `cargo test --offline`
   - `go test ./... -count=1 -timeout=120s`
+
+## 2026-05-31 Stitch 远端快照与前端一致性审计
+
+- 用户说明已重新配置 Stitch MCP 服务，要求拉取远程数据保存本地，并判断当前项目前端是否与原型功能一致。
+- 已确认 Serena 当前项目为 `blogWeb`，并恢复 `task_plan.md`、`progress.md`、`findings.md`。
+- 直接调用 `mcp__stitch.list_projects` 仍返回 `Auth required`；随后检查 Codex 配置，确认 `mcp_servers.stitch` 已配置 `url` 和 `X-Goog-Api-Key` header。
+- 已新增 `.codex-run/stitch_fetch_current.ps1`，从 Codex config 读取 Stitch MCP URL/header，不输出密钥。
+- 首次脚本写入 `.codex-run/stitch-current` 因 Windows 权限拒绝失败；已改为写入仓库根目录 `stitch_current_snapshot/`。
+- 普通沙箱调用 Stitch HTTP 出现连接接收中断；经用户批准提升网络权限后拉取成功。
+- 已保存远端项目和 14 个 screen 的列表、详情、HTML、截图：
+  - `stitch_current_snapshot/get_project.raw.json`
+  - `stitch_current_snapshot/list_screens.raw.json`
+  - `stitch_current_snapshot/screens.summary.json`
+  - `stitch_current_snapshot/screens/`
+- 已用 CodeGraph 抽取当前 React 后台路由：`/login`、`/dashboard`、`/posts`、`/articles/new`、`/articles/:id`、`/categories`、`/comments`、`/settings`。
+- 已核对前台 SSR 路由和模板：`/`、`/articles/:slug`、`/categories/:slug`；搜索通过 `/?keyword=...` 实现。
+- 一致性结论：后台核心管理原型功能基本一致；前台首页/文章详情/分类文章页/搜索/订阅/点赞/收藏/关注/评论能力部分一致；独立关于页、作者主页、分类浏览页等远端原型页面尚未作为真实路由落地。
+- 已更新 `task_plan.md` 与 `findings.md` 记录本次快照和结论。

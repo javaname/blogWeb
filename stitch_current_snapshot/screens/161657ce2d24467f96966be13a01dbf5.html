@@ -1,0 +1,263 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Ink &amp; Insight Admin - Register</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:wght@400;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#1c1b1b",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "inverse-primary": "#adc6ff",
+                        "surface-bright": "#f8f9fa",
+                        "on-primary-fixed": "#001a42",
+                        "on-tertiary-fixed-variant": "#723600",
+                        "background": "#f8f9fa",
+                        "primary-container": "#2170e4",
+                        "on-tertiary": "#ffffff",
+                        "tertiary": "#924700",
+                        "on-background": "#191c1d",
+                        "surface-container-high": "#e7e8e9",
+                        "on-primary-fixed-variant": "#004395",
+                        "error-container": "#ffdad6",
+                        "surface-container-low": "#f3f4f5",
+                        "tertiary-fixed": "#ffdcc6",
+                        "surface-container-highest": "#e1e3e4",
+                        "on-tertiary-fixed": "#311400",
+                        "error": "#ba1a1a",
+                        "on-error-container": "#93000a",
+                        "on-error": "#ffffff",
+                        "primary": "#0058be",
+                        "surface-tint": "#005ac2",
+                        "surface-container": "#edeeef",
+                        "outline": "#727785",
+                        "on-secondary": "#ffffff",
+                        "on-surface-variant": "#424754",
+                        "on-surface": "#191c1d",
+                        "on-tertiary-container": "#fffbff",
+                        "secondary": "#5f5e5e",
+                        "surface-dim": "#d9dadb",
+                        "outline-variant": "#c2c6d6",
+                        "inverse-surface": "#2e3132",
+                        "on-secondary-fixed-variant": "#474746",
+                        "surface-variant": "#e1e3e4",
+                        "tertiary-container": "#b75b00",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#f0f1f2",
+                        "primary-fixed-dim": "#adc6ff",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed": "#e5e2e1",
+                        "secondary-container": "#e2dfde",
+                        "primary-fixed": "#d8e2ff",
+                        "tertiary-fixed-dim": "#ffb786",
+                        "surface": "#f8f9fa",
+                        "on-primary-container": "#fefcff",
+                        "on-secondary-container": "#636262"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-max": "1200px",
+                        "article-max": "720px",
+                        "base": "8px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "40px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "caption": ["Inter"],
+                        "article-body": ["Source Serif 4"],
+                        "interface-md": ["Inter"],
+                        "display-lg-mobile": ["Inter"],
+                        "article-body-mobile": ["Source Serif 4"],
+                        "headline-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "label-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "caption": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+                        "article-body": ["20px", { "lineHeight": "32px", "fontWeight": "400" }],
+                        "interface-md": ["16px", { "lineHeight": "24px", "fontWeight": "500" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "article-body-mobile": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-sm": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        [data-weight="fill"] {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-surface-container-low text-on-surface min-h-screen flex items-center justify-center font-interface-md">
+<main class="w-full max-w-[1200px] h-screen md:h-[800px] flex flex-col md:flex-row shadow-sm bg-surface-container-lowest rounded-xl overflow-hidden md:m-gutter">
+<!-- Left Panel: Editorial Brand -->
+<section class="hidden md:flex md:w-5/12 bg-surface-container-highest p-margin-desktop flex-col justify-between relative overflow-hidden" data-alt="A modern, minimalist office space with clean lines, soft natural lighting, and subtle blue architectural details. The scene conveys a sense of professional clarity and rigorous organization. The atmosphere is quiet and focused, perfectly aligning with a high-end content management tool's aesthetic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAo5fyVUNHIFgxRPWToEejB_EN_9LdcXKlZwOwG5Ms4bIW_1uNyU4thvWxFSS3_OcG2RQpOmkeuS5XDPylYEUGP8BGAaPnqh1mmtdNvDTzQ8M5KHnTI6ve7oTWC-ux1QxpIQsTN6M33D1aE7nDx-q8LoBC0M7LvsRnts1BDZBYtoaQP5IrLXaR128PVfBcRmg3GL-MiwKtYQrSmznm-slNrLIovyvIpZ-4ieM2MVPPZMuFP_YcCJvHaemhD7rT7KdWsoTppmno2N34'); background-size: cover; background-position: center;">
+<!-- Overlay to ensure text readability -->
+<div class="absolute inset-0 bg-surface-container-highest/90 backdrop-blur-sm"></div>
+<div class="relative z-10 flex flex-col gap-base">
+<div class="flex items-center gap-3 mb-8">
+<span class="material-symbols-outlined text-primary text-3xl" data-weight="fill">edit_document</span>
+<h1 class="font-headline-md text-headline-md text-on-surface">Ink &amp; Insight Admin</h1>
+</div>
+<h2 class="font-display-lg text-display-lg text-on-surface leading-tight mb-4">Precision content management for modern editors.</h2>
+<p class="font-interface-md text-interface-md text-on-surface-variant max-w-sm">
+                    A dedicated operational canvas designed to streamline your editorial workflow and empower your publication's growth.
+                </p>
+</div>
+<div class="relative z-10 flex flex-col gap-6 mt-12">
+<div class="grid grid-cols-1 gap-4">
+<div class="flex items-center gap-4 bg-surface-container-lowest/50 p-4 rounded-lg border border-outline-variant/30">
+<span class="material-symbols-outlined text-primary">article</span>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Total Content</p>
+<p class="font-headline-md text-headline-md text-on-surface">1,284 Articles Published</p>
+</div>
+</div>
+<div class="flex items-center gap-4 bg-surface-container-lowest/50 p-4 rounded-lg border border-outline-variant/30">
+<span class="material-symbols-outlined text-primary">forum</span>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Community</p>
+<p class="font-headline-md text-headline-md text-on-surface">312 Pending Comments</p>
+</div>
+</div>
+<div class="flex items-center gap-4 bg-surface-container-lowest/50 p-4 rounded-lg border border-outline-variant/30">
+<span class="material-symbols-outlined text-primary">trending_up</span>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Audience</p>
+<p class="font-headline-md text-headline-md text-on-surface">48.5K Weekly Readers</p>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2 mt-8 text-secondary">
+<span class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+<span class="font-caption text-caption">System Status: All systems operational</span>
+</div>
+</div>
+</section>
+<!-- Right Panel: Authentication Form -->
+<section class="w-full md:w-7/12 p-margin-mobile md:p-margin-desktop flex flex-col relative overflow-y-auto">
+<div class="max-w-[420px] w-full mx-auto flex-1 flex flex-col justify-center">
+<!-- Tab Switcher -->
+<div class="flex border-b border-outline-variant mb-8">
+<button class="flex-1 pb-3 font-interface-md text-interface-md text-on-surface-variant hover:text-primary transition-colors text-center" onclick="document.getElementById('register-form').classList.add('hidden'); document.getElementById('login-form').classList.remove('hidden'); this.classList.remove('text-on-surface-variant', 'border-transparent'); this.classList.add('text-primary', 'border-primary', 'border-b-2', 'font-bold'); this.nextElementSibling.classList.remove('text-primary', 'border-primary', 'border-b-2', 'font-bold'); this.nextElementSibling.classList.add('text-on-surface-variant', 'border-transparent');">
+                        Sign In
+                    </button>
+<button class="flex-1 pb-3 font-interface-md text-interface-md text-primary font-bold border-b-2 border-primary text-center transition-colors" onclick="document.getElementById('login-form').classList.add('hidden'); document.getElementById('register-form').classList.remove('hidden'); this.classList.remove('text-on-surface-variant', 'border-transparent'); this.classList.add('text-primary', 'border-primary', 'border-b-2', 'font-bold'); this.previousElementSibling.classList.remove('text-primary', 'border-primary', 'border-b-2', 'font-bold'); this.previousElementSibling.classList.add('text-on-surface-variant', 'border-transparent');">
+                        Register
+                    </button>
+</div>
+<!-- Registration Form (Active) -->
+<div class="space-y-6" id="register-form">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">Create Admin Account</h3>
+<p class="font-caption text-caption text-on-surface-variant">Request access to the editorial dashboard.</p>
+</div>
+<!-- Status Alerts Example -->
+<div class="space-y-3">
+<div class="bg-surface-container-high/50 border border-outline-variant rounded-lg p-3 flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-0.5">info</span>
+<p class="font-caption text-caption text-on-surface">Verification code sent to your email.</p>
+</div>
+<div class="bg-error-container text-on-error-container border border-error/20 rounded-lg p-3 flex items-start gap-3">
+<span class="material-symbols-outlined mt-0.5">error</span>
+<p class="font-caption text-caption">Invalid or expired verification code.</p>
+</div>
+</div>
+<form class="space-y-5" onsubmit="event.preventDefault();">
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface" for="reg-email">Corporate Email</label>
+<input class="w-full bg-surface-container-lowest border border-outline rounded-lg px-4 py-2 font-interface-md text-interface-md text-on-surface focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" id="reg-email" placeholder="editor@inkandinsight.com" type="email">
+</div>
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface" for="reg-code">Verification Code</label>
+<div class="flex gap-3">
+<input class="flex-1 bg-surface-container-lowest border border-outline rounded-lg px-4 py-2 font-interface-md text-interface-md text-on-surface focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" id="reg-code" placeholder="6-digit code" type="text">
+<button class="px-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg font-label-sm text-label-sm text-on-surface hover:bg-surface-container-high transition-colors whitespace-nowrap" type="button">
+                                    Send Code
+                                </button>
+</div>
+</div>
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface" for="reg-username">Username</label>
+<input class="w-full bg-surface-container-lowest border border-outline rounded-lg px-4 py-2 font-interface-md text-interface-md text-on-surface focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" id="reg-username" placeholder="Unique admin handle" type="text">
+</div>
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface" for="reg-password">Password</label>
+<div class="relative">
+<input class="w-full bg-surface-container-lowest border border-outline rounded-lg px-4 py-2 font-interface-md text-interface-md text-on-surface focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" id="reg-password" placeholder="••••••••" type="password">
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface" type="button">
+<span class="material-symbols-outlined text-[20px]">visibility_off</span>
+</button>
+</div>
+</div>
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface" for="reg-confirm-password">Confirm Password</label>
+<input class="w-full bg-surface-container-lowest border border-outline rounded-lg px-4 py-2 font-interface-md text-interface-md text-on-surface focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" id="reg-confirm-password" placeholder="••••••••" type="password">
+</div>
+<button class="w-full bg-primary text-on-primary font-label-sm text-label-sm py-3 rounded-lg hover:bg-on-primary-fixed-variant transition-colors mt-2 shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1)] hover:-translate-y-0.5 duration-200" type="submit">
+                            Create Admin Account
+                        </button>
+</form>
+</div>
+<!-- Login Form (Hidden by default) -->
+<div class="space-y-6 hidden" id="login-form">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">Welcome Back</h3>
+<p class="font-caption text-caption text-on-surface-variant">Sign in to the editorial dashboard.</p>
+</div>
+<form class="space-y-5" onsubmit="event.preventDefault();">
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface" for="login-email">Email or Username</label>
+<input class="w-full bg-surface-container-lowest border border-outline rounded-lg px-4 py-2 font-interface-md text-interface-md text-on-surface focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" id="login-email" placeholder="editor@inkandinsight.com" type="text">
+</div>
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface" for="login-password">Password</label>
+<input class="w-full bg-surface-container-lowest border border-outline rounded-lg px-4 py-2 font-interface-md text-interface-md text-on-surface focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" id="login-password" placeholder="••••••••" type="password">
+</div>
+<div class="flex items-center justify-between">
+<label class="flex items-center gap-2 cursor-pointer">
+<input class="rounded border-outline text-primary focus:ring-primary w-4 h-4 bg-surface-container-lowest" type="checkbox">
+<span class="font-caption text-caption text-on-surface-variant">Remember me</span>
+</label>
+<a class="font-caption text-caption text-primary hover:underline" href="#">Forgot Password?</a>
+</div>
+<button class="w-full bg-primary text-on-primary font-label-sm text-label-sm py-3 rounded-lg hover:bg-on-primary-fixed-variant transition-colors mt-2 shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1)] hover:-translate-y-0.5 duration-200" type="submit">
+                            Sign In
+                        </button>
+</form>
+</div>
+</div>
+<!-- Footer -->
+<div class="mt-auto pt-8 flex justify-between items-center w-full max-w-[420px] mx-auto">
+<div class="flex gap-4">
+<button class="font-caption text-caption text-on-surface font-semibold hover:text-primary transition-colors">English</button>
+<span class="text-outline-variant">|</span>
+<button class="font-caption text-caption text-on-surface-variant hover:text-primary transition-colors">中文</button>
+</div>
+<a class="font-caption text-caption text-primary hover:underline flex items-center gap-1" href="#">
+<span class="material-symbols-outlined text-[16px]">help</span>
+                    Admin Help
+                </a>
+</div>
+</section>
+</main>
+</body></html>
