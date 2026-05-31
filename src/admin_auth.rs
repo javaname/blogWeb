@@ -131,6 +131,15 @@ pub async fn request_registration_code(
     }
     let code = registration_code(&state);
     let ttl = state.config.email.verification_ttl_sec;
+    if !state.config.email.username.trim().is_empty() {
+        crate::email::send_registration_code(
+            &state.config.email,
+            &email,
+            &code,
+            std::time::Duration::from_secs(ttl),
+        )
+        .await?;
+    }
     sqlx::query(
         "INSERT INTO email_verification_codes (email, code_hash, expires_at, created_at)
          VALUES (?, ?, datetime('now', '+' || ? || ' seconds'), CURRENT_TIMESTAMP)",

@@ -4,6 +4,7 @@ pub mod admin_write;
 pub mod app;
 pub mod config;
 pub mod db;
+pub mod email;
 pub mod error;
 pub mod http_interactions;
 pub mod http_public;

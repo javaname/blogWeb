@@ -91,3 +91,10 @@
 - Rust 评论策略已同步 Go 侧关键词和归一化方式：转小写后仅保留字母与数字，因此 `b-l-o-o-d` 会匹配 `blood`。
 - Rust 邮箱注册当前闭环覆盖验证码存储、校验、bcrypt 用户创建和邮箱登录；真实 SMTP 投递仍需单独实现 TLS SMTP 发送。
 - `tests/golden/**/*.json` 是字节级 golden，Windows 工作区 CRLF 会导致 Go 兼容测试 hash mismatch；需要通过 `.gitattributes` 固定 LF。
+
+## 2026-05-31 SMTP 邮件发送
+
+- Rust 邮件发送使用 `lettre`：网易 465 端口走 SMTPS；非 465 生产端口走 STARTTLS。
+- 本地 fake SMTP 需要 `email.allow_insecure=true`，避免在生产配置中意外降级为明文 SMTP。
+- `lettre` 会把中文邮件标题按 RFC 2047 编码，测试不能断言明文中文 Subject。
+- 邮箱注册前端已经存在于 `client/src/pages/Login.jsx`，并通过 `client/src/utils/adminApi.js` 调用 `/api/auth/register/code` 和 `/api/auth/register`；i18n 文案也已存在于 zh-CN/en-US。

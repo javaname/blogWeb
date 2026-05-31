@@ -117,3 +117,79 @@ async fn email_registration_rejects_invalid_code_and_duplicate_email() {
     assert_eq!(duplicate_status, StatusCode::CONFLICT);
     assert_eq!(duplicate_payload["code"], "conflict");
 }
+
+#[tokio::test]
+async fn registration_code_requires_configured_smtp_for_production_delivery() {
+    let redis = support::FakeRedis::start();
+    let mut config = blogweb::config::Config::default();
+    config.redis.addr = redis.addr().to_string();
+    config.email.username = "sender@example.com".into();
+    config.email.password = String::new();
+    let router = blogweb::app::router_with_pool_and_config(
+        seeded_pool().await,
+        std::path::PathBuf::from("public/assets"),
+        std::path::PathBuf::from("public/uploads"),
+        config,
+    );
+
+    let (status, payload) = post_json(
+        router,
+        "/api/auth/register/code",
+        r#"{"email":"reader@example.com"}"#,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
+    assert_eq!(payload["code"], "email_unavailable");
+}
+
+#[tokio::test]
+async fn registration_code_sends_smtp_message_when_email_config_is_complete() {
+    let redis = support::FakeRedis::start();
+    let smtp = support::FakeSmtp::start();
+    let pool = seeded_pool().await;
+    let mut config = blogweb::config::Config::default();
+    config.redis.addr = redis.addr().to_string();
+    config.email.smtp_host = smtp.host();
+    config.email.smtp_port = smtp.port();
+    config.email.username = "sender@example.com".into();
+    config.email.password = "smtp-password".into();
+    config.email.from = "blog@example.com".into();
+    config.email.allow_insecure = true;
+    let router = blogweb::app::router_with_pool_and_config(
+        pool.clone(),
+        std::path::PathBuf::from("public/assets"),
+        std::path::PathBuf::from("public/uploads"),
+        config,
+    );
+
+    let (status, payload) = post_json(
+        router,
+        "/api/auth/register/code",
+        r#"{"email":"Reader@Example.com"}"#,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::CREATED);
+    assert_eq!(payload["sent"], true);
+    let messages = smtp.messages();
+    assert_eq!(messages.len(), 1, "expected one SMTP message");
+    assert!(
+        messages[0].contains("To: reader@example.com"),
+        "{}",
+        messages[0]
+    );
+    assert!(messages[0].contains("Subject:"), "{}", messages[0]);
+    assert!(
+        messages[0].contains("Content-Type: text/plain; charset=utf-8"),
+        "{}",
+        messages[0]
+    );
+    let stored: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM email_verification_codes WHERE email = 'reader@example.com'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(stored, 1);
+}

@@ -59,6 +59,47 @@ pub fn router_with_redis(pool: Pool<Sqlite>, redis: &FakeRedis) -> axum::Router 
     )
 }
 
+#[derive(Clone)]
+pub struct FakeSmtp {
+    addr: String,
+    messages: Arc<Mutex<Vec<String>>>,
+}
+
+impl FakeSmtp {
+    pub fn start() -> Self {
+        let listener = TcpListener::bind("127.0.0.1:0").expect("bind fake smtp");
+        let addr = listener.local_addr().expect("fake smtp addr").to_string();
+        let messages = Arc::new(Mutex::new(Vec::new()));
+        let server_messages = Arc::clone(&messages);
+        thread::spawn(move || {
+            for stream in listener.incoming().flatten() {
+                let connection_messages = Arc::clone(&server_messages);
+                thread::spawn(move || handle_smtp_connection(stream, connection_messages));
+            }
+        });
+        Self { addr, messages }
+    }
+
+    pub fn host(&self) -> String {
+        self.addr
+            .split(':')
+            .next()
+            .unwrap_or("127.0.0.1")
+            .to_string()
+    }
+
+    pub fn port(&self) -> u16 {
+        self.addr
+            .rsplit_once(':')
+            .and_then(|(_, port)| port.parse::<u16>().ok())
+            .expect("fake smtp port")
+    }
+
+    pub fn messages(&self) -> Vec<String> {
+        self.messages.lock().expect("fake smtp lock").clone()
+    }
+}
+
 fn handle_connection(stream: TcpStream, store: Arc<Mutex<HashMap<String, String>>>) {
     let mut reader = BufReader::new(stream);
     loop {
@@ -145,4 +186,59 @@ fn read_command(reader: &mut BufReader<TcpStream>) -> std::io::Result<Option<Vec
         command.push(String::from_utf8_lossy(&data[..len]).to_string());
     }
     Ok(Some(command))
+}
+
+fn handle_smtp_connection(stream: TcpStream, messages: Arc<Mutex<Vec<String>>>) {
+    let mut reader = BufReader::new(stream);
+    if reader
+        .get_mut()
+        .write_all(b"220 fake-smtp ESMTP\r\n")
+        .is_err()
+    {
+        return;
+    }
+    loop {
+        let mut line = String::new();
+        if reader.read_line(&mut line).unwrap_or_default() == 0 {
+            return;
+        }
+        let command = line.trim_end_matches(['\r', '\n']);
+        let upper = command.to_ascii_uppercase();
+        let response = if upper.starts_with("EHLO") || upper.starts_with("HELO") {
+            "250-fake-smtp\r\n250-AUTH PLAIN LOGIN\r\n250 OK\r\n"
+        } else if upper.starts_with("AUTH") {
+            "235 Authentication successful\r\n"
+        } else if upper.starts_with("MAIL FROM") || upper.starts_with("RCPT TO") {
+            "250 OK\r\n"
+        } else if upper == "DATA" {
+            if reader
+                .get_mut()
+                .write_all(b"354 End data with <CR><LF>.<CR><LF>\r\n")
+                .is_err()
+            {
+                return;
+            }
+            let mut data = String::new();
+            loop {
+                line.clear();
+                if reader.read_line(&mut line).unwrap_or_default() == 0 {
+                    return;
+                }
+                if line.trim_end_matches(['\r', '\n']) == "." {
+                    break;
+                }
+                data.push_str(&line);
+            }
+            messages.lock().expect("fake smtp lock").push(data);
+            "250 Queued\r\n"
+        } else if upper == "QUIT" {
+            let _ = reader.get_mut().write_all(b"221 Bye\r\n");
+            return;
+        } else {
+            "250 OK\r\n"
+        };
+        if reader.get_mut().write_all(response.as_bytes()).is_err() {
+            return;
+        }
+    }
 }

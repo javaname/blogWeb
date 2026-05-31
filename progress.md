@@ -258,3 +258,25 @@
   - 一次 PowerShell regex 文件筛选写法错误，未影响代码。
   - Go golden JSON 工作区被 CRLF 化导致字节级 hash mismatch；已重写为 LF，并新增 `.gitattributes` 固定 `tests/golden/**/*.json text eol=lf`。
 - 已完成阶段提交并推送到远程：`48f1e46`（`main -> main`）。
+
+## 2026-05-31 Rust 邮箱 SMTP 投递与前端注册验证
+
+- 已继续推进旧邮箱注册阶段，将 Rust `/api/auth/register/code` 从 fake/test-only 路径补成真实 SMTP 投递：
+  - 新增 `src/email.rs`，基于 `lettre` 发送注册验证码邮件。
+  - 465 端口使用 SMTPS，其他生产端口使用 STARTTLS；测试环境通过 `email.allow_insecure=true` 接本地 fake SMTP。
+  - 邮箱配置缺少 host/username/password 时返回 Go 兼容 `500 email_unavailable`。
+- 已补测试：
+  - 未完整配置 SMTP 时验证码接口返回 `email_unavailable`。
+  - 完整邮箱配置时 fake SMTP 收到邮件，且验证码记录入库。
+- 已确认前端登录页已有注册 tab、验证码发送、注册提交和中英文 i18n 文案；本轮未重复改前端源码。
+- 验证通过：
+  - `cargo test --offline --test email_registration`
+  - `cargo test --offline`
+  - `go test ./... -count=1 -timeout=120s`
+  - `npm --prefix client run check:i18n`
+  - `npm --prefix client run check:ui`
+  - `npm --prefix client run build`
+- 遇到并处理的问题：
+  - 新增 `lettre` 后首次离线测试缺依赖，已联网下载依赖并更新 `Cargo.lock`。
+  - 前端 build 在沙箱内因 esbuild 子进程 `EPERM` 失败，提升权限后通过。
+  - build 只造成 `public/admin` 产物换行/构建输出变化，已恢复，避免无意义提交。

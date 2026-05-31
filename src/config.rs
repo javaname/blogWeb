@@ -95,6 +95,7 @@ pub struct EmailConfig {
     pub username: String,
     pub password: String,
     pub from: String,
+    pub allow_insecure: bool,
     pub verification_ttl_sec: u64,
 }
 
@@ -247,6 +248,7 @@ impl Default for EmailConfig {
             username: String::new(),
             password: String::new(),
             from: String::new(),
+            allow_insecure: false,
             verification_ttl_sec: 600,
         }
     }

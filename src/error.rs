@@ -16,6 +16,12 @@ pub enum AppError {
     Migration(String),
     #[error("{1}")]
     HttpStatus(u16, String),
+    #[error("{message}")]
+    HttpJson {
+        status: u16,
+        code: String,
+        message: String,
+    },
     #[error(transparent)]
     Io(#[from] std::io::Error),
     #[error(transparent)]
@@ -33,6 +39,15 @@ impl IntoResponse for AppError {
                 let status =
                     StatusCode::from_u16(status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
                 (status, Json(json!({ "code": code, "message": code }))).into_response()
+            }
+            AppError::HttpJson {
+                status,
+                code,
+                message,
+            } => {
+                let status =
+                    StatusCode::from_u16(status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
+                (status, Json(json!({ "code": code, "message": message }))).into_response()
             }
             _ => (
                 StatusCode::INTERNAL_SERVER_ERROR,

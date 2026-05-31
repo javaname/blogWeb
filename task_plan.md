@@ -48,11 +48,11 @@ Stitch 项目：
 
 目标：新增邮箱注册能力，使用网易邮箱 SMTP 发送验证码，验证码校验通过后创建普通用户账号。
 
-1. [in_progress] 写入邮箱注册设计文档与计划记录
-2. [pending] 按 TDD 增加后端注册与验证码失败测试
-3. [pending] 实现后端配置、迁移、邮件发送、注册接口和邮箱登录
-4. [pending] 实现前端登录页注册表单和国际化文案
-5. [pending] 运行 Go 与前端完整验证
+1. [complete] 写入邮箱注册设计文档与计划记录
+2. [complete] 按 TDD 增加后端注册与验证码失败测试
+3. [complete] 实现后端配置、迁移、邮件发送、注册接口和邮箱登录
+4. [complete] 实现前端登录页注册表单和国际化文案
+5. [complete] 运行 Go 与前端完整验证
 
 # 新增阶段：后端 Rust 重构
 
@@ -144,7 +144,7 @@ Stitch 项目：
   - [complete] `POST /api/auth/register`
   - [complete] Rust email config / fake sender 测试路径
   - [complete] 注册用户 bcrypt 密码和邮箱登录
-  - [pending] 真实 SMTP 投递实现
+  - [complete] 真实 SMTP 投递实现
 - [complete] 切片 3：公开页面模板细节补齐
   - [complete] 首页/分类页/文章页基础结构向 Go 模板靠齐
   - [complete] 文章页评论展示、回复展示和相关文章
