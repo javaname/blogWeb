@@ -71,30 +71,32 @@ Stitch 项目：
   - [complete] cursor 分页契约
   - [complete] 真实 Markdown renderer / sanitizer
   - [complete] 公开首页、文章页、分类页、assets/uploads 静态资源基础兼容
-  - [pending] 完整 Tera 模板复刻、相关/评论展示、页面细节对齐
-- [in_progress] 切片 C：后台认证与会话兼容
+  - [complete] 文章页 approved 评论、一级回复和同分类相关文章基础展示
+  - [pending] 完整 Tera 模板复刻、页面 DOM/视觉细节对齐
+- [complete] 切片 C：后台认证与会话兼容
   - [complete] `POST /api/admin/login` 对齐 Go golden body 与 `admin_session` cookie 契约
   - [complete] `GET /api/admin/csrf-token` 未登录对齐 Go golden 401 body
   - [complete] 登录后会话可读取 `GET /api/admin/csrf-token` 与 `GET /api/admin/me`
   - [complete] Redis 会话存储、bcrypt 密码校验、logout、CSRF 写接口保护
-- [in_progress] 切片 D：后台管理只读 API
+- [complete] 切片 D：后台管理只读 API
   - [complete] `GET /api/admin/dashboard` 真实统计、活动和 30 天趋势
   - [complete] `GET /api/admin/settings` 返回公开运行时策略且不泄露密钥
   - [complete] `GET /api/admin/articles`、`/categories`、`/comments` 列表基础兼容
-  - [pending] `GET /api/admin/articles/:id` 编辑详情、筛选/排序更多边界、完整 golden 覆盖
-- [in_progress] 切片 E：后台写接口与 CSRF
+  - [complete] `GET /api/admin/articles/:id` 编辑详情
+  - [complete] 后台文章列表 status/category/keyword 筛选、like_count/非法排序、分页边界行为覆盖
+- [complete] 切片 E：后台写接口与 CSRF
   - [complete] 后台写接口缺失/错误 CSRF token 返回 Go 兼容 403 `csrf_invalid`
   - [complete] `POST /api/admin/categories` 基础创建
   - [complete] `POST /api/admin/articles` 基础创建和外部 http 封面拒绝
   - [complete] `PUT /api/admin/comments/:id/status` 基础审核状态更新
-  - [pending] 文章编辑详情、文章更新/删除、分类更新/排序/删除、评论删除、设置更新、上传接口
-- [in_progress] 切片 F：前台读者互动 API
+  - [complete] 文章编辑详情、文章更新/删除、分类更新/排序/删除、评论删除、设置更新、上传接口
+- [complete] 切片 F：前台读者互动 API
   - [complete] `POST /api/articles/:slug/like` 与 `POST /api/likes/batch` 支持 `anonymous_id` cookie
   - [complete] `POST /api/articles/:slug/bookmark`
   - [complete] `POST /api/authors/:id/follow`
   - [complete] `POST /api/newsletter/subscribe`
   - [complete] `POST /api/articles/:slug/comments`
-  - [pending] 读者互动速率限制、敏感词完整策略、前台页面评论展示完全复刻
+  - [complete] 读者互动速率限制、敏感词完整策略、前台页面评论/回复/相关文章基础展示
 - [complete] 切片 G：Rust 启动命令
   - [complete] `blogweb serve-web -config <path>` 启动前只做 migration check，未迁移时失败且不创建数据库
   - [complete] 支持 Go 风格默认命令：无子命令或首参数为 flag 时按 `serve-web` 解析
@@ -111,8 +113,8 @@ Stitch 项目：
   - [complete] MCP HTTP audit：成功、失败、拒绝请求写入 `mcp_audit_logs`，payload 仅保存 digest
   - [complete] MCP HTTP rate limit：read/write/publish/upload 分桶限流
   - [complete] 运行文档：README 与 MCP 客户端接入说明补充 Rust CLI 命令和行为差异
-- [pending] 一次性迁移配置、数据库、认证会话、文章/分类/评论/互动、上传和 MCP 能力
-- [pending] 更新启动文档与验证命令
+- [complete] 一次性迁移配置、数据库、认证会话、文章/分类/评论/互动、上传和 MCP 能力
+- [complete] 更新启动文档与验证命令
 
 # 新增阶段：Review 修复与后台原型落地
 

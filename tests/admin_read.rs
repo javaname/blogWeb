@@ -107,6 +107,15 @@ async fn get_json(router: axum::Router, uri: &str, cookie: &str) -> (StatusCode,
     (status, serde_json::from_slice(&body).unwrap())
 }
 
+fn article_titles(payload: &Value) -> Vec<String> {
+    payload["list"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|item| item["title"].as_str().unwrap().to_string())
+        .collect()
+}
+
 #[tokio::test]
 async fn admin_read_routes_require_login() {
     let redis = support::FakeRedis::start();
@@ -203,4 +212,97 @@ async fn admin_articles_categories_and_comments_lists_match_go_shape() {
         "Published dashboard article"
     );
     assert_eq!(comments["list"][0]["author_name"], "读者");
+}
+
+#[tokio::test]
+async fn admin_article_editor_detail_matches_go_contract() {
+    let redis = support::FakeRedis::start();
+    let router = support::router_with_redis(seeded_pool().await, &redis);
+    let cookie = admin_cookie(router.clone()).await;
+
+    let (status, payload) = get_json(router.clone(), "/api/admin/articles/1", &cookie).await;
+
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(payload["id"], 1);
+    assert_eq!(payload["title"], "Published dashboard article");
+    assert_eq!(payload["slug"], "published-dashboard-article");
+    assert_eq!(payload["content"], "# body");
+    assert_eq!(payload["cover_image"], "");
+    assert_eq!(payload["category_id"], 1);
+    assert_eq!(payload["status"], "published");
+    assert_eq!(payload["is_pinned"], true);
+    assert_eq!(payload["published_at"], "2026-05-29T08:00:00Z");
+
+    let (missing_status, missing) = get_json(router, "/api/admin/articles/404", &cookie).await;
+    assert_eq!(missing_status, StatusCode::NOT_FOUND);
+    assert_eq!(missing["code"], "not_found");
+}
+
+#[tokio::test]
+async fn admin_article_list_filters_by_status_category_and_keyword() {
+    let redis = support::FakeRedis::start();
+    let router = support::router_with_redis(seeded_pool().await, &redis);
+    let cookie = admin_cookie(router.clone()).await;
+
+    let (draft_status, drafts) =
+        get_json(router.clone(), "/api/admin/articles?status=draft", &cookie).await;
+    assert_eq!(draft_status, StatusCode::OK);
+    assert_eq!(drafts["total"], 1);
+    assert_eq!(article_titles(&drafts), vec!["Draft dashboard article"]);
+
+    let (category_status, category) =
+        get_json(router.clone(), "/api/admin/articles?category_id=1", &cookie).await;
+    assert_eq!(category_status, StatusCode::OK);
+    assert_eq!(category["total"], 1);
+    assert_eq!(
+        article_titles(&category),
+        vec!["Published dashboard article"]
+    );
+
+    let (keyword_status, keyword) =
+        get_json(router, "/api/admin/articles?keyword=Published", &cookie).await;
+    assert_eq!(keyword_status, StatusCode::OK);
+    assert_eq!(keyword["total"], 1);
+    assert_eq!(
+        article_titles(&keyword),
+        vec!["Published dashboard article"]
+    );
+}
+
+#[tokio::test]
+async fn admin_article_list_sorting_and_pagination_boundaries_follow_go() {
+    let redis = support::FakeRedis::start();
+    let router = support::router_with_redis(seeded_pool().await, &redis);
+    let cookie = admin_cookie(router.clone()).await;
+
+    let (like_status, like_sorted) = get_json(
+        router.clone(),
+        "/api/admin/articles?sort_by=like_count&sort_order=desc",
+        &cookie,
+    )
+    .await;
+    assert_eq!(like_status, StatusCode::OK);
+    assert_eq!(
+        article_titles(&like_sorted),
+        vec!["Published dashboard article", "Draft dashboard article"]
+    );
+
+    let (fallback_status, fallback) = get_json(
+        router.clone(),
+        "/api/admin/articles?sort_by=unknown&sort_order=sideways&page=0&page_size=0",
+        &cookie,
+    )
+    .await;
+    assert_eq!(fallback_status, StatusCode::OK);
+    assert_eq!(fallback["page"], 1);
+    assert_eq!(fallback["page_size"], 20);
+    assert_eq!(
+        article_titles(&fallback),
+        vec!["Draft dashboard article", "Published dashboard article"]
+    );
+
+    let (clamped_status, clamped) =
+        get_json(router, "/api/admin/articles?page_size=200", &cookie).await;
+    assert_eq!(clamped_status, StatusCode::OK);
+    assert_eq!(clamped["page_size"], 100);
 }

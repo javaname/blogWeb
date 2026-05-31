@@ -33,6 +33,18 @@ pub struct CommentListQuery {
     keyword: Option<String>,
 }
 
+fn normalize_page(page: Option<i64>) -> i64 {
+    page.unwrap_or(1).max(1)
+}
+
+fn normalize_page_size(page_size: Option<i64>) -> i64 {
+    match page_size.unwrap_or(20) {
+        value if value <= 0 => 20,
+        value if value > 100 => 100,
+        value => value,
+    }
+}
+
 #[derive(Debug, Serialize)]
 struct AdminList<T> {
     list: Vec<T>,
@@ -187,8 +199,8 @@ pub async fn list_articles(
         return Ok(auth_required());
     }
 
-    let page = query.page.unwrap_or(1).max(1);
-    let page_size = query.page_size.unwrap_or(20).clamp(1, 100);
+    let page = normalize_page(query.page);
+    let page_size = normalize_page_size(query.page_size);
     let mut count = QueryBuilder::new("SELECT COUNT(*) FROM articles");
     push_article_filters(&mut count, &query);
     let total: i64 = count.build_query_scalar().fetch_one(&state.db).await?;
@@ -360,8 +372,8 @@ pub async fn list_comments(
         return Ok(auth_required());
     }
 
-    let page = query.page.unwrap_or(1).max(1);
-    let page_size = query.page_size.unwrap_or(20).clamp(1, 100);
+    let page = normalize_page(query.page);
+    let page_size = normalize_page_size(query.page_size);
     let mut count = QueryBuilder::new("SELECT COUNT(*) FROM comments");
     push_comment_filters(&mut count, &query);
     let total: i64 = count.build_query_scalar().fetch_one(&state.db).await?;

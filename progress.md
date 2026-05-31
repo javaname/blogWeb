@@ -280,3 +280,15 @@
   - 新增 `lettre` 后首次离线测试缺依赖，已联网下载依赖并更新 `Cargo.lock`。
   - 前端 build 在沙箱内因 esbuild 子进程 `EPERM` 失败，提升权限后通过。
   - build 只造成 `public/admin` 产物换行/构建输出变化，已恢复，避免无意义提交。
+
+## 2026-05-31 Rust 后台文章读接口覆盖与计划复盘
+
+- 已启动只读子智能体复盘旧 Rust 切片状态，确认切片 C/E/F 及 D 的文章详情已由后续补齐阶段完成；仍未完成的是公开模板完整复刻、前台页面 DOM/视觉细节完全对齐，以及 MCP 限流跨进程 Redis 共享语义。
+- 已按 TDD 补 `tests/admin_read.rs` 覆盖后台文章编辑详情、404、status/category/keyword 筛选、like_count 排序、非法排序回退、`page=0` 和 `page_size=0/200` 分页边界。
+- 已观察 RED：`page_size=0` 在 Rust 中返回 1，但 Go 行为应回退默认 20。
+- 已修复 `src/admin_read.rs` 的分页归一化，文章列表和评论列表统一使用 `<=0 -> 20`、`>100 -> 100`。
+- 已更新 `task_plan.md` 和 `findings.md`，把已完成但滞后的旧 pending 状态改为完成，并保留公开模板/DOM 级复刻为后续缺口。
+- 验证通过：
+  - `cargo test --offline --test admin_read`
+  - `cargo test --offline`
+  - `go test ./... -count=1 -timeout=120s`

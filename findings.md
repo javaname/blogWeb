@@ -53,18 +53,18 @@
 - Go cursor 是未 base64 的 JSON 字符串，字段为 `is_pinned`、`published_at`、`id`；Rust 公开列表需要按该字符串直接收发，保持前端和 MCP 兼容。
 - 当前 Rust 公开页面只保证服务端 HTML 可用和核心数据正确，未完整复刻 Go 模板；后续若要视觉/DOM 级兼容，需要针对 `templates/*.html` 增加更细的 snapshot 或端到端测试。
 - Go 后台登录成功契约包含两个 cookie：`admin_session` 和匿名访客 `anonymous_id`；Rust 通过路由 handler 设置前者，通过全局响应 middleware 设置后者。
-- Rust 当前后台登录为切片级最小实现，按测试 seed 先做明文密码比对；生产切换前必须接入 Go 兼容 bcrypt 校验、Redis-backed session、logout/me 和 CSRF 写保护。
+- Rust 后台认证已接入 Go 兼容 bcrypt 校验、Redis-backed session、logout、`/me` 和 CSRF 写保护；旧的内存会话/明文测试密码路径已移除出生产认证链路。
 - `GET /api/admin/csrf-token` 在 Go 中由 `RequireAuth` 先拦截，未登录响应固定为 `{"code":"auth_required","message":"请先登录"}`，Rust 已按该行为实现未登录分支。
 - Rust 已有内存会话闭环可支撑前端登录后立即取 CSRF token 和 `/api/admin/me`；但该实现进程内有效，不满足 Go 版 Redis session 的跨进程/重启保留语义。
 - Go 后台 settings 响应只返回公开运行时策略：site、upload、publishing、mcp；不能返回 `session.secret`、`admin.init_password` 等敏感配置。
-- Go 后台文章列表默认按 `updated_at desc, id desc` 排序，分页默认 `page=1&page_size=20`，最大 `page_size=100`；Rust 当前已覆盖基础 shape 和默认排序，仍需补更多筛选/排序边界测试。
+- Go 后台文章列表默认按 `updated_at desc, id desc` 排序，分页默认 `page=1&page_size=20`，最大 `page_size=100`；Rust 已补 status/category/keyword 筛选、like_count/非法排序和 `page_size` 边界行为覆盖。
 - Go 默认站点配置为 `个人博客`、`一个支持后台管理与 MCP 接入的个人博客系统`、`http://localhost:3000`；前端原型品牌文案不能替代后端兼容默认值。
 - Go CSRF middleware 行为：有 `admin_session` 但缺失/错误 `X-CSRF-Token` 返回 403 `{"code":"csrf_invalid","message":"CSRF token 无效"}`；无 session 返回 401 `auth_required`。
-- 后台文章创建接口成功返回 `201 {"id": <id>, "slug": <slug>}`；当前 Rust 已覆盖基础创建，但 slug 生成、发布时间和更新历史仍是简化实现，后续要补完整编辑/更新测试。
-- 后台分类创建接口成功返回 `201 {"id","name","slug"}`；当前 Rust 已覆盖创建，尚未覆盖更新、排序、删除冲突。
+- 后台文章创建接口成功返回 `201 {"id": <id>, "slug": <slug>}`；Rust 已补创建、编辑详情、更新、删除、slug history 和封面路径校验测试。
+- 后台分类创建接口成功返回 `201 {"id","name","slug"}`；Rust 已补创建、更新、排序、删除接口及冲突/占用边界覆盖。
 - Go 前台点赞/批量点赞已改为支持 `anonymous_id` HttpOnly cookie；Rust 前台互动模块同样按 header 优先、cookie 兜底解析匿名访客标识。
-- 前台互动当前 Rust 实现覆盖 happy path 和基本错误，暂未实现 Go 中 Redis rate limiter、评论敏感词完整规则和所有幂等/冲突边界。
-- Rust `serve-web` 已遵守设计中的 check-only 启动策略：不会在启动时隐式 apply migration 或 seed；生产切换前仍需补 Redis-backed session、MCP 命令和完整启动文档。
+- 前台互动 Rust 实现已接入 Redis rate limiter、评论敏感词完整规则和主要幂等/冲突边界；当前继续保留的展示缺口是页面模板/DOM/视觉细节完全复刻。
+- Rust `serve-web` 已遵守设计中的 check-only 启动策略：不会在启动时隐式 apply migration 或 seed；Redis-backed session、MCP 命令和启动文档已补齐。
 - Rust MCP token hash 已按 Go 行为使用 `session.secret` 做 HMAC-SHA256 后入库，CLI 不保存明文 token；token 生成优先走系统随机源。
 - Rust MCP 已覆盖 HTTP `initialize` golden 兼容、缺 Bearer Token JSON-RPC 401、只读 resources/tools、写 tools、上传 tool、prompts、stdio transport、audit 和 rate limit。
 - Rust `serve-mcp -transport http|stdio` 已遵守 check-only 启动策略：未迁移数据库时失败且不创建数据库。
@@ -89,7 +89,7 @@
 - Rust 公开文章页需要查询 approved 评论并按 `parent_id` 组装一级回复；Go 侧父评论按创建时间升序构建后反转，回复保持升序。
 - Rust 读者互动限流复用 Redis `INCR` + `EXPIRE` 模型；没有真实远端地址注入时，Axum 测试路径使用 `unknown` 作为 IP 维度 key。
 - Rust 评论策略已同步 Go 侧关键词和归一化方式：转小写后仅保留字母与数字，因此 `b-l-o-o-d` 会匹配 `blood`。
-- Rust 邮箱注册当前闭环覆盖验证码存储、校验、bcrypt 用户创建和邮箱登录；真实 SMTP 投递仍需单独实现 TLS SMTP 发送。
+- Rust 邮箱注册当前已覆盖验证码存储、校验、bcrypt 用户创建、邮箱登录和真实 SMTP 投递；测试通过 fake SMTP 覆盖投递路径。
 - `tests/golden/**/*.json` 是字节级 golden，Windows 工作区 CRLF 会导致 Go 兼容测试 hash mismatch；需要通过 `.gitattributes` 固定 LF。
 
 ## 2026-05-31 SMTP 邮件发送
