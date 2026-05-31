@@ -20,6 +20,7 @@ use crate::{
     config::Config,
     error::{AppError, Result},
     renderer,
+    session::RedisSessionStore,
 };
 
 const SCOPE_BLOG_READ: &str = "blog.read";
@@ -35,6 +36,7 @@ static TOKEN_COUNTER: AtomicU64 = AtomicU64::new(1);
 struct McpState {
     db: Pool<Sqlite>,
     config: Config,
+    rate_limiter: RedisSessionStore,
     rate_limits: Arc<Mutex<HashMap<String, RateBucket>>>,
 }
 
@@ -62,6 +64,7 @@ struct McpError {
 
 struct McpClient {
     id: i64,
+    token_hash: String,
     scopes: String,
 }
 
@@ -71,6 +74,7 @@ pub fn router_with_pool_and_config(pool: Pool<Sqlite>, config: Config) -> Router
         .route(&path, post(http_handler))
         .with_state(McpState {
             db: pool,
+            rate_limiter: RedisSessionStore::new(&config),
             config,
             rate_limits: Arc::new(Mutex::new(HashMap::new())),
         })
@@ -179,7 +183,7 @@ async fn http_handler(
         .bind(client.id)
         .execute(&state.db)
         .await;
-    if let Some(err) = enforce_rate_limit(&state, client.id, &request) {
+    if let Some(err) = enforce_rate_limit(&state, &client, &request).await {
         write_audit(
             &state.db,
             Some(client.id),
@@ -331,6 +335,7 @@ async fn authenticate_http(
         if constant_time_eq(token_hash.as_bytes(), expected_hash.as_bytes()) {
             matched = Some(McpClient {
                 id: row.get("id"),
+                token_hash,
                 scopes: row.get("scopes"),
             });
             break;
@@ -442,6 +447,7 @@ where
     input.read_to_string(&mut data)?;
     let state = McpState {
         db: pool,
+        rate_limiter: RedisSessionStore::new(&config),
         config,
         rate_limits: Arc::new(Mutex::new(HashMap::new())),
     };
@@ -1497,13 +1503,25 @@ fn hash_digest(payload: &str) -> String {
     format!("sha256:{}", to_hex(&hasher.finalize()))
 }
 
-fn enforce_rate_limit(
+async fn enforce_rate_limit(
     state: &McpState,
-    client_id: i64,
+    client: &McpClient,
     request: &JsonRpcRequest,
 ) -> Option<McpError> {
     let (bucket, max, window) = rate_limit_bucket(state, request)?;
-    let key = format!("{client_id}:{bucket}");
+    let client_key = rate_limit_client_key(client);
+    let key = format!("mcp:rate:{client_key}:{bucket}");
+    match state
+        .rate_limiter
+        .allow_rate_limit(&key, max, window.as_secs() as i64)
+        .await
+    {
+        Ok(true) => return None,
+        Ok(false) => return Some(rate_limited_error()),
+        Err(_) => {}
+    }
+
+    let key = format!("{client_key}:{bucket}");
     let mut buckets = state.rate_limits.lock().ok()?;
     let now = Instant::now();
     let entry = buckets.entry(key).or_insert(RateBucket {
@@ -1516,14 +1534,26 @@ fn enforce_rate_limit(
     }
     entry.count += 1;
     if entry.count > max {
-        Some(McpError::new(
-            StatusCode::TOO_MANY_REQUESTS,
-            "rate_limited",
-            "MCP 请求过于频繁，请稍后再试",
-        ))
+        Some(rate_limited_error())
     } else {
         None
     }
+}
+
+fn rate_limit_client_key(client: &McpClient) -> String {
+    client
+        .token_hash
+        .get(..16)
+        .map(str::to_string)
+        .unwrap_or_else(|| client.id.to_string())
+}
+
+fn rate_limited_error() -> McpError {
+    McpError::new(
+        StatusCode::TOO_MANY_REQUESTS,
+        "rate_limited",
+        "MCP 请求过于频繁，请稍后再试",
+    )
 }
 
 fn rate_limit_bucket(

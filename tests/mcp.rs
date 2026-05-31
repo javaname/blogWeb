@@ -11,6 +11,8 @@ use std::{
 };
 use tower::ServiceExt;
 
+mod support;
+
 const SESSION_SECRET: &str = "custom-session-secret-with-32-bytes";
 
 fn blogweb() -> &'static str {
@@ -536,7 +538,9 @@ async fn mcp_http_upload_image_stores_valid_png_and_rejects_invalid_payloads() {
     let token = "upload-token";
     insert_mcp_client(&pool, "uploader", token, &["blog.upload"]).await;
     let upload_dir = tempfile::tempdir().unwrap();
+    let redis = support::FakeRedis::start();
     let mut config = Config::default();
+    config.redis.addr = redis.addr().to_string();
     config.upload.dir = upload_dir.path().display().to_string();
 
     let valid = perform_mcp_json_with_config(
@@ -686,7 +690,9 @@ async fn mcp_http_rate_limit_applies_to_read_and_upload_buckets() {
     let token = "rate-token";
     insert_mcp_client(&pool, "rate-client", token, &["blog.read", "blog.upload"]).await;
     let upload_dir = tempfile::tempdir().unwrap();
+    let redis = support::FakeRedis::start();
     let mut config = Config::default();
+    config.redis.addr = redis.addr().to_string();
     config.upload.dir = upload_dir.path().display().to_string();
     config.mcp.rate_limit.read_per_minute = 1;
     config.mcp.rate_limit.upload_per_10min = 1;
@@ -724,6 +730,43 @@ async fn mcp_http_rate_limit_applies_to_read_and_upload_buckets() {
         .unwrap();
     assert_eq!(second_upload.status(), StatusCode::TOO_MANY_REQUESTS);
     let body = axum::body::to_bytes(second_upload.into_body(), usize::MAX)
+        .await
+        .unwrap();
+    let payload: Value = serde_json::from_slice(&body).unwrap();
+    assert_eq!(payload["error"]["data"]["code"], "rate_limited");
+}
+
+#[tokio::test]
+async fn mcp_http_rate_limit_is_shared_across_router_instances_via_redis() {
+    let pool = migrated_pool().await;
+    let token = "shared-rate-token";
+    insert_mcp_client(&pool, "shared-rate-client", token, &["blog.read"]).await;
+    let redis = support::FakeRedis::start();
+    let mut config = Config::default();
+    config.redis.addr = redis.addr().to_string();
+    config.mcp.rate_limit.read_per_minute = 1;
+
+    let first_router = mcp::router_with_pool_and_config(pool.clone(), config.clone());
+    let second_router = mcp::router_with_pool_and_config(pool, config);
+
+    let first_read = first_router
+        .oneshot(mcp_request(
+            r#"{"jsonrpc":"2.0","id":110,"method":"tools/list","params":{}}"#,
+            Some(token),
+        ))
+        .await
+        .unwrap();
+    assert_eq!(first_read.status(), StatusCode::OK);
+
+    let second_read = second_router
+        .oneshot(mcp_request(
+            r#"{"jsonrpc":"2.0","id":111,"method":"tools/list","params":{}}"#,
+            Some(token),
+        ))
+        .await
+        .unwrap();
+    assert_eq!(second_read.status(), StatusCode::TOO_MANY_REQUESTS);
+    let body = axum::body::to_bytes(second_read.into_body(), usize::MAX)
         .await
         .unwrap();
     let payload: Value = serde_json::from_slice(&body).unwrap();

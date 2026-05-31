@@ -325,3 +325,15 @@
   - `go test ./... -count=1 -timeout=120s`
 - 已完成阶段提交：`7eb70fa`（`复刻 Rust 公开页面模板结构`）。
 - 推送远程时 GitHub 连接连续失败：第一次 `Recv failure: Connection was reset`，第二次 `Could not connect to server`；待网络恢复后执行 `git push`。
+
+## 2026-05-31 Rust MCP Redis 共享限流
+
+- 已按 TDD 新增 `tests/mcp.rs` 用例 `mcp_http_rate_limit_is_shared_across_router_instances_via_redis`，确认 RED：两个独立 router 使用同一 MCP token 时，第二个 router 未命中限流，仍返回 200。
+- 已把 `src/mcp.rs` 的 MCP HTTP 限流从纯进程内 `HashMap` 改为优先调用 Redis `INCR/EXPIRE`，按已认证 token hash 派生限流 key，避免仅用 SQLite 自增 client id 导致测试库/部署撞 key。
+- Redis 不可用时仍保留本进程 HashMap fallback；错误响应继续返回 429 `rate_limited`。
+- 已把 MCP 限流与上传测试切到 fake Redis，避免本机真实 Redis 或历史运行残留 key 影响测试结果。
+- 验证通过：
+  - `cargo fmt --check`
+  - `cargo test --offline --test mcp`
+  - `cargo test --offline`
+  - `go test ./... -count=1 -timeout=120s`

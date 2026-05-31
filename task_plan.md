@@ -111,7 +111,7 @@ Stitch 项目：
   - [complete] MCP HTTP prompts：`prompts/list`、`prompts/get` 三个模板和参数校验
   - [complete] `serve-mcp -transport stdio`：从 stdin 读取 JSON-RPC 到 EOF，默认隐藏/拒绝写能力
   - [complete] MCP HTTP audit：成功、失败、拒绝请求写入 `mcp_audit_logs`，payload 仅保存 digest
-  - [complete] MCP HTTP rate limit：read/write/publish/upload 分桶限流
+  - [complete] MCP HTTP rate limit：Redis 共享 read/write/publish/upload 分桶限流，Redis 不可用时本进程 fallback
   - [complete] 运行文档：README 与 MCP 客户端接入说明补充 Rust CLI 命令和行为差异
 - [complete] 一次性迁移配置、数据库、认证会话、文章/分类/评论/互动、上传和 MCP 能力
 - [complete] 更新启动文档与验证命令
