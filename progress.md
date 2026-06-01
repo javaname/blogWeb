@@ -337,3 +337,23 @@
   - `cargo test --offline --test mcp`
   - `cargo test --offline`
   - `go test ./... -count=1 -timeout=120s`
+
+## 2026-06-01 Stitch 快照公开页面落地
+
+- 用户要求继续按建议推进，基于当前 Stitch 快照补齐真实前台内容。
+- 已按 TDD 扩展 `tests/public_pages_static.rs`：
+  - 首页导航必须包含 `/categories` 与 `/about`。
+  - `/categories` 渲染分类浏览页、分类数量、文章数量和分类入口。
+  - `/about` 渲染关于页、编辑原则、订阅表单和分类入口。
+  - `/authors/1` 渲染作者主页、关注按钮和作者文章；不存在的作者返回 404。
+- 已确认 RED：新增页面路由缺失时 `/categories`、`/about`、`/authors/1` 返回 404，首页导航仍是锚点。
+- 已实现 Rust SSR 页面与路由：
+  - `src/app.rs` 新增 `/categories`、`/about`、`/authors/:id`。
+  - `src/http_public.rs` 新增分类浏览、关于、作者主页的查询与 renderer。
+  - topnav/footer 分类和关于链接改为真实路由。
+- 已处理一次 GREEN 偏差：作者页公开名称按既有规则显示“编辑部”，测试断言从“管理员”修正为“编辑部”。
+- 验证通过：
+  - `cargo test --offline --test public_pages_static`
+  - `cargo fmt --check`
+  - `cargo test --offline`
+  - `go test ./... -count=1 -timeout=120s`

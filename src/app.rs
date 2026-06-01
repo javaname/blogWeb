@@ -32,8 +32,8 @@ use crate::http_interactions::{
     subscribe_newsletter,
 };
 use crate::http_public::{
-    article_detail, article_page, category_page, home_page, list_articles, serve_asset,
-    serve_upload, PublicState,
+    about_page, article_detail, article_page, author_page, categories_index_page, category_page,
+    home_page, list_articles, serve_asset, serve_upload, PublicState,
 };
 use crate::session::RedisSessionStore;
 
@@ -78,6 +78,9 @@ pub fn router_with_pool_and_config(
     Router::new()
         .route("/healthz", get(healthz))
         .route("/", get(home_page))
+        .route("/about", get(about_page))
+        .route("/authors/:id", get(author_page))
+        .route("/categories", get(categories_index_page))
         .route("/articles/:slug", get(article_page))
         .route("/categories/:slug", get(category_page))
         .route("/assets/*path", get(serve_asset))

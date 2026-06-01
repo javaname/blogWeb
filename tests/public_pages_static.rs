@@ -89,6 +89,8 @@ async fn home_page_renders_public_articles_as_html() {
     assert!(body.contains("data-search-form"), "{body}");
     assert!(body.contains("data-newsletter-form"), "{body}");
     assert!(body.contains("id=\"categories\""), "{body}");
+    assert!(body.contains("href=\"/categories\""), "{body}");
+    assert!(body.contains("href=\"/about\""), "{body}");
     assert!(body.contains("<footer"), "{body}");
     assert!(body.contains("Rust Migration Baseline"), "{body}");
     assert!(body.contains("/articles/rust-migration-baseline"), "{body}");
@@ -101,6 +103,94 @@ async fn home_page_renders_public_articles_as_html() {
         body.contains("data-slug=\"rust-migration-baseline\""),
         "{body}"
     );
+}
+
+#[tokio::test]
+async fn categories_index_renders_topic_browse_from_snapshot() {
+    let response = app::router_with_pool(seeded_pool().await)
+        .oneshot(
+            Request::builder()
+                .uri("/categories")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = body_text(response).await;
+    assert!(body.contains("data-page=\"categories\""), "{body}");
+    assert!(body.contains("探索主题"), "{body}");
+    assert!(body.contains("2 个分类"), "{body}");
+    assert!(body.contains("3 篇文章"), "{body}");
+    assert!(body.contains("href=\"/categories/technology\""), "{body}");
+    assert!(body.contains("href=\"/categories/design\""), "{body}");
+    assert!(body.contains("Technology"), "{body}");
+    assert!(body.contains("Design"), "{body}");
+    assert!(body.contains("2 篇文章"), "{body}");
+    assert!(body.contains("1 篇文章"), "{body}");
+}
+
+#[tokio::test]
+async fn about_page_renders_editorial_identity_from_snapshot() {
+    let response = app::router_with_pool(seeded_pool().await)
+        .oneshot(
+            Request::builder()
+                .uri("/about")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = body_text(response).await;
+    assert!(body.contains("data-page=\"about\""), "{body}");
+    assert!(body.contains("关于"), "{body}");
+    assert!(body.contains("编辑原则"), "{body}");
+    assert!(body.contains("深度优先"), "{body}");
+    assert!(body.contains("清晰表达"), "{body}");
+    assert!(body.contains("data-newsletter-form"), "{body}");
+    assert!(body.contains("href=\"/categories\""), "{body}");
+}
+
+#[tokio::test]
+async fn author_profile_renders_author_articles_and_follow_action() {
+    let response = app::router_with_pool(seeded_pool().await)
+        .oneshot(
+            Request::builder()
+                .uri("/authors/1")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = body_text(response).await;
+    assert!(body.contains("data-page=\"author\""), "{body}");
+    assert!(body.contains("编辑部"), "{body}");
+    assert!(body.contains("data-follow-author"), "{body}");
+    assert!(body.contains("data-author-id=\"1\""), "{body}");
+    assert!(body.contains("3 篇文章"), "{body}");
+    assert!(body.contains("Rust Migration Baseline"), "{body}");
+    assert!(body.contains("Design Systems"), "{body}");
+    assert!(body.contains("Related Rust Story"), "{body}");
+}
+
+#[tokio::test]
+async fn missing_author_profile_returns_404() {
+    let response = app::router_with_pool(seeded_pool().await)
+        .oneshot(
+            Request::builder()
+                .uri("/authors/404")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::NOT_FOUND);
 }
 
 #[tokio::test]

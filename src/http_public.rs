@@ -109,6 +109,14 @@ struct PublicAuthor {
 }
 
 #[derive(Debug)]
+struct PublicAuthorProfile {
+    id: i64,
+    username: String,
+    article_count: i64,
+    follower_count: i64,
+}
+
+#[derive(Debug)]
 struct PublicCommentNode {
     id: i64,
     author_name: String,
@@ -200,6 +208,48 @@ pub async fn category_page(
         &state.config,
         &category,
         &articles.list,
+        &categories,
+    )))
+}
+
+pub async fn categories_index_page(
+    State(state): State<PublicState>,
+) -> Result<axum::response::Response> {
+    let categories = public_categories(&state).await?;
+    let total_articles: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*)
+         FROM articles
+         WHERE status = 'published'
+           AND (published_at IS NULL OR published_at <= datetime('now'))",
+    )
+    .fetch_one(&state.db)
+    .await?;
+    Ok(html_response(render_categories_index_page(
+        &state.config,
+        &categories,
+        total_articles,
+    )))
+}
+
+pub async fn about_page(State(state): State<PublicState>) -> Result<axum::response::Response> {
+    let categories = public_categories(&state).await?;
+    Ok(html_response(render_about_page(&state.config, &categories)))
+}
+
+pub async fn author_page(
+    State(state): State<PublicState>,
+    Path(author_id): Path<i64>,
+) -> Result<axum::response::Response> {
+    let profile = public_author_profile(&state, author_id).await?;
+    let Some(profile) = profile else {
+        return Err(AppError::HttpStatus(404, "not_found".into()));
+    };
+    let articles = published_summaries_by_author(&state, author_id, 12).await?;
+    let categories = public_categories(&state).await?;
+    Ok(html_response(render_author_page(
+        &state.config,
+        &profile,
+        &articles,
         &categories,
     )))
 }
@@ -516,6 +566,76 @@ async fn public_categories(state: &PublicState) -> Result<Vec<PublicCategoryWith
         .collect()
 }
 
+async fn public_author_profile(
+    state: &PublicState,
+    author_id: i64,
+) -> Result<Option<PublicAuthorProfile>> {
+    let row = sqlx::query(
+        "SELECT
+            users.id,
+            users.username,
+            COUNT(DISTINCT articles.id) AS article_count,
+            COUNT(DISTINCT author_follows.id) AS follower_count
+         FROM users
+         LEFT JOIN articles ON articles.author_id = users.id
+            AND articles.status = 'published'
+            AND (articles.published_at IS NULL OR articles.published_at <= datetime('now'))
+         LEFT JOIN author_follows ON author_follows.author_id = users.id
+         WHERE users.id = ?
+         GROUP BY users.id",
+    )
+    .bind(author_id)
+    .fetch_optional(&state.db)
+    .await?;
+    row.map(|row| {
+        Ok(PublicAuthorProfile {
+            id: row.try_get("id")?,
+            username: row.try_get("username")?,
+            article_count: row.try_get("article_count")?,
+            follower_count: row.try_get("follower_count")?,
+        })
+    })
+    .transpose()
+}
+
+async fn published_summaries_by_author(
+    state: &PublicState,
+    author_id: i64,
+    limit: i64,
+) -> Result<Vec<PublicArticleSummary>> {
+    let rows = sqlx::query(
+        "SELECT
+            articles.id,
+            articles.title,
+            articles.slug,
+            articles.cover_image,
+            articles.excerpt,
+            articles.is_pinned,
+            articles.published_at,
+            categories.id AS category_id,
+            categories.name AS category_name,
+            categories.slug AS category_slug,
+            users.id AS author_id,
+            users.username AS author_username,
+            COUNT(likes.id) AS like_count
+         FROM articles
+         LEFT JOIN categories ON categories.id = articles.category_id
+         INNER JOIN users ON users.id = articles.author_id
+         LEFT JOIN likes ON likes.article_id = articles.id
+         WHERE articles.author_id = ?
+           AND articles.status = 'published'
+           AND (articles.published_at IS NULL OR articles.published_at <= datetime('now'))
+         GROUP BY articles.id
+         ORDER BY articles.is_pinned DESC, articles.published_at DESC, articles.id DESC
+         LIMIT ?",
+    )
+    .bind(author_id)
+    .bind(limit.clamp(1, 50))
+    .fetch_all(&state.db)
+    .await?;
+    rows.into_iter().map(|row| summary_from_row(&row)).collect()
+}
+
 fn summary_from_row(row: &sqlx::sqlite::SqliteRow) -> Result<PublicArticleSummary> {
     let category_id: Option<i64> = row.try_get("category_id")?;
     let category = match category_id {
@@ -806,6 +926,122 @@ fn render_category_page(
     html
 }
 
+fn render_categories_index_page(
+    config: &Config,
+    categories: &[PublicCategoryWithCount],
+    total_articles: i64,
+) -> String {
+    let mut html = document_start(
+        "categories",
+        &format!("分类浏览 &mdash; {}", config.site.title),
+        &config.site.description,
+        "bg-background text-on-surface",
+        false,
+    );
+    html.push_str(&topnav(config, ""));
+    html.push_str("<main class=\"max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pt-10 pb-20\"><section class=\"mb-12 pb-8 border-b border-outline-variant\"><p class=\"text-primary font-label-sm text-label-sm uppercase tracking-wider mb-3\">分类浏览</p><h1 class=\"font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg leading-tight mb-4\">探索主题</h1><p class=\"font-interface-md text-interface-md text-on-surface-variant max-w-[720px]\">按照主题浏览所有公开文章，快速找到技术、设计和创作方法相关内容。</p><div class=\"mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4\"><article class=\"rounded-xl border border-outline-variant bg-surface-container-low p-5\"><span class=\"material-symbols-outlined text-primary\">category</span><strong class=\"block mt-3 text-headline-md font-headline-md\">");
+    html.push_str(&categories.len().to_string());
+    html.push_str(" 个分类</strong></article><article class=\"rounded-xl border border-outline-variant bg-surface-container-low p-5\"><span class=\"material-symbols-outlined text-primary\">article</span><strong class=\"block mt-3 text-headline-md font-headline-md\">");
+    html.push_str(&total_articles.to_string());
+    html.push_str(" 篇文章</strong></article><article class=\"rounded-xl border border-outline-variant bg-surface-container-low p-5\"><span class=\"material-symbols-outlined text-primary\">sell</span><strong class=\"block mt-3 text-headline-md font-headline-md\">精选主题</strong></article></div></section><section class=\"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8\">");
+    for category in categories {
+        html.push_str("<a href=\"/categories/");
+        html.push_str(&escape_html(&category.slug));
+        html.push_str("\" class=\"group block rounded-xl border border-outline-variant bg-surface-container-low p-6 hover:shadow-lg transition-all\" data-category-id=\"");
+        html.push_str(&category.id.to_string());
+        html.push_str("\"><div class=\"flex items-center justify-between mb-6\"><span class=\"material-symbols-outlined text-primary\">folder</span><span class=\"text-caption font-caption bg-surface-container px-3 py-1 rounded-full text-on-surface-variant\">");
+        html.push_str(&category.article_count.to_string());
+        html.push_str(if category.article_count == 1 {
+            " 篇文章"
+        } else {
+            " 篇文章"
+        });
+        html.push_str("</span></div><h2 class=\"font-headline-md text-headline-md mb-3 group-hover:text-primary transition-colors\">");
+        html.push_str(&escape_html(&category.name));
+        html.push_str(
+            "</h2><p class=\"font-interface-md text-interface-md text-on-surface-variant mb-6\">",
+        );
+        html.push_str(&category_description(&category.slug, &category.name));
+        html.push_str("</p><span class=\"font-interface-md text-interface-md text-primary font-bold\">查看文章 <span class=\"material-symbols-outlined text-[18px] align-middle\">arrow_forward</span></span></a>");
+    }
+    html.push_str("</section></main>");
+    html.push_str(&site_footer(config));
+    html.push_str("<script src=\"/assets/site.js\" defer></script></body></html>");
+    html
+}
+
+fn render_about_page(config: &Config, categories: &[PublicCategoryWithCount]) -> String {
+    let mut html = document_start(
+        "about",
+        &format!("关于我们 &mdash; {}", config.site.title),
+        &config.site.description,
+        "bg-background text-on-surface",
+        false,
+    );
+    html.push_str(&topnav(config, ""));
+    html.push_str("<main class=\"max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pt-10 pb-20\"><section class=\"grid grid-cols-1 lg:grid-cols-12 gap-12 items-start mb-20\"><div class=\"lg:col-span-8\"><p class=\"text-primary font-label-sm text-label-sm uppercase tracking-wider mb-4\">关于</p><h1 class=\"font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg leading-tight mb-6\">关于 ");
+    html.push_str(&escape_html(&config.site.title));
+    html.push_str("</h1><p class=\"font-interface-md text-interface-md text-on-surface-variant max-w-[760px]\">");
+    html.push_str(&escape_html(&config.site.description));
+    html.push_str("。我们关注现代设计、工程实践和长期主义创作，强调清晰、克制和可执行的思考。</p></div><aside class=\"lg:col-span-4\">");
+    html.push_str(&sidebar_newsletter());
+    html.push_str("</aside></section><section class=\"mb-20\"><h2 class=\"font-headline-md text-headline-md mb-8\">编辑原则</h2><div class=\"grid grid-cols-1 md:grid-cols-3 gap-6\"><article class=\"rounded-xl border border-outline-variant bg-surface-container-low p-6\"><span class=\"material-symbols-outlined text-primary\">manage_search</span><h3 class=\"font-interface-md text-interface-md font-bold mt-4 mb-3\">深度优先</h3><p class=\"text-on-surface-variant\">优先发表经过验证、结构完整、能帮助读者做判断的内容。</p></article><article class=\"rounded-xl border border-outline-variant bg-surface-container-low p-6\"><span class=\"material-symbols-outlined text-primary\">format_quote</span><h3 class=\"font-interface-md text-interface-md font-bold mt-4 mb-3\">清晰表达</h3><p class=\"text-on-surface-variant\">用明确语言解释复杂主题，减少术语噪声和不必要的包装。</p></article><article class=\"rounded-xl border border-outline-variant bg-surface-container-low p-6\"><span class=\"material-symbols-outlined text-primary\">verified</span><h3 class=\"font-interface-md text-interface-md font-bold mt-4 mb-3\">实践校验</h3><p class=\"text-on-surface-variant\">把设计观点、技术选择和产品经验落到可复用的方法中。</p></article></div></section><section class=\"grid grid-cols-1 lg:grid-cols-12 gap-12\"><div class=\"lg:col-span-8\"><h2 class=\"font-headline-md text-headline-md mb-6\">主题范围</h2>");
+    html.push_str(&sidebar_categories(categories, None));
+    html.push_str("</div><div class=\"lg:col-span-4 rounded-xl border border-outline-variant bg-surface-container-low p-6\"><h2 class=\"font-headline-md text-headline-md mb-4\">合作方式</h2><p class=\"text-on-surface-variant mb-6\">欢迎围绕内容系统、产品工程、设计实践和写作流程交流。</p><a href=\"/categories\" class=\"inline-flex items-center gap-2 text-primary font-bold\">浏览全部主题 <span class=\"material-symbols-outlined text-[18px]\">arrow_forward</span></a></div></section></main>");
+    html.push_str(&site_footer(config));
+    html.push_str("<script src=\"/assets/site.js\" defer></script></body></html>");
+    html
+}
+
+fn render_author_page(
+    config: &Config,
+    profile: &PublicAuthorProfile,
+    articles: &[PublicArticleSummary],
+    categories: &[PublicCategoryWithCount],
+) -> String {
+    let display_name = author_name(&profile.username);
+    let mut html = document_start(
+        "author",
+        &format!("{} &mdash; {}", display_name, config.site.title),
+        &author_bio(&profile.username),
+        "bg-background text-on-surface",
+        false,
+    );
+    html.push_str(&topnav(config, ""));
+    html.push_str("<main class=\"max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pt-10 pb-20\"><section class=\"rounded-xl border border-outline-variant bg-surface-container-low p-8 md:p-10 mb-12\"><div class=\"flex flex-col md:flex-row gap-8 items-start\"><img class=\"w-24 h-24 rounded-full object-cover bg-outline-variant\" src=\"");
+    html.push_str(&author_avatar(&profile.username));
+    html.push_str("\" alt=\"");
+    html.push_str(&escape_html(&display_name));
+    html.push_str("\"><div class=\"flex-1\"><p class=\"text-primary font-label-sm text-label-sm uppercase tracking-wider mb-3\">作者主页</p><h1 class=\"font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg leading-tight mb-4\">");
+    html.push_str(&escape_html(&display_name));
+    html.push_str("</h1><p class=\"font-interface-md text-interface-md text-on-surface-variant max-w-[720px] mb-6\">");
+    html.push_str(&author_bio(&profile.username));
+    html.push_str("</p><div class=\"flex flex-wrap gap-4 mb-6\"><span class=\"rounded-full bg-surface-container px-4 py-2 text-on-surface-variant\">");
+    html.push_str(&profile.article_count.to_string());
+    html.push_str(" 篇文章</span><span class=\"rounded-full bg-surface-container px-4 py-2 text-on-surface-variant\">");
+    html.push_str(&profile.follower_count.to_string());
+    html.push_str(" 位关注者</span></div><button class=\"bg-primary text-on-primary px-6 py-3 rounded-lg font-interface-md text-interface-md font-bold\" type=\"button\" data-follow-author data-author-id=\"");
+    html.push_str(&profile.id.to_string());
+    html.push_str("\" data-author-name=\"");
+    html.push_str(&escape_html(&display_name));
+    html.push_str("\" data-following=\"false\">关注 ");
+    html.push_str(&escape_html(&display_name));
+    html.push_str("</button></div></div></section><div class=\"grid grid-cols-1 lg:grid-cols-12 gap-12\"><section class=\"lg:col-span-8 space-y-8\"><div class=\"flex items-center justify-between border-b border-outline-variant pb-4\"><h2 class=\"font-headline-md text-headline-md\">作者文章</h2><span class=\"text-on-surface-variant\">");
+    html.push_str(&articles.len().to_string());
+    html.push_str(" 篇文章</span></div>");
+    render_article_grid(&mut html, articles);
+    if articles.is_empty() {
+        html.push_str("<div class=\"text-center py-20\"><span class=\"material-symbols-outlined text-[64px] text-on-surface-variant opacity-40\">article</span><p class=\"font-interface-md text-interface-md text-on-surface-variant mt-4\">该作者暂无已发布文章。</p></div>");
+    }
+    html.push_str("</section><aside class=\"lg:col-span-4 space-y-8\">");
+    html.push_str(&sidebar_newsletter());
+    html.push_str(&sidebar_categories(categories, None));
+    html.push_str("</aside></div></main>");
+    html.push_str(&site_footer(config));
+    html.push_str("<script src=\"/assets/site.js\" defer></script></body></html>");
+    html
+}
+
 fn html_response(html: String) -> axum::response::Response {
     let mut response = html.into_response();
     response.headers_mut().insert(
@@ -841,7 +1077,7 @@ fn document_start(
 fn topnav(config: &Config, keyword: &str) -> String {
     let mut html = String::from("<header class=\"bg-surface-container-lowest border-b border-outline-variant shadow-sm sticky top-0 z-40\"><div class=\"flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto\"><a href=\"/\" class=\"font-display-lg font-bold text-on-surface text-2xl md:text-3xl tracking-tight\">");
     html.push_str(&escape_html(&config.site.title));
-    html.push_str("</a><nav class=\"hidden md:flex items-center gap-8\"><a class=\"font-interface-md text-interface-md text-primary font-bold border-b-2 border-primary pb-1\" href=\"/\">最新</a><a class=\"font-interface-md text-interface-md text-on-surface-variant hover:text-primary transition-colors duration-200\" href=\"#categories\">分类</a><a class=\"font-interface-md text-interface-md text-on-surface-variant hover:text-primary transition-colors duration-200\" href=\"#about\">关于</a></nav><div class=\"flex items-center gap-4\"><button type=\"button\" class=\"hidden md:block text-on-surface-variant hover:text-primary transition-colors p-2\" aria-label=\"搜索\" data-search-toggle><span class=\"material-symbols-outlined\">search</span></button><a href=\"/admin\" class=\"font-interface-md text-interface-md text-on-surface-variant px-4 py-2 hover:text-primary transition-colors\">登录</a><button type=\"button\" class=\"bg-primary text-on-primary px-6 py-2 rounded-lg font-interface-md text-interface-md hover:bg-opacity-90 transition-all active:scale-95\" data-newsletter-focus>订阅</button></div></div><div class=\"hidden border-t border-outline-variant bg-surface-container-lowest\" data-search-panel><form class=\"max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-4 flex flex-col sm:flex-row gap-3\" data-search-form><label class=\"sr-only\" for=\"site-search\">搜索文章</label><input id=\"site-search\" name=\"keyword\" class=\"flex-1 rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-3 font-interface-md text-interface-md text-on-surface placeholder:text-on-surface-variant focus:border-primary focus:ring-2 focus:ring-primary/20\" placeholder=\"搜索文章标题或摘要\" value=\"");
+    html.push_str("</a><nav class=\"hidden md:flex items-center gap-8\"><a class=\"font-interface-md text-interface-md text-primary font-bold border-b-2 border-primary pb-1\" href=\"/\">最新</a><a class=\"font-interface-md text-interface-md text-on-surface-variant hover:text-primary transition-colors duration-200\" href=\"/categories\">分类</a><a class=\"font-interface-md text-interface-md text-on-surface-variant hover:text-primary transition-colors duration-200\" href=\"/about\">关于</a></nav><div class=\"flex items-center gap-4\"><button type=\"button\" class=\"hidden md:block text-on-surface-variant hover:text-primary transition-colors p-2\" aria-label=\"搜索\" data-search-toggle><span class=\"material-symbols-outlined\">search</span></button><a href=\"/admin\" class=\"font-interface-md text-interface-md text-on-surface-variant px-4 py-2 hover:text-primary transition-colors\">登录</a><button type=\"button\" class=\"bg-primary text-on-primary px-6 py-2 rounded-lg font-interface-md text-interface-md hover:bg-opacity-90 transition-all active:scale-95\" data-newsletter-focus>订阅</button></div></div><div class=\"hidden border-t border-outline-variant bg-surface-container-lowest\" data-search-panel><form class=\"max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-4 flex flex-col sm:flex-row gap-3\" data-search-form><label class=\"sr-only\" for=\"site-search\">搜索文章</label><input id=\"site-search\" name=\"keyword\" class=\"flex-1 rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-3 font-interface-md text-interface-md text-on-surface placeholder:text-on-surface-variant focus:border-primary focus:ring-2 focus:ring-primary/20\" placeholder=\"搜索文章标题或摘要\" value=\"");
     html.push_str(&escape_html(keyword));
     html.push_str("\"><button type=\"submit\" class=\"bg-primary text-on-primary px-6 py-3 rounded-lg font-interface-md text-interface-md font-bold\">搜索</button></form></div></header>");
     html
@@ -852,7 +1088,7 @@ fn site_footer(config: &Config) -> String {
     html.push_str(&escape_html(&config.site.title));
     html.push_str("</div><p class=\"font-caption text-caption text-on-surface-variant max-w-[320px] text-center md:text-left\">");
     html.push_str(&escape_html(&config.site.description));
-    html.push_str("</p></div><div class=\"flex flex-col md:flex-row items-center gap-8\"><nav class=\"flex gap-6\"><a class=\"font-caption text-caption text-on-surface-variant hover:text-on-surface transition-colors\" href=\"/\">首页</a><a class=\"font-caption text-caption text-on-surface-variant hover:text-on-surface transition-colors\" href=\"#categories\">分类</a><a class=\"font-caption text-caption text-on-surface-variant hover:text-on-surface transition-colors\" href=\"/admin\">后台</a></nav><div class=\"flex gap-4\"><button type=\"button\" class=\"w-10 h-10 rounded-full bg-surface-container flex items-center justify-center hover:bg-primary hover:text-on-primary transition-all\" aria-label=\"分享\" data-share-page><span class=\"material-symbols-outlined text-[20px]\">share</span></button><button type=\"button\" class=\"w-10 h-10 rounded-full bg-surface-container flex items-center justify-center hover:bg-primary hover:text-on-primary transition-all\" aria-label=\"邮件订阅\" data-newsletter-focus><span class=\"material-symbols-outlined text-[20px]\">mail</span></button></div></div></div><div class=\"max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop mt-8 pt-8 border-t border-outline-variant text-center\"><p class=\"font-caption text-caption text-on-surface-variant\">&copy; ");
+    html.push_str("</p></div><div class=\"flex flex-col md:flex-row items-center gap-8\"><nav class=\"flex gap-6\"><a class=\"font-caption text-caption text-on-surface-variant hover:text-on-surface transition-colors\" href=\"/\">首页</a><a class=\"font-caption text-caption text-on-surface-variant hover:text-on-surface transition-colors\" href=\"/categories\">分类</a><a class=\"font-caption text-caption text-on-surface-variant hover:text-on-surface transition-colors\" href=\"/about\">关于</a><a class=\"font-caption text-caption text-on-surface-variant hover:text-on-surface transition-colors\" href=\"/admin\">后台</a></nav><div class=\"flex gap-4\"><button type=\"button\" class=\"w-10 h-10 rounded-full bg-surface-container flex items-center justify-center hover:bg-primary hover:text-on-primary transition-all\" aria-label=\"分享\" data-share-page><span class=\"material-symbols-outlined text-[20px]\">share</span></button><button type=\"button\" class=\"w-10 h-10 rounded-full bg-surface-container flex items-center justify-center hover:bg-primary hover:text-on-primary transition-all\" aria-label=\"邮件订阅\" data-newsletter-focus><span class=\"material-symbols-outlined text-[20px]\">mail</span></button></div></div></div><div class=\"max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop mt-8 pt-8 border-t border-outline-variant text-center\"><p class=\"font-caption text-caption text-on-surface-variant\">&copy; ");
     html.push_str(&escape_html(&config.site.title));
     html.push_str("。保留所有权利。</p></div></footer>");
     html
@@ -1099,6 +1335,16 @@ fn author_avatar(username: &str) -> String {
         "https://api.dicebear.com/7.x/initials/svg?seed={}",
         escape_url_component(seed)
     )
+}
+
+fn category_description(slug: &str, name: &str) -> String {
+    match slug {
+        "technology" => "技术趋势、工程实践和软件系统的深入观察。".into(),
+        "design" => "产品体验、界面系统和信息表达的设计分析。".into(),
+        "lifestyle" => "关于专注、工作方式和长期创作节奏的记录。".into(),
+        "editorial" => "写作流程、编辑判断和内容系统方法论。".into(),
+        _ => format!("收录于「{}」主题下的精选文章。", name),
+    }
 }
 
 fn author_bio(username: &str) -> String {

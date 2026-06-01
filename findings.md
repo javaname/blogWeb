@@ -121,3 +121,10 @@
 
 - Rust 公开页面已从最小 HTML 升级为 Go 模板级 DOM 结构：topnav、搜索面板、页脚、newsletter、分类侧栏、文章 hero/card、文章详情头部、作者关注、点赞/收藏、评论表单、回复按钮和相关文章均有对应交互钩子。
 - 当前实现仍是 Rust 字符串 renderer，并非直接引入 Tera；验收标准是 HTTP 输出 DOM/交互语义对齐 Go 模板，而不是逐字节复用 `templates/*.html`。
+
+## 2026-06-01 Stitch 快照公开页面落地
+
+- 远端 Stitch 当前快照中的公开缺口已优先落地为 Rust SSR 页面：独立分类浏览 `/categories`、关于页 `/about`、作者主页 `/authors/:id`。
+- `/categories` 必须注册在 `/categories/:slug` 之前，否则会被动态分类 slug 路由吞掉；当前 `src/app.rs` 已按静态优先顺序挂载。
+- 作者页沿用公开模板现有 `author_name("admin") -> "编辑部"` 规则，不在读者侧展示“管理员”。
+- 前台导航和页脚已经从 `#categories`、`#about` 改为真实路由 `/categories`、`/about`；首页仍保留侧栏 `id="categories"` 作为页面内结构与旧测试兼容。
