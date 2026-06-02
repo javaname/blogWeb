@@ -357,3 +357,19 @@
   - `cargo fmt --check`
   - `cargo test --offline`
   - `go test ./... -count=1 -timeout=120s`
+
+## 2026-06-02 Stitch 缺失远端页面与本地原型同步
+
+- 用户要求远端生成后同步到本地，继续完成缺失原型页的本地 Web 实现。
+- 已基于 Stitch MCP 生成并核验 6 个缺失远端页面：标签文章列表、文章归档、404 页面、媒体库、用户与权限、数据分析。
+- 已重新运行 Stitch 同步脚本并把快照保存到 `stitch_current_snapshot/`；当前快照包含 20 个 screen，新增页面均有 `.html`、`.png` 和 `.raw.json`。
+- 已确认公开 SSR 缺口已落地：`/search`、`/tags/:slug`、`/archive`、未知路径品牌 404。
+- 已确认后台 React 缺口已落地：`/media`、`/users`、`/analytics` 路由、侧栏入口、页面原型、英文文案和样式补强。
+- 已验证通过：
+  - `cargo fmt --check`
+  - `cargo test --offline --test public_pages_static`
+  - `cargo test --offline`
+  - `go test ./... -count=1 -timeout=120s`
+  - `npm --prefix client run check:i18n`
+  - `npm --prefix client run check:ui`
+  - `npm --prefix client run build`

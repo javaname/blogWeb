@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>404 - Page Not Found | Ink &amp; Insight</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed-dim": "#ffb786",
+                        "tertiary": "#924700",
+                        "secondary-fixed": "#e5e2e1",
+                        "surface-bright": "#f8f9fa",
+                        "primary-container": "#2170e4",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#191c1d",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "tertiary-container": "#b75b00",
+                        "on-tertiary-fixed": "#311400",
+                        "outline": "#727785",
+                        "on-surface-variant": "#424754",
+                        "surface-variant": "#e1e3e4",
+                        "secondary-container": "#e2dfde",
+                        "on-primary-container": "#fefcff",
+                        "on-primary-fixed-variant": "#004395",
+                        "on-tertiary-container": "#fffbff",
+                        "on-tertiary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "surface": "#f8f9fa",
+                        "on-tertiary-fixed-variant": "#723600",
+                        "inverse-on-surface": "#f0f1f2",
+                        "outline-variant": "#c2c6d6",
+                        "surface-tint": "#005ac2",
+                        "surface-container-low": "#f3f4f5",
+                        "tertiary-fixed": "#ffdcc6",
+                        "inverse-primary": "#adc6ff",
+                        "primary-fixed": "#d8e2ff",
+                        "on-error-container": "#93000a",
+                        "background": "#f8f9fa",
+                        "secondary": "#5f5e5e",
+                        "on-error": "#ffffff",
+                        "error": "#ba1a1a",
+                        "surface-container-high": "#e7e8e9",
+                        "surface-container-highest": "#e1e3e4",
+                        "on-secondary-fixed-variant": "#474746",
+                        "on-primary-fixed": "#001a42",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "on-background": "#191c1d",
+                        "surface-dim": "#d9dadb",
+                        "surface-container": "#edeeef",
+                        "primary-fixed-dim": "#adc6ff",
+                        "primary": "#0058be",
+                        "inverse-surface": "#2e3132",
+                        "on-secondary-container": "#636262",
+                        "error-container": "#ffdad6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "margin-mobile": "16px",
+                        "article-max": "720px",
+                        "container-max": "1200px",
+                        "margin-desktop": "40px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Inter", "sans-serif"],
+                        "label-sm": ["Inter", "sans-serif"],
+                        "interface-md": ["Inter", "sans-serif"],
+                        "article-body-mobile": ["Source Serif 4", "serif"],
+                        "article-body": ["Source Serif 4", "serif"],
+                        "display-lg-mobile": ["Inter", "sans-serif"],
+                        "caption": ["Inter", "sans-serif"],
+                        "headline-md": ["Inter", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-sm": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "interface-md": ["16px", { "lineHeight": "24px", "fontWeight": "500" }],
+                        "article-body-mobile": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "article-body": ["20px", { "lineHeight": "32px", "fontWeight": "400" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "caption": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 0.5);
+            box-shadow: 0px 1px 3px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-interface-md flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<!-- NOTE: Page intent is an Error 404, which does not logically sit under "Latest", "Categories", or "About". 
+         However, the user prompt specifically requests the TopNavBar. We will render it, but NO item is active. -->
+<header class="bg-surface shadow-sm sticky top-0 z-50 transition-colors duration-200 ease-in-out">
+<div class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop h-20 max-w-container-max mx-auto">
+<!-- Brand -->
+<a class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-[32px] md:leading-[40px] font-bold text-on-surface tracking-tight" href="/">
+                Ink &amp; Insight
+            </a>
+<!-- Navigation Links (Desktop) -->
+<nav class="hidden md:flex gap-8 items-center h-full">
+<a class="font-interface-md text-interface-md text-on-surface-variant hover:text-primary transition-colors duration-200 ease-in-out flex items-center h-full" href="#">
+                    最新
+                </a>
+<a class="font-interface-md text-interface-md text-on-surface-variant hover:text-primary transition-colors duration-200 ease-in-out flex items-center h-full" href="#">
+                    分类
+                </a>
+<a class="font-interface-md text-interface-md text-on-surface-variant hover:text-primary transition-colors duration-200 ease-in-out flex items-center h-full" href="#">
+                    关于
+                </a>
+</nav>
+<!-- Actions -->
+<div class="flex items-center gap-4">
+<button aria-label="Search" class="text-on-surface-variant hover:text-primary transition-colors hidden sm:block">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">search</span>
+</button>
+<button class="bg-primary text-on-primary font-label-sm text-label-sm px-6 py-2 rounded hover:bg-on-primary-fixed-variant transition-colors duration-200 ease-in-out">
+                    订阅
+                </button>
+<!-- Mobile Menu Toggle -->
+<button aria-label="Menu" class="md:hidden text-on-surface-variant">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-16 md:py-24 flex flex-col items-center">
+<!-- 404 Hero Section -->
+<section class="text-center max-w-2xl mx-auto mb-20">
+<h1 class="text-[120px] leading-[1] md:text-[160px] font-bold text-outline-variant mb-6 select-none">404</h1>
+<h2 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-on-surface mb-4">Page Not Found</h2>
+<p class="font-article-body-mobile text-article-body-mobile md:font-article-body md:text-article-body text-on-surface-variant mb-10 max-w-lg mx-auto">
+                The article or page you are looking for may have moved, been archived, or does not exist.
+            </p>
+<!-- CTAs -->
+<div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+<a class="bg-primary text-on-primary font-label-sm text-label-sm px-8 py-3 rounded w-full sm:w-auto hover:bg-on-primary-fixed-variant transition-all duration-200 shadow-sm hover:shadow-md flex justify-center items-center gap-2" href="/">
+<span class="material-symbols-outlined text-[18px]">home</span>
+                    Return Home
+                </a>
+<a class="bg-transparent border border-outline text-on-surface font-label-sm text-label-sm px-8 py-3 rounded w-full sm:w-auto hover:bg-surface-container-low transition-colors duration-200 flex justify-center items-center" href="/categories">
+                    Browse Categories
+                </a>
+</div>
+<!-- Search Box -->
+<div class="relative max-w-md mx-auto w-full">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline">search</span>
+</div>
+<input class="w-full bg-surface-container-lowest border border-surface-variant rounded-lg py-3 pl-12 pr-4 font-interface-md text-interface-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder:text-outline-variant transition-shadow" placeholder="Search articles..." type="text"/>
+</div>
+</section>
+<!-- Recommended Articles Bento/Cards Layout -->
+<section class="w-full mt-10">
+<div class="flex items-center justify-between mb-8 border-b border-surface-variant pb-4">
+<h3 class="font-headline-md text-headline-md text-on-surface">Recommended Articles</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Card 1 -->
+<article class="bg-surface-container-lowest rounded-lg border border-surface-variant shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden flex flex-col group cursor-pointer hover:-translate-y-[2px]">
+<div class="h-48 overflow-hidden bg-surface-container relative">
+<div class="absolute top-3 left-3 bg-surface-bright/90 backdrop-blur-sm px-3 py-1 rounded text-primary text-[10px] uppercase font-bold tracking-wider z-10">Technology</div>
+<img alt="Abstract view of the earth from space at night, with glowing city lights connected by bright digital network lines, representing global connectivity and technology. High contrast, modern editorial style with deep blacks and vibrant blue data streams." class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" data-alt="Abstract view of the earth from space at night, with glowing city lights connected by bright digital network lines, representing global connectivity and technology. High contrast, modern editorial style with deep blacks and vibrant blue data streams." src="https://lh3.googleusercontent.com/aida-public/AB6AXuChv0YBySgN63byIKNLPlRL_2Ji9_Rw2Z06GWi-nG3Ri1Y7KdlVExYRlnf1_L7Q_6Wo6eCOeS2kR46r3171B16pnH7XqYLz13r7xsPvvfoQkqUiyBj3lCGPfz8y2de9whQg9WTXD9w1yHjKAp0Y4yr_y4oYuF_9jV6XNRWgFK0ex-meScwNnegCTTKcMejyao7gGMfGtjiaIU7pCJLkQ7wvpyAnCTb8pR5mFNQ3qqkOl4sbfVfa_j4uF1p47BSf-Ri3lbmd93SFpx0"/>
+</div>
+<div class="p-5 flex-grow flex flex-col">
+<h4 class="font-interface-md text-interface-md font-semibold text-on-surface mb-2 leading-snug group-hover:text-primary transition-colors">The Future of AI in Modern Editorial</h4>
+<p class="font-caption text-caption text-on-surface-variant line-clamp-2 mt-auto">Exploring how machine learning algorithms are subtly reshaping the way we consume long-form content.</p>
+</div>
+</article>
+<!-- Card 2 -->
+<article class="bg-surface-container-lowest rounded-lg border border-surface-variant shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden flex flex-col group cursor-pointer hover:-translate-y-[2px]">
+<div class="h-48 overflow-hidden bg-surface-container relative">
+<div class="absolute top-3 left-3 bg-surface-bright/90 backdrop-blur-sm px-3 py-1 rounded text-primary text-[10px] uppercase font-bold tracking-wider z-10">Design</div>
+<img alt="Minimalist modern interior with clean architectural lines, featuring a single designer chair bathed in soft natural sunlight from a large window. The space uses a sophisticated, bright white palette with subtle gray shadows, evoking calm and focused editorial design principles." class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" data-alt="Minimalist modern interior with clean architectural lines, featuring a single designer chair bathed in soft natural sunlight from a large window. The space uses a sophisticated, bright white palette with subtle gray shadows, evoking calm and focused editorial design principles." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDaddPMVqLetDmkv5Q6JObmI40Df-VAlicmhoA2aQP0nzUIdlYnuB8l4ZPbdQ9ofn1g9f12v-WRS9-IWt5XWWz5wa_JtN8RjJ1gd-qXP5zhdTQTJCzmijp8GX8kjIFnXIvb2t7bAEZqu9S9kBQhKZy3w41l7qTVg9m5p7ocqRJdDBFsiwJEm9LEegQRh1L2d2NP9pQ8NX-sGcYlAXILGmoFrtEu0oNbsg04-CjWBeSlq7zzg6fVeT2Pz3Y9bA-hVp1Tw6F2PmrVrlo"/>
+</div>
+<div class="p-5 flex-grow flex flex-col">
+<h4 class="font-interface-md text-interface-md font-semibold text-on-surface mb-2 leading-snug group-hover:text-primary transition-colors">Embracing Whitespace in Digital Landscapes</h4>
+<p class="font-caption text-caption text-on-surface-variant line-clamp-2 mt-auto">Why the absence of content is becoming the most valuable asset in modern user interface design.</p>
+</div>
+</article>
+<!-- Card 3 -->
+<article class="bg-surface-container-lowest rounded-lg border border-surface-variant shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden flex flex-col group cursor-pointer hover:-translate-y-[2px]">
+<div class="h-48 overflow-hidden bg-surface-container relative">
+<div class="absolute top-3 left-3 bg-surface-bright/90 backdrop-blur-sm px-3 py-1 rounded text-primary text-[10px] uppercase font-bold tracking-wider z-10">Culture</div>
+<img alt="A close-up shot of a vintage typewriter on a dark wooden desk, partially illuminated by a warm desk lamp. The focus is sharp on the metal keys, while the background falls into a soft blur. The mood is nostalgic yet sharp, suitable for a professional writing blog." class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" data-alt="A close-up shot of a vintage typewriter on a dark wooden desk, partially illuminated by a warm desk lamp. The focus is sharp on the metal keys, while the background falls into a soft blur. The mood is nostalgic yet sharp, suitable for a professional writing blog." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYOmLlHsMvi86-dwV38Mu8puMm8Os4Mh2xuOOWwIPc6d2fUH1yxF2PwGMUJdK1a6QZLqI_SP0j7aThi1Hz1vyKGaDh-45cXKu_PQ-ljMl0rdUHaQZ_8fMPiZy4XclbbZrqOhFr3jNdRv8GXRdNkpCdnfMx2KczAv2n5jf7O3HGE2dDcBxRo3H3A4WJMvqbdyxKACabt4x_umIpbqD8ctvpGDB3cK2x-4IA0RMeyPLmZVMIDrD0T3xZMPEAfmcDJS4jk24LmZ1h5B4"/>
+</div>
+<div class="p-5 flex-grow flex flex-col">
+<h4 class="font-interface-md text-interface-md font-semibold text-on-surface mb-2 leading-snug group-hover:text-primary transition-colors">The Resurgence of Slow Reading</h4>
+<p class="font-caption text-caption text-on-surface-variant line-clamp-2 mt-auto">In an era of infinite scroll, the deliberate act of deep reading is becoming a counter-cultural movement.</p>
+</div>
+</article>
+</div>
+</section>
+<!-- Popular Categories -->
+<section class="w-full mt-16 mb-8 text-center">
+<h4 class="font-interface-md text-interface-md text-on-surface-variant mb-6">Explore Popular Categories</h4>
+<div class="flex flex-wrap justify-center gap-3">
+<a class="bg-primary-fixed/20 text-primary-container px-4 py-2 rounded-full font-label-sm text-label-sm hover:bg-primary-fixed/40 transition-colors" href="#">Technology</a>
+<a class="bg-primary-fixed/20 text-primary-container px-4 py-2 rounded-full font-label-sm text-label-sm hover:bg-primary-fixed/40 transition-colors" href="#">Design Systems</a>
+<a class="bg-primary-fixed/20 text-primary-container px-4 py-2 rounded-full font-label-sm text-label-sm hover:bg-primary-fixed/40 transition-colors" href="#">Culture</a>
+<a class="bg-primary-fixed/20 text-primary-container px-4 py-2 rounded-full font-label-sm text-label-sm hover:bg-primary-fixed/40 transition-colors" href="#">Editorial</a>
+<a class="bg-primary-fixed/20 text-primary-container px-4 py-2 rounded-full font-label-sm text-label-sm hover:bg-primary-fixed/40 transition-colors" href="#">Photography</a>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-low dark:bg-inverse-surface mt-auto">
+<div class="flex flex-col md:flex-row justify-between items-center w-full px-margin-mobile md:px-margin-desktop gap-base py-12 max-w-container-max mx-auto">
+<div class="font-headline-md text-headline-md font-bold text-on-surface dark:text-surface-bright mb-4 md:mb-0">
+                Ink &amp; Insight
+            </div>
+<nav class="flex gap-6 mb-4 md:mb-0">
+<a class="font-caption text-caption text-on-secondary-container dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed transition-colors opacity-90 hover:opacity-100" href="#">
+                    隐私政策
+                </a>
+<a class="font-caption text-caption text-on-secondary-container dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed transition-colors opacity-90 hover:opacity-100" href="#">
+                    服务条款
+                </a>
+<a class="font-caption text-caption text-on-secondary-container dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed transition-colors opacity-90 hover:opacity-100" href="#">
+                    联系我们
+                </a>
+</nav>
+<div class="font-caption text-caption text-on-secondary-container dark:text-secondary-fixed-dim">
+                © 2024 Ink &amp; Insight. All rights reserved.
+            </div>
+</div>
+</footer>
+</body></html>

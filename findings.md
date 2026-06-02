@@ -128,3 +128,10 @@
 - `/categories` 必须注册在 `/categories/:slug` 之前，否则会被动态分类 slug 路由吞掉；当前 `src/app.rs` 已按静态优先顺序挂载。
 - 作者页沿用公开模板现有 `author_name("admin") -> "编辑部"` 规则，不在读者侧展示“管理员”。
 - 前台导航和页脚已经从 `#categories`、`#about` 改为真实路由 `/categories`、`/about`；首页仍保留侧栏 `id="categories"` 作为页面内结构与旧测试兼容。
+
+## 2026-06-02 Stitch 缺失远端页面与本地原型同步
+
+- Stitch `list_screens` 对新生成页面存在短时滞后；按生成 screen ID 调用 `get_screen` 可以读取页面。同步脚本通过显式补充页面 ID 解决漏拉问题。
+- 当前本地 `stitch_current_snapshot/` 已包含 20 个 screen；新增 6 个页面 ID 为：标签文章列表 `dadcdbac583f4433bb49075fa818396f`、文章归档 `ae95df4cf57543d4a2e0cb364620d6f4`、404 页面 `c34cacb03f4c4fa5b4970e47849d7495`、媒体库 `41331a660d53466fbf701b1fdb299c71`、用户与权限 `5897a40c5d4045b2a7dffc9bcaf10540`、数据分析 `64460493e53e4651a2832da531df7777`。
+- 公开 SSR 现在覆盖独立搜索 `/search`、标签页 `/tags/:slug`、归档页 `/archive` 和 HTML 404 fallback；标签页目前基于 slug 派生关键词筛选文章，属于原型级实现，不新增独立 tag 数据表。
+- 后台 `/media`、`/users`、`/analytics` 当前是 React 原型页面，复用现有后台壳层和静态数据展示；后端尚未新增独立媒体列表、用户管理列表或分析 API。

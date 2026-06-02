@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>文章归档 - Ink &amp; Insight</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-surface": "#2e3132",
+                        "surface-variant": "#e1e3e4",
+                        "background": "#f8f9fa",
+                        "tertiary-fixed": "#ffdcc6",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "primary-container": "#2170e4",
+                        "on-secondary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "secondary-container": "#e2dfde",
+                        "error": "#ba1a1a",
+                        "surface-container-high": "#e7e8e9",
+                        "on-primary-fixed": "#001a42",
+                        "on-tertiary-fixed": "#311400",
+                        "surface-container-highest": "#e1e3e4",
+                        "on-surface-variant": "#424754",
+                        "tertiary-container": "#b75b00",
+                        "surface": "#f8f9fa",
+                        "tertiary-fixed-dim": "#ffb786",
+                        "surface-dim": "#d9dadb",
+                        "on-secondary-container": "#636262",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#004395",
+                        "primary-fixed-dim": "#adc6ff",
+                        "primary-fixed": "#d8e2ff",
+                        "on-tertiary-fixed-variant": "#723600",
+                        "secondary-fixed": "#e5e2e1",
+                        "on-tertiary-container": "#fffbff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-container": "#fefcff",
+                        "surface-bright": "#f8f9fa",
+                        "on-primary": "#ffffff",
+                        "surface-tint": "#005ac2",
+                        "on-secondary-fixed-variant": "#474746",
+                        "on-error": "#ffffff",
+                        "surface-container": "#edeeef",
+                        "surface-container-low": "#f3f4f5",
+                        "secondary": "#5f5e5e",
+                        "outline-variant": "#c2c6d6",
+                        "primary": "#0058be",
+                        "outline": "#727785",
+                        "on-background": "#191c1d",
+                        "on-tertiary": "#ffffff",
+                        "tertiary": "#924700",
+                        "on-surface": "#191c1d",
+                        "inverse-on-surface": "#f0f1f2",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "inverse-primary": "#adc6ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "article-max": "720px",
+                        "gutter": "24px",
+                        "margin-mobile": "16px",
+                        "container-max": "1200px",
+                        "base": "8px",
+                        "margin-desktop": "40px"
+                    },
+                    "fontFamily": {
+                        "display-lg-mobile": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "interface-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "article-body-mobile": ["Source Serif 4"],
+                        "label-sm": ["Inter"],
+                        "caption": ["Inter"],
+                        "article-body": ["Source Serif 4"]
+                    },
+                    "fontSize": {
+                        "display-lg-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "interface-md": ["16px", { "lineHeight": "24px", "fontWeight": "500" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "article-body-mobile": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-sm": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "caption": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+                        "article-body": ["20px", { "lineHeight": "32px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        html { scroll-behavior: smooth; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface antialiased selection:bg-primary selection:text-on-primary min-h-screen flex flex-col">
+<!-- Header: TopNavBar -->
+<header class="bg-surface border-b border-outline-variant sticky top-0 w-full z-50">
+<nav class="flex justify-between items-center w-full px-margin-desktop h-16 max-w-container-max mx-auto">
+<!-- Brand -->
+<div class="flex items-center gap-gutter">
+<a class="font-headline-md text-headline-md font-bold text-on-surface tracking-tight" href="#">Ink &amp; Insight</a>
+</div>
+<!-- Navigation Links -->
+<div class="hidden md:flex items-center gap-gutter font-interface-md text-interface-md">
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">Latest</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">Categories</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">About</a>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-base">
+<button aria-label="Search" class="p-2 text-on-surface hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+<button class="hidden md:block px-4 py-2 bg-primary text-on-primary rounded font-interface-md text-interface-md hover:opacity-80 transition-opacity">
+                    Subscribe
+                </button>
+</div>
+</nav>
+</header>
+<!-- Main Content -->
+<main class="flex-grow w-full max-w-container-max mx-auto px-margin-desktop py-12 md:py-20 flex flex-col gap-[80px]">
+<!-- Hero Section -->
+<section class="flex flex-col items-center text-center gap-gutter">
+<h1 class="font-display-lg text-display-lg text-on-surface">文章归档</h1>
+<p class="font-article-body text-article-body text-on-surface-variant max-w-2xl">按时间浏览全部公开文章。记录思考的轨迹，沉淀知识的重量。</p>
+<!-- Stats Bar -->
+<div class="mt-8 flex flex-wrap justify-center items-center gap-8 py-4 px-8 border border-outline-variant rounded-lg bg-surface-container-lowest shadow-sm">
+<div class="flex flex-col items-center">
+<span class="font-headline-md text-headline-md text-primary">128</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">篇文章</span>
+</div>
+<div class="w-px h-10 bg-outline-variant"></div>
+<div class="flex flex-col items-center">
+<span class="font-headline-md text-headline-md text-primary">36</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">个主题</span>
+</div>
+<div class="w-px h-10 bg-outline-variant"></div>
+<div class="flex flex-col items-center">
+<span class="font-headline-md text-headline-md text-primary">2024</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">最新更新</span>
+</div>
+</div>
+</section>
+<!-- 2-Column Layout -->
+<section class="grid grid-cols-1 md:grid-cols-12 gap-gutter items-start">
+<!-- Left Column: Archive Timeline (8 cols) -->
+<div class="md:col-span-8 flex flex-col gap-12">
+<!-- Year Block: 2024 -->
+<div class="scroll-mt-32" id="year-2024">
+<h2 class="font-headline-md text-headline-md text-on-surface border-b border-outline-variant pb-4 mb-8">2024</h2>
+<div class="flex flex-col gap-10">
+<!-- Month: October -->
+<div class="relative pl-6 border-l border-outline-variant">
+<h3 class="font-interface-md text-interface-md text-on-surface-variant mb-6 flex items-center before:content-[''] before:absolute before:left-[-5px] before:top-2 before:w-2.5 before:h-2.5 before:bg-surface before:border-2 before:border-primary before:rounded-full">十月</h3>
+<div class="flex flex-col gap-8">
+<!-- Article Entry -->
+<article class="group cursor-pointer">
+<div class="flex flex-wrap items-center gap-3 mb-2 font-caption text-caption text-on-surface-variant">
+<time datetime="2024-10-15">10月15日</time>
+<span class="w-1 h-1 rounded-full bg-outline"></span>
+<span>阅读时间 8 分钟</span>
+<span class="w-1 h-1 rounded-full bg-outline"></span>
+<span class="px-2 py-0.5 bg-surface-container rounded-sm text-on-surface font-medium">设计思维</span>
+</div>
+<h4 class="font-headline-md text-headline-md text-on-surface group-hover:text-primary transition-colors duration-200 mb-3">极简主义在复杂系统设计中的应用边界</h4>
+<p class="font-article-body text-article-body text-on-surface-variant line-clamp-2">当我们谈论极简时，往往容易陷入形式主义的陷阱。真正的极简不是去除元素，而是降低用户的认知负荷。本文探讨如何在不妥协功能的前提下，实现系统级界面的视觉与交互极简。</p>
+</article>
+<!-- Article Entry -->
+<article class="group cursor-pointer">
+<div class="flex flex-wrap items-center gap-3 mb-2 font-caption text-caption text-on-surface-variant">
+<time datetime="2024-10-02">10月2日</time>
+<span class="w-1 h-1 rounded-full bg-outline"></span>
+<span>阅读时间 5 分钟</span>
+<span class="w-1 h-1 rounded-full bg-outline"></span>
+<span class="px-2 py-0.5 bg-surface-container rounded-sm text-on-surface font-medium">技术洞察</span>
+</div>
+<h4 class="font-headline-md text-headline-md text-on-surface group-hover:text-primary transition-colors duration-200 mb-3">现代前端架构的演进：从组件化到微前端</h4>
+<p class="font-article-body text-article-body text-on-surface-variant line-clamp-2">随着企业级应用复杂度的不断攀升，传统的单体前端架构已经难以满足快速迭代和多团队协作的需求。微前端方案逐渐成为破局的关键。</p>
+</article>
+</div>
+</div>
+<!-- Month: September -->
+<div class="relative pl-6 border-l border-outline-variant">
+<h3 class="font-interface-md text-interface-md text-on-surface-variant mb-6 flex items-center before:content-[''] before:absolute before:left-[-5px] before:top-2 before:w-2.5 before:h-2.5 before:bg-surface before:border-2 before:border-outline-variant before:rounded-full">九月</h3>
+<div class="flex flex-col gap-8">
+<article class="group cursor-pointer">
+<div class="flex flex-wrap items-center gap-3 mb-2 font-caption text-caption text-on-surface-variant">
+<time datetime="2024-09-20">9月20日</time>
+<span class="w-1 h-1 rounded-full bg-outline"></span>
+<span>阅读时间 12 分钟</span>
+<span class="w-1 h-1 rounded-full bg-outline"></span>
+<span class="px-2 py-0.5 bg-surface-container rounded-sm text-on-surface font-medium">读书笔记</span>
+</div>
+<h4 class="font-headline-md text-headline-md text-on-surface group-hover:text-primary transition-colors duration-200 mb-3">重读《设计心理学》：日常事物背后的逻辑</h4>
+<p class="font-article-body text-article-body text-on-surface-variant line-clamp-2">诺曼的经典著作无论何时翻阅都能带来新的启发。本文是对书中核心概念“示能”、“意符”和“映射”在现代数字化产品中的重新解读。</p>
+</article>
+</div>
+</div>
+</div>
+</div>
+<!-- Year Block: 2023 -->
+<div class="scroll-mt-32" id="year-2023">
+<h2 class="font-headline-md text-headline-md text-on-surface border-b border-outline-variant pb-4 mb-8">2023</h2>
+<div class="flex flex-col gap-10">
+<div class="relative pl-6 border-l border-outline-variant">
+<h3 class="font-interface-md text-interface-md text-on-surface-variant mb-6 flex items-center before:content-[''] before:absolute before:left-[-5px] before:top-2 before:w-2.5 before:h-2.5 before:bg-surface before:border-2 before:border-outline-variant before:rounded-full">十二月</h3>
+<div class="flex flex-col gap-8">
+<article class="group cursor-pointer">
+<div class="flex flex-wrap items-center gap-3 mb-2 font-caption text-caption text-on-surface-variant">
+<time datetime="2023-12-10">12月10日</time>
+<span class="w-1 h-1 rounded-full bg-outline"></span>
+<span>阅读时间 6 分钟</span>
+<span class="w-1 h-1 rounded-full bg-outline"></span>
+<span class="px-2 py-0.5 bg-surface-container rounded-sm text-on-surface font-medium">年度总结</span>
+</div>
+<h4 class="font-headline-md text-headline-md text-on-surface group-hover:text-primary transition-colors duration-200 mb-3">2023 写作回顾：在喧嚣中寻找专注</h4>
+<p class="font-article-body text-article-body text-on-surface-variant line-clamp-2">一年间发布的 45 篇文章，见证了我在设计与技术领域的探索。本文总结了这一年来的写作心得、数据表现以及对明年的规划。</p>
+</article>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Sidebar (4 cols) -->
+<aside class="md:col-span-4 hidden md:flex flex-col gap-10 sticky top-32">
+<!-- Quick Jump -->
+<div class="p-6 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm">
+<h3 class="font-label-sm text-label-sm text-on-surface uppercase tracking-wider mb-4">年份速览</h3>
+<ul class="flex flex-col gap-2 font-interface-md text-interface-md">
+<li><a class="flex justify-between items-center text-on-surface-variant hover:text-primary transition-colors py-1" href="#year-2024">2024 <span class="font-caption text-caption text-outline">42 篇</span></a></li>
+<li><a class="flex justify-between items-center text-on-surface-variant hover:text-primary transition-colors py-1" href="#year-2023">2023 <span class="font-caption text-caption text-outline">68 篇</span></a></li>
+<li><a class="flex justify-between items-center text-on-surface-variant hover:text-primary transition-colors py-1" href="#year-2022">2022 <span class="font-caption text-caption text-outline">18 篇</span></a></li>
+</ul>
+</div>
+<!-- Popular Categories -->
+<div class="p-6 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm">
+<h3 class="font-label-sm text-label-sm text-on-surface uppercase tracking-wider mb-4">热门主题</h3>
+<div class="flex flex-wrap gap-2">
+<a class="px-3 py-1.5 bg-surface-container hover:bg-surface-container-high transition-colors rounded font-caption text-caption text-on-surface" href="#">设计思维 (24)</a>
+<a class="px-3 py-1.5 bg-surface-container hover:bg-surface-container-high transition-colors rounded font-caption text-caption text-on-surface" href="#">技术洞察 (18)</a>
+<a class="px-3 py-1.5 bg-surface-container hover:bg-surface-container-high transition-colors rounded font-caption text-caption text-on-surface" href="#">读书笔记 (12)</a>
+<a class="px-3 py-1.5 bg-surface-container hover:bg-surface-container-high transition-colors rounded font-caption text-caption text-on-surface" href="#">年度总结 (3)</a>
+<a class="px-3 py-1.5 bg-surface-container hover:bg-surface-container-high transition-colors rounded font-caption text-caption text-on-surface" href="#">随笔 (15)</a>
+</div>
+</div>
+<!-- Subscribe -->
+<div class="p-6 bg-surface-container-low border border-outline-variant rounded-lg">
+<span class="material-symbols-outlined text-primary mb-2" data-icon="mail">mail</span>
+<h3 class="font-interface-md text-interface-md font-semibold text-on-surface mb-2">获取最新文章</h3>
+<p class="font-caption text-caption text-on-surface-variant mb-4">订阅我们的通讯，不再错过深度的干货内容。</p>
+<form class="flex flex-col gap-3">
+<input class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded font-caption text-caption text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入您的邮箱" type="email"/>
+<button class="w-full py-2 bg-primary text-on-primary rounded font-interface-md text-interface-md hover:bg-primary/90 transition-colors" type="button">订阅</button>
+</form>
+</div>
+</aside>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-low border-t border-outline-variant mt-auto">
+<div class="flex flex-col md:flex-row justify-between items-center w-full px-margin-desktop py-8 max-w-container-max mx-auto gap-4 md:gap-0">
+<span class="font-interface-md text-interface-md font-bold text-on-surface">
+                Ink &amp; Insight
+            </span>
+<span class="font-caption text-caption text-on-surface-variant">
+                © 2024 Ink &amp; Insight. All rights reserved.
+            </span>
+<div class="flex gap-6 font-caption text-caption">
+<a class="text-on-secondary-container hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary" href="#">Privacy Policy</a>
+<a class="text-on-secondary-container hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary" href="#">Terms of Service</a>
+<a class="text-on-secondary-container hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary" href="#">RSS Feed</a>
+</div>
+</div>
+</footer>
+</body></html>

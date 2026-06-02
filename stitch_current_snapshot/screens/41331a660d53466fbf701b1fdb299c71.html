@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ink &amp; Insight - Media Library</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "inverse-surface": "#2e3132",
+                      "secondary-fixed-dim": "#c8c6c5",
+                      "surface-container-highest": "#e1e3e4",
+                      "surface-variant": "#e1e3e4",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container-high": "#e7e8e9",
+                      "secondary-fixed": "#e5e2e1",
+                      "on-tertiary-fixed": "#311400",
+                      "tertiary-container": "#b75b00",
+                      "inverse-on-surface": "#f0f1f2",
+                      "primary": "#0058be",
+                      "primary-container": "#2170e4",
+                      "tertiary-fixed-dim": "#ffb786",
+                      "primary-fixed-dim": "#adc6ff",
+                      "on-error-container": "#93000a",
+                      "tertiary": "#924700",
+                      "surface-bright": "#f8f9fa",
+                      "on-primary": "#ffffff",
+                      "on-error": "#ffffff",
+                      "surface-container": "#edeeef",
+                      "surface": "#f8f9fa",
+                      "secondary": "#5f5e5e",
+                      "on-secondary-fixed-variant": "#474746",
+                      "on-secondary-container": "#636262",
+                      "on-background": "#191c1d",
+                      "on-secondary": "#ffffff",
+                      "primary-fixed": "#d8e2ff",
+                      "background": "#f8f9fa",
+                      "error-container": "#ffdad6",
+                      "on-surface-variant": "#424754",
+                      "surface-tint": "#005ac2",
+                      "on-tertiary": "#ffffff",
+                      "outline": "#727785",
+                      "on-surface": "#191c1d",
+                      "on-secondary-fixed": "#1c1b1b",
+                      "on-primary-fixed": "#001a42",
+                      "on-primary-container": "#fefcff",
+                      "tertiary-fixed": "#ffdcc6",
+                      "surface-container-low": "#f3f4f5",
+                      "outline-variant": "#c2c6d6",
+                      "on-tertiary-container": "#fffbff",
+                      "surface-dim": "#d9dadb",
+                      "error": "#ba1a1a",
+                      "secondary-container": "#e2dfde",
+                      "on-tertiary-fixed-variant": "#723600",
+                      "inverse-primary": "#adc6ff",
+                      "on-primary-fixed-variant": "#004395"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "base": "8px",
+                      "gutter": "24px",
+                      "margin-desktop": "40px",
+                      "container-max": "1200px",
+                      "margin-mobile": "16px",
+                      "article-max": "720px"
+              },
+              "fontFamily": {
+                      "article-body": [
+                              "Source Serif 4"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "display-lg-mobile": [
+                              "Inter"
+                      ],
+                      "interface-md": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "label-sm": [
+                              "Inter"
+                      ],
+                      "caption": [
+                              "Inter"
+                      ],
+                      "article-body-mobile": [
+                              "Source Serif 4"
+                      ]
+              },
+              "fontSize": {
+                      "article-body": [
+                              "20px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "interface-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "caption": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "article-body-mobile": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings:
+          'FILL' 0,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-surface-bright text-on-surface font-interface-md h-screen flex overflow-hidden">
+<!-- SideNavBar -->
+<nav class="bg-surface-container-low text-primary font-interface-md fixed left-0 top-0 h-full w-[280px] shadow-sm flex flex-col gap-base p-margin-desktop z-20">
+<div class="mb-8">
+<h1 class="font-headline-md text-headline-md font-bold text-on-surface">Admin Console</h1>
+<p class="font-caption text-caption text-on-surface-variant">Content Manager</p>
+</div>
+<button class="bg-primary text-on-primary font-label-sm text-label-sm rounded-lg py-3 px-4 flex items-center justify-center gap-2 mb-6 hover:bg-primary-container transition-colors duration-200">
+<span class="material-symbols-outlined">add</span>
+            New Post
+        </button>
+<div class="flex-1 flex flex-col gap-1 overflow-y-auto">
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-lg px-4 py-2 flex items-center gap-3 hover:bg-surface-container-high transition-all duration-200 Click: opacity-80" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                Dashboard
+            </a>
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-lg px-4 py-2 flex items-center gap-3 hover:bg-surface-container-high transition-all duration-200 Click: opacity-80" href="#">
+<span class="material-symbols-outlined">article</span>
+                Posts
+            </a>
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-lg px-4 py-2 flex items-center gap-3 hover:bg-surface-container-high transition-all duration-200 Click: opacity-80" href="#">
+<span class="material-symbols-outlined">category</span>
+                Categories
+            </a>
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-lg px-4 py-2 flex items-center gap-3 hover:bg-surface-container-high transition-all duration-200 Click: opacity-80" href="#">
+<span class="material-symbols-outlined">comment</span>
+                Comments
+            </a>
+<a class="bg-primary-container text-on-primary-container font-bold rounded-lg px-4 py-2 flex items-center gap-3 hover:bg-surface-container-high transition-all duration-200 Click: opacity-80" href="#">
+<span class="material-symbols-outlined fill">photo_library</span>
+                Media Library
+            </a>
+<a class="text-on-surface-variant hover:bg-surface-container-high rounded-lg px-4 py-2 flex items-center gap-3 hover:bg-surface-container-high transition-all duration-200 Click: opacity-80" href="#">
+<span class="material-symbols-outlined">settings</span>
+                Settings
+            </a>
+</div>
+<div class="mt-auto pt-4 border-t border-outline-variant flex items-center gap-3">
+<img alt="Admin Avatar" class="w-10 h-10 rounded-full border border-outline-variant" data-alt="A professional headshot of a male admin user with a neutral expression. The lighting is soft and natural, emphasizing a clean, corporate aesthetic. The background is a subtle, out-of-focus gray, ensuring the subject stands out. The image is cropped in a tight circle." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAw4ThbaO7TsCWHJOn_QSEaPdLT0Fi5pH-q7OP7Fd_S7v2eh3WYVsUoTdwHIj2YYWQMdBblgBkU6Eie3aYdbNTNXF2haB1Wq01AwKZA99FmFHDhCN4y1swmT-Qqh4sGNL8JeZB5ebEbQxJvGc-bxjnqltkHDfdBF8CRlYKa9pib3uU2rgicko4fNXmvJl8d71figgk7b3xp4jcUr3HkItGPWGoutXoDAFR32z3c6lvyyjqmGiHSAER08B96ohIYUbAbyZtxy_CR7a4"/>
+<div>
+<p class="font-label-sm text-label-sm font-bold">Admin User</p>
+<p class="font-caption text-caption text-on-surface-variant">admin@inkandinsight.com</p>
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="ml-[280px] flex-1 flex flex-col h-full bg-surface">
+<!-- TopNavBar -->
+<header class="bg-surface-container-lowest text-primary font-interface-md docked full-width top-0 sticky bg-surface-container-lowest border-b border-outline-variant shadow-sm flex justify-between items-center w-full px-margin-desktop py-4 z-10">
+<h2 class="font-headline-md text-headline-md font-bold text-on-surface">Media Library</h2>
+<div class="flex items-center gap-4">
+<div class="relative hidden md:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-lg focus:ring-2 focus:ring-primary focus:bg-surface-container-lowest text-on-surface font-interface-md text-interface-md w-64" placeholder="Search media..." type="text"/>
+</div>
+<button class="bg-primary text-on-primary font-label-sm text-label-sm px-4 py-2 rounded-lg hover:bg-primary-container transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined">upload</span>
+                    Upload Media
+                </button>
+<div class="flex items-center gap-2 border-l border-outline-variant pl-4 ml-2">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors">
+<span class="material-symbols-outlined">light_mode</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Scrollable Content -->
+<main class="flex-1 overflow-y-auto p-margin-desktop">
+<!-- Dashboard Stats -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter mb-8">
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Total Files</h3>
+<span class="material-symbols-outlined text-primary bg-primary-fixed p-2 rounded-lg">folder</span>
+</div>
+<p class="font-display-lg-mobile text-display-lg-mobile font-bold text-on-surface">1,248</p>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Images</h3>
+<span class="material-symbols-outlined text-tertiary bg-tertiary-fixed p-2 rounded-lg">image</span>
+</div>
+<p class="font-display-lg-mobile text-display-lg-mobile font-bold text-on-surface">892</p>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Storage Used</h3>
+<span class="material-symbols-outlined text-secondary bg-secondary-fixed p-2 rounded-lg">storage</span>
+</div>
+<p class="font-display-lg-mobile text-display-lg-mobile font-bold text-on-surface">1.2<span class="text-headline-md text-on-surface-variant font-normal"> GB</span></p>
+<div class="w-full bg-surface-container-high h-2 rounded-full mt-2 overflow-hidden">
+<div class="bg-primary h-full" style="width: 24%"></div>
+</div>
+<p class="font-caption text-caption text-on-surface-variant mt-1">24% of 5GB limit</p>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Recent Uploads</h3>
+<span class="material-symbols-outlined text-primary bg-primary-fixed p-2 rounded-lg">schedule</span>
+</div>
+<p class="font-display-lg-mobile text-display-lg-mobile font-bold text-on-surface">24</p>
+<p class="font-caption text-caption text-on-surface-variant mt-1">In the last 7 days</p>
+</div>
+</div>
+<!-- Toolbar -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 bg-surface-container-lowest p-4 rounded-xl border border-outline-variant shadow-sm">
+<div class="flex flex-wrap items-center gap-2">
+<button class="bg-surface-container-highest text-on-surface font-label-sm text-label-sm px-4 py-2 rounded-full border border-outline-variant">All</button>
+<button class="bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-low font-label-sm text-label-sm px-4 py-2 rounded-full border border-transparent transition-colors">Images</button>
+<button class="bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-low font-label-sm text-label-sm px-4 py-2 rounded-full border border-transparent transition-colors">Documents</button>
+<button class="bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-low font-label-sm text-label-sm px-4 py-2 rounded-full border border-transparent transition-colors">Videos</button>
+</div>
+<div class="flex items-center gap-4 w-full md:w-auto">
+<div class="relative w-full md:w-48">
+<select class="w-full appearance-none bg-surface-container-low border border-outline-variant rounded-lg pl-3 pr-8 py-2 font-interface-md text-interface-md text-on-surface focus:ring-2 focus:ring-primary focus:border-primary">
+<option>Sort by: Newest</option>
+<option>Sort by: Oldest</option>
+<option>Sort by: Name</option>
+<option>Sort by: Size</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">arrow_drop_down</span>
+</div>
+<div class="flex items-center border border-outline-variant rounded-lg overflow-hidden bg-surface-container-lowest">
+<button class="p-2 bg-surface-container-high text-on-surface">
+<span class="material-symbols-outlined">grid_view</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined">view_list</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Content Area (Grid + Details) -->
+<div class="flex gap-gutter h-[600px]">
+<!-- Media Grid -->
+<div class="flex-1 overflow-y-auto pr-2 grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 auto-rows-max">
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest rounded-xl border border-primary ring-1 ring-primary shadow-sm overflow-hidden group cursor-pointer">
+<div class="aspect-video bg-surface-container-low relative overflow-hidden">
+<img alt="Workspace Hero" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" data-alt="A minimalist, modern workspace setup. A sleek laptop sits on a clean, white desk next to a small, green succulent plant. Natural light streams in, creating soft, bright reflections. The overall aesthetic is professional, clean, and light-mode compatible." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDweZWiUcIgXRmFu87fAQaEE0By1iB3zL9_c39-6ALO-TFKoeeAau-ve7DdrBxJ5KX4uLMD1OwsB4PhA4hUsSYHZE8d2kQkV03M4Ant07jTphCeOGQrid4kEC5YUk23j54rNY83131pAq0Msa-wv-3PQigz0AsthGfqAkx1pgU6Qxn47SgtT2bFWoGhuB_X7ZFnWEHB3Cs82nM3VY7uXSWnICYIIe8g67D9NOZB_FQqwqwCDLnfb3fbprA9gkEXbXCNvEx_sLKMS-8"/>
+<div class="absolute top-2 right-2 bg-surface-container-lowest/90 backdrop-blur-sm rounded px-2 py-1 flex items-center gap-1 shadow-sm">
+<span class="font-caption text-caption font-semibold">JPG</span>
+</div>
+</div>
+<div class="p-3">
+<p class="font-interface-md text-interface-md font-semibold text-on-surface truncate" title="workspace-hero.jpg">workspace-hero.jpg</p>
+<div class="flex justify-between items-center mt-1">
+<p class="font-caption text-caption text-on-surface-variant">2.4 MB • 1200x800</p>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden group cursor-pointer hover:shadow-md transition-shadow">
+<div class="aspect-video bg-surface-container-low relative overflow-hidden flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-on-surface-variant">description</span>
+<div class="absolute top-2 right-2 bg-surface-container-lowest/90 backdrop-blur-sm rounded px-2 py-1 flex items-center gap-1 shadow-sm">
+<span class="font-caption text-caption font-semibold">PDF</span>
+</div>
+</div>
+<div class="p-3">
+<p class="font-interface-md text-interface-md font-semibold text-on-surface truncate" title="Q3_Report_Final.pdf">Q3_Report_Final.pdf</p>
+<div class="flex justify-between items-center mt-1">
+<p class="font-caption text-caption text-on-surface-variant">4.1 MB • Document</p>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden group cursor-pointer hover:shadow-md transition-shadow">
+<div class="aspect-video bg-surface-container-low relative overflow-hidden">
+<img alt="Team Meeting" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" data-alt="A group of diverse professionals casually gathered around a wooden table in a brightly lit modern office. They are looking at a laptop and smiling, suggesting collaboration and positive energy. The color palette is warm and inviting with natural light." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDm_VNO7hLi4okiLgxSQm_kDzTUW398Ss9pfzllmXPPcgcrImVdzbK-MIoyQZsG0AFCB4p0KqFiBLmMLK_kEuXY85seLl5flB0VTGqoJF29B2R5flGQDFV-ucZm_s7qz-dUFEDaz8tXsvDNHcSkPznuQmS1zGaViqjAxRLXg8PxI8IWHcTVdtESZiuVho5qbmgFkSOEqyA18xxF_LrcqLhdNUjDAhKMtOx6ELh4im90l87smNEm78ODa60vSmolSgM9mK_v0IOPAhA"/>
+<div class="absolute top-2 right-2 bg-surface-container-lowest/90 backdrop-blur-sm rounded px-2 py-1 flex items-center gap-1 shadow-sm">
+<span class="font-caption text-caption font-semibold">PNG</span>
+</div>
+</div>
+<div class="p-3">
+<p class="font-interface-md text-interface-md font-semibold text-on-surface truncate" title="team-collaboration.png">team-collaboration.png</p>
+<div class="flex justify-between items-center mt-1">
+<p class="font-caption text-caption text-on-surface-variant">5.2 MB • 1920x1080</p>
+</div>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden group cursor-pointer hover:shadow-md transition-shadow">
+<div class="aspect-video bg-surface-container-low relative overflow-hidden flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-on-surface-variant">play_circle</span>
+<div class="absolute top-2 right-2 bg-surface-container-lowest/90 backdrop-blur-sm rounded px-2 py-1 flex items-center gap-1 shadow-sm">
+<span class="font-caption text-caption font-semibold">MP4</span>
+</div>
+</div>
+<div class="p-3">
+<p class="font-interface-md text-interface-md font-semibold text-on-surface truncate" title="product_demo_v2.mp4">product_demo_v2.mp4</p>
+<div class="flex justify-between items-center mt-1">
+<p class="font-caption text-caption text-on-surface-variant">24.8 MB • 02:15</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Detail Panel (Fixed on right) -->
+<div class="w-[320px] bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm flex flex-col h-full overflow-hidden shrink-0">
+<div class="p-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest">
+<h3 class="font-headline-md text-interface-md font-semibold text-on-surface">File Details</h3>
+<button class="text-on-surface-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="overflow-y-auto flex-1 p-4 bg-surface">
+<div class="aspect-video bg-surface-container-low rounded-lg overflow-hidden mb-4 border border-outline-variant">
+<img alt="Workspace Hero Preview" class="w-full h-full object-cover" data-alt="A minimalist, modern workspace setup. A sleek laptop sits on a clean, white desk next to a small, green succulent plant. Natural light streams in, creating soft, bright reflections. The overall aesthetic is professional, clean, and light-mode compatible." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrrignfPRhKwSpl9z4_5iQGxQlwtMEVoweE75MTHwpN_cX1V0kroSXhcAJpvKNXpzmk_AWwAPZnFIKM4_e8nGJyLTujEw6DLYSycbxGxm_Mqu_1shFiQSu-b-fPlOqOSaygtOY8NhIPHhWJ7PTYh_fHjfBAgK6fR6Eg4SQwAxBNh7o64Q5gIvp_-Exvft75Ns1aahFY1VR-NEFU83tYrbEeV2lVs5yWsTN4uhTMtemiQ-2y_zqS_njoue_NHVOrqleh5tpy-BWEzM"/>
+</div>
+<div class="space-y-4">
+<div>
+<label class="font-label-sm text-label-sm text-on-surface-variant block mb-1">File Name</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 font-interface-md text-interface-md text-on-surface focus:ring-2 focus:ring-primary focus:border-primary" type="text" value="workspace-hero.jpg"/>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<span class="font-caption text-caption text-on-surface-variant block">Type</span>
+<span class="font-interface-md text-interface-md text-on-surface">Image/JPEG</span>
+</div>
+<div>
+<span class="font-caption text-caption text-on-surface-variant block">Size</span>
+<span class="font-interface-md text-interface-md text-on-surface">2.4 MB</span>
+</div>
+<div>
+<span class="font-caption text-caption text-on-surface-variant block">Dimensions</span>
+<span class="font-interface-md text-interface-md text-on-surface">1200 x 800</span>
+</div>
+<div>
+<span class="font-caption text-caption text-on-surface-variant block">Uploaded</span>
+<span class="font-interface-md text-interface-md text-on-surface">Oct 24, 2023</span>
+</div>
+</div>
+<div class="pt-4 border-t border-outline-variant">
+<label class="font-label-sm text-label-sm text-on-surface block mb-2">Alternative Text</label>
+<textarea class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 font-interface-md text-interface-md text-on-surface focus:ring-2 focus:ring-primary focus:border-primary resize-none" placeholder="Describe the image for screen readers..." rows="3">Modern workspace with laptop and succulent.</textarea>
+<p class="font-caption text-caption text-on-surface-variant mt-1">Leave empty if the image is purely decorative.</p>
+</div>
+</div>
+</div>
+<div class="p-4 border-t border-outline-variant bg-surface-container-lowest flex flex-col gap-2">
+<button class="w-full bg-surface-container-lowest text-on-surface border border-outline-variant hover:bg-surface-container-low font-label-sm text-label-sm py-2 rounded-lg transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">link</span>
+                            Copy URL
+                        </button>
+<button class="w-full bg-error-container text-on-error-container hover:bg-error/20 font-label-sm text-label-sm py-2 rounded-lg transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">delete</span>
+                            Delete File
+                        </button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

@@ -1549,6 +1549,109 @@ button {
   white-space: nowrap;
 }
 
+.admin-media-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.admin-media-card {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid var(--color-border-soft);
+  border-radius: 16px;
+  background: var(--color-background);
+}
+
+.admin-media-card__preview {
+  grid-row: span 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 72px;
+  border-radius: 14px;
+  background: var(--color-surface-container);
+  color: var(--color-primary);
+  font-size: 26px;
+}
+
+.admin-media-card strong,
+.admin-user-cell strong,
+.admin-permission-list__row strong,
+.admin-analytics-row strong {
+  display: block;
+  color: var(--color-text);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.admin-media-card p,
+.admin-permission-list__row p {
+  margin: 2px 0 0;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.admin-media-card span,
+.admin-media-card small {
+  color: var(--color-text-subtle);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.admin-user-grid {
+  grid-template-columns: minmax(0, 1.6fr) 120px 120px 80px;
+}
+
+.admin-user-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-user-cell > span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: var(--color-primary-soft);
+  color: var(--color-primary-soft-text);
+  font-weight: 700;
+}
+
+.admin-permission-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.admin-permission-list__row {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--color-border-soft);
+  border-radius: 14px;
+  background: var(--color-background);
+}
+
+.admin-permission-list__row .admin-icon {
+  color: var(--color-primary);
+}
+
+.admin-chart--compact {
+  height: 260px;
+}
+
+.admin-analytics-row {
+  grid-template-columns: minmax(0, 1.6fr) 120px 100px 100px;
+}
+
 @keyframes admin-spin {
   to {
     transform: rotate(360deg);
@@ -1620,7 +1723,10 @@ button {
 
   .admin-post-grid,
   .admin-category-grid,
-  .admin-comment-grid {
+  .admin-comment-grid,
+  .admin-user-grid,
+  .admin-analytics-row,
+  .admin-media-grid {
     grid-template-columns: 1fr;
   }
 

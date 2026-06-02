@@ -185,3 +185,14 @@ Stitch 项目：
 - [complete] 实现 `/authors/:id` 作者主页，展示作者信息、关注按钮、文章数量和作者文章列表。
 - [complete] 更新前台导航和页脚，把分类/关于从页面锚点改为真实路由。
 - [complete] 验证通过：`cargo fmt --check`、`cargo test --offline`、`go test ./... -count=1 -timeout=120s`。
+
+# 新增阶段：远端缺失页面补全与本地 Web 原型落地
+
+目标：通过 Stitch MCP 补全远端缺失页面，重新同步远端快照到本地，并将缺失页面落地到本地公开 SSR 与后台 React 原型。
+
+当前状态：
+- [complete] Stitch 远端新增并核验 6 个页面：标签文章列表、文章归档、404、媒体库、用户与权限、数据分析。
+- [complete] 本地快照已重新同步到 `stitch_current_snapshot/`，当前 screen 总数为 20，并包含新增页面的 HTML、截图和 raw JSON。
+- [complete] 公开 SSR 已补齐 `/search`、`/tags/:slug`、`/archive` 和品牌 404 fallback。
+- [complete] 后台 React 已补齐 `/media`、`/users`、`/analytics` 原型页、侧栏入口、英文文案和响应式样式。
+- [complete] 验证通过：`cargo fmt --check`、`cargo test --offline --test public_pages_static`、`cargo test --offline`、`go test ./... -count=1 -timeout=120s`、`npm --prefix client run check:i18n`、`npm --prefix client run check:ui`、`npm --prefix client run build`。

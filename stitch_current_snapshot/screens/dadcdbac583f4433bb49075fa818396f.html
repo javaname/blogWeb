@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Tag: Design Systems - Ink &amp; Insight</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-variant": "#e1e3e4",
+                      "secondary-fixed-dim": "#c8c6c5",
+                      "on-surface": "#191c1d",
+                      "outline-variant": "#c2c6d6",
+                      "outline": "#727785",
+                      "surface-container-high": "#e7e8e9",
+                      "surface-dim": "#d9dadb",
+                      "secondary": "#5f5e5e",
+                      "tertiary": "#924700",
+                      "on-tertiary-fixed-variant": "#723600",
+                      "surface-container-highest": "#e1e3e4",
+                      "primary-fixed-dim": "#adc6ff",
+                      "on-primary-container": "#fefcff",
+                      "tertiary-fixed-dim": "#ffb786",
+                      "on-error-container": "#93000a",
+                      "on-tertiary-fixed": "#311400",
+                      "inverse-primary": "#adc6ff",
+                      "on-secondary-fixed": "#1c1b1b",
+                      "surface-tint": "#005ac2",
+                      "on-tertiary-container": "#fffbff",
+                      "primary": "#0058be",
+                      "primary-fixed": "#d8e2ff",
+                      "tertiary-fixed": "#ffdcc6",
+                      "primary-container": "#2170e4",
+                      "error-container": "#ffdad6",
+                      "error": "#ba1a1a",
+                      "surface-container": "#edeeef",
+                      "on-surface-variant": "#424754",
+                      "on-primary-fixed": "#001a42",
+                      "on-primary": "#ffffff",
+                      "surface-bright": "#f8f9fa",
+                      "on-secondary": "#ffffff",
+                      "secondary-fixed": "#e5e2e1",
+                      "surface": "#f8f9fa",
+                      "background": "#f8f9fa",
+                      "on-tertiary": "#ffffff",
+                      "on-primary-fixed-variant": "#004395",
+                      "inverse-surface": "#2e3132",
+                      "on-error": "#ffffff",
+                      "tertiary-container": "#b75b00",
+                      "on-secondary-fixed-variant": "#474746",
+                      "surface-container-low": "#f3f4f5",
+                      "inverse-on-surface": "#f0f1f2",
+                      "on-background": "#191c1d",
+                      "surface-container-lowest": "#ffffff",
+                      "on-secondary-container": "#636262",
+                      "secondary-container": "#e2dfde"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-desktop": "40px",
+                      "container-max": "1200px",
+                      "base": "8px",
+                      "margin-mobile": "16px",
+                      "gutter": "24px",
+                      "article-max": "720px"
+              },
+              "fontFamily": {
+                      "interface-md": [
+                              "Inter"
+                      ],
+                      "label-sm": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "article-body": [
+                              "Source Serif 4"
+                      ],
+                      "caption": [
+                              "Inter"
+                      ],
+                      "display-lg-mobile": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "article-body-mobile": [
+                              "Source Serif 4"
+                      ]
+              },
+              "fontSize": {
+                      "interface-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "label-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "article-body": [
+                              "20px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "caption": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "article-body-mobile": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings:
+          'FILL' 0,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface antialiased">
+<!-- TopNavBar -->
+<header class="bg-surface-container-lowest dark:bg-on-surface border-b border-outline-variant dark:border-outline sticky top-0 z-50">
+<div class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto h-20">
+<!-- Brand -->
+<a class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg font-bold text-on-surface dark:text-surface hover:opacity-80 transition-opacity" href="#">
+                Ink &amp; Insight
+            </a>
+<!-- Navigation Links (Desktop) -->
+<nav class="hidden md:flex items-center gap-gutter">
+<a class="font-interface-md text-interface-md text-on-surface-variant dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed-dim transition-colors duration-200" href="#">Latest</a>
+<a class="font-interface-md text-interface-md text-primary dark:text-primary-fixed-dim border-b-2 border-primary dark:border-primary-fixed-dim pb-1 opacity-80 transition-opacity hover:text-primary dark:hover:text-primary-fixed-dim transition-colors duration-200" href="#">Categories</a>
+<a class="font-interface-md text-interface-md text-on-surface-variant dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed-dim transition-colors duration-200" href="#">About</a>
+</nav>
+<!-- Actions -->
+<div class="flex items-center gap-base">
+<button aria-label="Search" class="p-2 text-on-surface-variant hover:text-primary transition-colors duration-200">
+<span class="material-symbols-outlined">search</span>
+</button>
+<button class="bg-primary text-on-primary font-label-sm text-label-sm px-4 py-2 rounded-lg hover:bg-primary-container transition-colors duration-200 hidden md:block">
+                    Subscribe
+                </button>
+<button aria-label="Menu" class="md:hidden p-2 text-on-surface-variant hover:text-primary transition-colors duration-200">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Page Header -->
+<section class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pt-16 pb-12">
+<div class="max-w-3xl">
+<span class="font-label-sm text-label-sm text-primary uppercase tracking-wider mb-4 block">Tag</span>
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-on-surface mb-6">Design Systems</h1>
+<p class="font-article-body-mobile md:font-article-body text-article-body-mobile md:text-article-body text-on-surface-variant mb-8">
+                Principles, patterns, and strategies for building consistent and scalable digital interfaces.
+            </p>
+<!-- Stats Bar -->
+<div class="flex flex-wrap items-center gap-6 py-4 border-t border-b border-surface-variant">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline">article</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">12 Articles</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline">category</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">3 Related Categories</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline">update</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Last Updated: Oct 28, 2024</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Main Content -->
+<main class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pb-24 grid grid-cols-1 lg:grid-cols-12 gap-12">
+<!-- Left Column: Article List -->
+<div class="lg:col-span-8 flex flex-col gap-8">
+<!-- Article Card 1 -->
+<article class="bg-surface-container-lowest border border-surface-variant rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-start">
+<span class="bg-primary-fixed text-on-primary-fixed font-caption text-caption px-2 py-1 rounded">ARCHITECTURE</span>
+<button aria-label="Like" class="text-outline-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined">favorite</span>
+</button>
+</div>
+<a class="group" href="#">
+<h3 class="font-headline-md text-headline-md text-on-surface group-hover:text-primary transition-colors duration-200 mb-2">The Tokenization Imperative</h3>
+<p class="font-article-body-mobile text-article-body-mobile text-on-surface-variant line-clamp-2">
+                            Moving beyond simple color palettes to establish a robust, semantic design token architecture that scales across platforms and themes.
+                        </p>
+</a>
+<div class="flex items-center justify-between mt-4 pt-4 border-t border-surface-variant">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-variant bg-cover bg-center" data-alt="A professional headshot of a smiling man with a beard, wearing a casual grey shirt, set against a blurred outdoor background. The lighting is soft and natural, suggesting a friendly, approachable author persona for a modern digital publication." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCSX43n3OwzRqmnPcTkfrpIT8j7BDOZPKpF2MnMBAHAkXURl-6SWi8N4mB5w2JNjbIXoqnk48jjEwJ0U8EeTH_YimL41VrswsmbRdLseyAkwoKfCdasqriGp2VC1X_9ozLLFiMWf26UOjLrqx5ENQ0MWYqyQCz76LM2Va11V8NeGtK5S88-PQEcdVp8UdSbb3W9LpVkDGEP2QRUCtcVmirxEo27LjlPJXRY1On76XK9rRAUXOJXJsAvgb9II72GluKEIiaYhmT69Ug')"></div>
+<span class="font-label-sm text-label-sm text-on-surface">Alex Rivera</span>
+</div>
+<div class="flex items-center gap-4 text-on-surface-variant font-caption text-caption">
+<span>12 Oct 2024</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">schedule</span> 8 min read</span>
+</div>
+</div>
+</div>
+</article>
+<!-- Article Card 2 -->
+<article class="bg-surface-container-lowest border border-surface-variant rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-start">
+<span class="bg-primary-fixed text-on-primary-fixed font-caption text-caption px-2 py-1 rounded">IMPLEMENTATION</span>
+<button aria-label="Like" class="text-outline-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined">favorite</span>
+</button>
+</div>
+<a class="group" href="#">
+<h3 class="font-headline-md text-headline-md text-on-surface group-hover:text-primary transition-colors duration-200 mb-2">Syncing Figma with Codebases</h3>
+<p class="font-article-body-mobile text-article-body-mobile text-on-surface-variant line-clamp-2">
+                            A deep dive into automating the pipeline between design tools and developer environments using modern APIs and CI/CD pipelines.
+                        </p>
+</a>
+<div class="flex items-center justify-between mt-4 pt-4 border-t border-surface-variant">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-variant bg-cover bg-center" data-alt="A professional headshot of a smiling woman with dark hair, looking directly at the camera. The background is a soft, warm blur. The lighting highlights her features, creating a clear and engaging author profile image for a technology blog." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDuHMTwKkbz8TvLX2AtLJO3dCmFRvuuk2Y4tRWV4OO13InNNilTvpxqLrYMfS72DY1YfnZh9xtGQhCOlWwhshC_Ud_vRHGDF0sU10cLOPOEjWSYWs7VNUSsQ-88ezLO9jbwvOHIy0Cz1i2XrS93T1E1ITr0NPCItZHDIGYrpliQmJ04HO0cxcZurmGVXUFrnR2ODQaWRbUsBfhE1bTvw-bhI09apWIOp7oarYsHgYAmjKd0pynoC2LkPhcP86viIlVeWXqDze1hL9U')"></div>
+<span class="font-label-sm text-label-sm text-on-surface">Sarah Chen</span>
+</div>
+<div class="flex items-center gap-4 text-on-surface-variant font-caption text-caption">
+<span>05 Oct 2024</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">schedule</span> 12 min read</span>
+</div>
+</div>
+</div>
+</article>
+<!-- Article Card 3 -->
+<article class="bg-surface-container-lowest border border-surface-variant rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-start">
+<span class="bg-primary-fixed text-on-primary-fixed font-caption text-caption px-2 py-1 rounded">ACCESSIBILITY</span>
+<button aria-label="Like" class="text-outline-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined">favorite</span>
+</button>
+</div>
+<a class="group" href="#">
+<h3 class="font-headline-md text-headline-md text-on-surface group-hover:text-primary transition-colors duration-200 mb-2">Baking A11y into the Foundation</h3>
+<p class="font-article-body-mobile text-article-body-mobile text-on-surface-variant line-clamp-2">
+                            Why accessibility cannot be an afterthought, and how to embed WCAG compliance directly into your component library's DNA.
+                        </p>
+</a>
+<div class="flex items-center justify-between mt-4 pt-4 border-t border-surface-variant">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-variant bg-cover bg-center" data-alt="A portrait of a young man with a slight smile, wearing a dark t-shirt. The background is a crisp, bright white, providing high contrast. The image is clear and professional, suited for a modern editorial platform's author bio." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA6al4noyT46OYtEpiH4yD7tPIuP_6ymNXiEUvqcdBjr76saSy0ONSxR5VhwlfhAiAloiVfAc4Zhwtco_LW2JXoolsHpmnre_4NZzoANfk2VSwlG2Km_Gl7PrTeXcA_nnIKdISEU2bieXlhLPVOJiFAKupB93D34yx_-P12I7BrKWHdq0F75l_oEO6Yq5AXrRJQqu7oAYntYqcTfv8Irb3OiFGNoKKVPX11yT2Vr0SKb5Nq-QaBNvCDl-sO-IQXDo8rDRCV9GKEMuQ')"></div>
+<span class="font-label-sm text-label-sm text-on-surface">Marcus Thorne</span>
+</div>
+<div class="flex items-center gap-4 text-on-surface-variant font-caption text-caption">
+<span>28 Sep 2024</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">schedule</span> 6 min read</span>
+</div>
+</div>
+</div>
+</article>
+</div>
+<!-- Right Column: Sidebar -->
+<aside class="lg:col-span-4 flex flex-col gap-10">
+<!-- Related Tags -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-surface-variant">
+<h4 class="font-headline-md text-headline-md text-on-surface mb-4">Related Tags</h4>
+<div class="flex flex-wrap gap-2">
+<a class="bg-surface-container px-3 py-1.5 rounded-full font-caption text-caption text-on-surface-variant hover:bg-surface-container-high transition-colors" href="#">UI Patterns</a>
+<a class="bg-surface-container px-3 py-1.5 rounded-full font-caption text-caption text-on-surface-variant hover:bg-surface-container-high transition-colors" href="#">Accessibility</a>
+<a class="bg-surface-container px-3 py-1.5 rounded-full font-caption text-caption text-on-surface-variant hover:bg-surface-container-high transition-colors" href="#">Frontend</a>
+<a class="bg-surface-container px-3 py-1.5 rounded-full font-caption text-caption text-on-surface-variant hover:bg-surface-container-high transition-colors" href="#">Documentation</a>
+<a class="bg-surface-container px-3 py-1.5 rounded-full font-caption text-caption text-on-surface-variant hover:bg-surface-container-high transition-colors" href="#">React</a>
+</div>
+</div>
+<!-- Popular Categories -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-surface-variant">
+<h4 class="font-headline-md text-headline-md text-on-surface mb-4">Popular Categories</h4>
+<ul class="flex flex-col gap-3">
+<li>
+<a class="flex justify-between items-center group" href="#">
+<span class="font-interface-md text-interface-md text-on-surface-variant group-hover:text-primary transition-colors">Engineering</span>
+<span class="font-caption text-caption text-outline bg-surface-container px-2 py-0.5 rounded-full">42</span>
+</a>
+</li>
+<li>
+<a class="flex justify-between items-center group" href="#">
+<span class="font-interface-md text-interface-md text-on-surface-variant group-hover:text-primary transition-colors">Product Design</span>
+<span class="font-caption text-caption text-outline bg-surface-container px-2 py-0.5 rounded-full">38</span>
+</a>
+</li>
+<li>
+<a class="flex justify-between items-center group" href="#">
+<span class="font-interface-md text-interface-md text-on-surface-variant group-hover:text-primary transition-colors">UX Strategy</span>
+<span class="font-caption text-caption text-outline bg-surface-container px-2 py-0.5 rounded-full">24</span>
+</a>
+</li>
+</ul>
+</div>
+<!-- Newsletter Subscribe -->
+<div class="bg-surface-container-low p-6 rounded-xl border border-surface-variant">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary">mail</span>
+<h4 class="font-headline-md text-headline-md text-on-surface">The Weekly Insight</h4>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-4">Get the latest design system articles delivered to your inbox.</p>
+<form action="#" class="flex flex-col gap-3" method="POST">
+<label class="sr-only" for="email">Email address</label>
+<input class="w-full px-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-interface-md text-interface-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow" id="email" name="email" placeholder="you@company.com" required="" type="email"/>
+<button class="w-full bg-primary text-on-primary font-label-sm text-label-sm py-2 px-4 rounded-lg hover:bg-primary-container transition-colors duration-200" type="submit">
+                        Subscribe
+                    </button>
+</form>
+</div>
+</aside>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-low dark:bg-inverse-surface border-t border-surface-variant dark:border-inverse-on-surface">
+<div class="w-full py-12 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto flex flex-col md:flex-row justify-between items-center gap-base">
+<!-- Brand & Copyright -->
+<div class="flex flex-col items-center md:items-start gap-2">
+<span class="font-headline-md text-headline-md font-bold text-on-surface dark:text-surface">Ink &amp; Insight</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant dark:text-secondary-fixed-dim">© 2024 Ink &amp; Insight. All rights reserved.</span>
+</div>
+<!-- Links -->
+<nav class="flex flex-wrap justify-center gap-6">
+<a class="font-label-sm text-label-sm text-on-surface-variant dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed-dim transition-colors duration-200 hover:scale-95 transition-transform" href="#">Privacy Policy</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed-dim transition-colors duration-200 hover:scale-95 transition-transform" href="#">Terms of Service</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed-dim transition-colors duration-200 hover:scale-95 transition-transform" href="#">Cookie Policy</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed-dim transition-colors duration-200 hover:scale-95 transition-transform" href="#">RSS Feed</a>
+</nav>
+</div>
+</footer>
+</body></html>
