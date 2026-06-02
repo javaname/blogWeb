@@ -206,3 +206,46 @@ Stitch 项目：
 - [complete] 已确认 Rust 测试仅读取 `tests/golden/**/*.json` 静态 fixture，不再依赖运行 Go 代码。
 - [complete] 已删除 Go 源码、Go 测试、`go.mod` 和 `go.sum`。
 - [complete] 已同步 README、CLAUDE、前端 UI 检查脚本和安全测试说明，当前验证矩阵切换为 Rust/前端。
+
+# 新增阶段：根据前端页面完善后端接口
+
+目标：对照当前已落地的前端页面，把仍停留在静态原型或原型级数据的页面补成真实 Rust 后端接口闭环，优先服务后台管理端 `/media`、`/users`、`/analytics` 三个页面。
+
+排产原则：
+- 先补接口契约和后端 TDD，再改前端页面接入真实数据。
+- 复用现有认证、CSRF、分页、错误响应和上传策略，不新增读者登录体系。
+- 对数据库结构谨慎扩展；能从现有表聚合的数据优先聚合，确需新资源表时单独迁移。
+- 每个切片完成后运行对应 Rust 测试和前端检查，并阶段提交推送。
+
+当前状态：
+- [complete] 盘点前端页面和后端路由缺口
+- [complete] 排产接口范围与实施切片
+- [pending] 切片 1：后台媒体库接口
+  - [pending] `GET /api/admin/media`：返回上传资源列表、类型/大小/使用状态、分页和筛选
+  - [pending] `GET /api/admin/media/stats` 或列表内 `stats`：返回文件数、存储占用、被文章使用数量、待补 alt 数量
+  - [pending] `POST /api/admin/media`：复用现有上传策略，返回可用于文章封面的资源记录
+  - [pending] `PUT /api/admin/media/:id`：更新 alt/title/usage 元数据
+  - [pending] `DELETE /api/admin/media/:id`：未被文章引用时删除记录和文件，引用中资源拒绝删除
+  - [pending] 前端 `/media` 从静态数组切换为真实 API，并保留空状态/加载/错误态
+- [pending] 切片 2：后台用户与权限接口
+  - [pending] `GET /api/admin/users`：返回管理员/编辑/普通用户列表、文章数、邮箱、角色和状态
+  - [pending] `GET /api/admin/users/stats` 或列表内 `stats`：返回总成员、管理员、编辑、待邀请/待验证数量
+  - [pending] `POST /api/admin/users/invitations`：预留邀请成员闭环，先支持创建 pending 用户或邀请记录
+  - [pending] `PUT /api/admin/users/:id/role`：调整角色，禁止降级最后一个管理员
+  - [pending] `PUT /api/admin/users/:id/status`：启用/禁用用户，禁止禁用当前会话用户和最后一个管理员
+  - [pending] 前端 `/users` 从静态数组切换为真实 API，权限说明保留配置化静态文案
+- [pending] 切片 3：后台数据分析接口
+  - [pending] `GET /api/admin/analytics`：返回指标卡、30 天趋势、来源分布和热门内容
+  - [pending] 基于现有文章、评论、点赞、收藏、关注、订阅等表聚合可用指标
+  - [pending] 视图/来源/阅读时长等当前无事件表的数据先返回明确的估算或空数据来源标识
+  - [pending] 前端 `/analytics` 从静态数组切换为真实 API，并处理无事件数据时的展示
+- [pending] 切片 4：公开标签能力从原型筛选升级
+  - [pending] 评估是否新增 tags/article_tags 表；若暂不新增，则明确 `/tags/:slug` 的派生规则和后台不可编辑边界
+  - [pending] 如新增标签表，同步补后台文章编辑标签字段、公开标签列表和 MCP 只读资源
+- [pending] 切片 5：验证、文档、提交和推送
+  - [pending] `cargo fmt --check`
+  - [pending] `cargo test --offline`
+  - [pending] `npm --prefix client run check:i18n`
+  - [pending] `npm --prefix client run check:ui`
+  - [pending] `npm --prefix client run build`
+  - [pending] 阶段提交并推送到远程

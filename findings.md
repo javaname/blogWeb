@@ -141,3 +141,14 @@
 - Rust 后端已覆盖 Go 后端生产入口和主要行为，Go 代码不再承担生产路径。
 - `tests/golden/**/*.json` 继续保留为冻结兼容 fixture；Rust 测试读取这些 JSON，但不再运行 Go golden 生成测试。
 - 当前验证矩阵应使用 `cargo fmt --check`、`cargo test --offline`、`npm --prefix client run check:i18n`、`npm --prefix client run check:ui` 和 `npm --prefix client run build`。
+
+## 2026-06-02 根据前端页面完善后端接口
+
+- 当前后台 React 已有 `/media`、`/users`、`/analytics` 页面，但三者仍使用页面内静态数组，没有 `adminApi.js` 调用真实接口。
+- Rust 后端当前后台路由覆盖认证、dashboard、settings、articles、categories、comments 和 upload；尚未挂载 `/api/admin/media`、`/api/admin/users`、`/api/admin/analytics`。
+- `/media` 页面需要资源列表、资源统计、上传入口和上传规则；现有 `POST /api/admin/upload` 只能上传并返回 URL，不保存独立媒体资源元数据。
+- `/users` 页面需要成员列表、角色、状态、文章数和成员统计；现有 users 表已有 username/password/role/email/email_verified_at 基础字段，可先聚合文章数并定义 active/pending/disabled 语义。
+- `/analytics` 页面需要指标卡、趋势、来源分布和热门内容；现有数据库可以聚合文章、评论、点赞、收藏、关注、订阅等指标，但没有真实页面访问事件、来源和阅读时长表。
+- 公开 `/search`、`/archive`、`/tags/:slug` 已有 SSR 路由；其中 `/tags/:slug` 当前是基于 slug 派生关键词筛选文章，尚未建立正式 tags/article_tags 数据模型。
+- 本次只做排产计划，不进入实现；后续实现仍应按 TDD 先新增 Rust 后端测试，再接前端页面真实 API。
+- `planning-with-files-zh` 的 session catchup 脚本在 `.claude` 路径不存在，和历史记录一致；不要重复同一路径失败，直接按已读计划文件恢复上下文。

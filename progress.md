@@ -381,3 +381,16 @@
 - 已确认 Rust 兼容测试只通过 `include_str!("../tests/golden/...")` 读取冻结 JSON，不需要继续运行 `internal/compat/golden_test.go`。
 - 已删除 Go 源码、Go 测试、`go.mod` 和 `go.sum`。
 - 已将当前开发文档和前端完整性检查改为 Rust/前端验证矩阵。
+
+## 2026-06-02 根据前端页面完善后端接口排产
+
+- 用户要求“根据前端页面完善后端接口，先按计划排产内容”。
+- 已按规划流程恢复 `task_plan.md`、`findings.md`、`progress.md`，并确认 Git 工作区起点为 `main...origin/main` 干净。
+- 已使用 CodeGraph 盘点前端页面和 API 调用：
+  - `Dashboard`、`Settings`、`Posts`、`ArticleEdit`、`Categories`、`Comments` 已接入 `client/src/utils/adminApi.js` 的真实接口。
+  - `Media`、`Users`、`Analytics` 仍使用页面内静态数组，尚未调用真实后端 API。
+- 已使用 CodeGraph/路由文本确认 Rust 后端当前只挂载后台认证、dashboard、settings、articles、categories、comments 和 upload，缺少 `/api/admin/media`、`/api/admin/users`、`/api/admin/analytics`。
+- 已在 `task_plan.md` 新增“根据前端页面完善后端接口”阶段，拆为媒体库、用户与权限、数据分析、公开标签能力、验证提交 5 个切片。
+- 已在 `findings.md` 记录接口缺口、可复用现有表和需要谨慎新增数据模型的点。
+- 遇到的问题：`planning-with-files-zh` 的 session catchup 脚本在 `.claude` 路径不存在，错误为 `can't open file ... session-catchup.py`；按历史记录继续使用现有计划文件恢复上下文。
+- 当前状态：排产草案已写入计划文件，等待用户确认优先级和范围后进入 TDD 实现。
