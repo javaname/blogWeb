@@ -10,9 +10,9 @@ const filesToScanForMojibake = [
   'templates/article.html',
   'templates/category.html',
   'public/assets/site.js',
-  'internal/handler/http.go',
-  'internal/handler/presentation.go',
-  'internal/service/article.go',
+  'src/http_public.rs',
+  'src/admin_read.rs',
+  'src/admin_write.rs',
 ];
 
 const mojibakePatterns = [

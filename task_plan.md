@@ -196,3 +196,13 @@ Stitch 项目：
 - [complete] 公开 SSR 已补齐 `/search`、`/tags/:slug`、`/archive` 和品牌 404 fallback。
 - [complete] 后台 React 已补齐 `/media`、`/users`、`/analytics` 原型页、侧栏入口、英文文案和响应式样式。
 - [complete] 验证通过：`cargo fmt --check`、`cargo test --offline --test public_pages_static`、`cargo test --offline`、`go test ./... -count=1 -timeout=120s`、`npm --prefix client run check:i18n`、`npm --prefix client run check:ui`、`npm --prefix client run build`。
+
+# 新增阶段：退役 Go 后端实现
+
+目标：对照 Go 与 Rust 后端实现，删除已由 Rust 完整重写的 Go 版本，保留静态 golden 作为兼容契约。
+
+当前状态：
+- [complete] 已确认 Rust 覆盖 Web、MCP、数据库迁移、认证会话、公开/后台 API、上传、读者互动和邮件注册等生产路径。
+- [complete] 已确认 Rust 测试仅读取 `tests/golden/**/*.json` 静态 fixture，不再依赖运行 Go 代码。
+- [complete] 已删除 Go 源码、Go 测试、`go.mod` 和 `go.sum`。
+- [complete] 已同步 README、CLAUDE、前端 UI 检查脚本和安全测试说明，当前验证矩阵切换为 Rust/前端。

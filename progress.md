@@ -373,3 +373,11 @@
   - `npm --prefix client run check:i18n`
   - `npm --prefix client run check:ui`
   - `npm --prefix client run build`
+
+## 2026-06-02 Go 后端实现退役
+
+- 用户确认按方案 A 执行：删除已由 Rust 完整重写的 Go 实现，保留静态 `tests/golden/**/*.json` 作为兼容契约。
+- 已核对 Rust 生产路径覆盖：`serve-web`、`serve-mcp`、`mcp issue-token`、`mcp revoke-token`、`db check/migrate`、公开 SSR/API、后台 API、读者互动、上传、邮箱注册和 MCP 能力。
+- 已确认 Rust 兼容测试只通过 `include_str!("../tests/golden/...")` 读取冻结 JSON，不需要继续运行 `internal/compat/golden_test.go`。
+- 已删除 Go 源码、Go 测试、`go.mod` 和 `go.sum`。
+- 已将当前开发文档和前端完整性检查改为 Rust/前端验证矩阵。

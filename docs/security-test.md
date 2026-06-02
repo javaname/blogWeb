@@ -14,17 +14,17 @@
 ## 执行方式
 
 ```powershell
-go test ./...
+cargo test --offline
 ```
 
 重点测试文件：
 
-- `internal/service/renderer_test.go`
-- `internal/service/upload_test.go`
-- `internal/handler/http_test.go`
-- `internal/mcp/http_test.go`
-- `internal/mcp/server_test.go`
-- `internal/mcp/transport_stdio_test.go`
+- `tests/public_articles.rs`
+- `tests/public_interactions.rs`
+- `tests/admin_auth.rs`
+- `tests/admin_write.rs`
+- `tests/mcp.rs`
+- `tests/http_health.rs`
 
 ## 人工补充检查
 

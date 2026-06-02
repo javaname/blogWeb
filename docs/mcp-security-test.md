@@ -16,7 +16,7 @@
 ## 执行方式
 
 ```powershell
-go test ./internal/mcp/...
+cargo test --offline --test mcp
 ```
 
 ## 人工核对

@@ -2,7 +2,7 @@
 
 个人博客系统，包含：
 
-- Rust 后端 Web 站点（Go 实现暂保留为兼容基线）
+- Rust 后端 Web 站点
 - React 管理后台
 - MCP Server（stdio / HTTP）
 
@@ -41,7 +41,9 @@ npm run dev
 
 ```powershell
 cargo test --offline
-go test ./internal/compat -run TestGenerateGoldenBaseline -count=1
+npm --prefix client run check:i18n
+npm --prefix client run check:ui
+npm --prefix client run build
 ```
 
 ## MCP Token

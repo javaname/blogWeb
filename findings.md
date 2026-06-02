@@ -135,3 +135,9 @@
 - 当前本地 `stitch_current_snapshot/` 已包含 20 个 screen；新增 6 个页面 ID 为：标签文章列表 `dadcdbac583f4433bb49075fa818396f`、文章归档 `ae95df4cf57543d4a2e0cb364620d6f4`、404 页面 `c34cacb03f4c4fa5b4970e47849d7495`、媒体库 `41331a660d53466fbf701b1fdb299c71`、用户与权限 `5897a40c5d4045b2a7dffc9bcaf10540`、数据分析 `64460493e53e4651a2832da531df7777`。
 - 公开 SSR 现在覆盖独立搜索 `/search`、标签页 `/tags/:slug`、归档页 `/archive` 和 HTML 404 fallback；标签页目前基于 slug 派生关键词筛选文章，属于原型级实现，不新增独立 tag 数据表。
 - 后台 `/media`、`/users`、`/analytics` 当前是 React 原型页面，复用现有后台壳层和静态数据展示；后端尚未新增独立媒体列表、用户管理列表或分析 API。
+
+## 2026-06-02 Go 后端实现退役
+
+- Rust 后端已覆盖 Go 后端生产入口和主要行为，Go 代码不再承担生产路径。
+- `tests/golden/**/*.json` 继续保留为冻结兼容 fixture；Rust 测试读取这些 JSON，但不再运行 Go golden 生成测试。
+- 当前验证矩阵应使用 `cargo fmt --check`、`cargo test --offline`、`npm --prefix client run check:i18n`、`npm --prefix client run check:ui` 和 `npm --prefix client run build`。
