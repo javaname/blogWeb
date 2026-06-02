@@ -71,6 +71,13 @@ const icons = {
       <path d="M12 17h.01" />
     </>
   ),
+  image: (
+    <>
+      <path d="M5 5h14v14H5z" />
+      <path d="M8 15l3-3 2 2 2-3 3 4" />
+      <path d="M9 9h.01" />
+    </>
+  ),
   moon: (
     <>
       <path d="M21 13a8 8 0 0 1-10-10 9 9 0 1 0 10 10z" />

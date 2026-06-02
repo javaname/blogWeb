@@ -6,8 +6,11 @@ import Categories from './pages/Categories';
 import Comments from './pages/Comments';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
+import Analytics from './pages/Analytics';
+import Media from './pages/Media';
 import Posts from './pages/Posts';
 import Settings from './pages/Settings';
+import Users from './pages/Users';
 
 export default function App() {
   return (
@@ -28,6 +31,9 @@ export default function App() {
         <Route path="articles/:id" element={<ArticleEdit />} />
         <Route path="categories" element={<Categories />} />
         <Route path="comments" element={<Comments />} />
+        <Route path="media" element={<Media />} />
+        <Route path="users" element={<Users />} />
+        <Route path="analytics" element={<Analytics />} />
         <Route path="settings" element={<Settings />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

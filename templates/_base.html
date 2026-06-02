@@ -125,8 +125,8 @@
     <a href="/" class="font-display-lg font-bold text-on-surface text-2xl md:text-3xl tracking-tight">{{ .site.title }}</a>
     <nav class="hidden md:flex items-center gap-8">
       <a class="font-interface-md text-interface-md text-primary font-bold border-b-2 border-primary pb-1" href="/">最新</a>
-      <a class="font-interface-md text-interface-md text-on-surface-variant hover:text-primary transition-colors duration-200" href="#categories">分类</a>
-      <a class="font-interface-md text-interface-md text-on-surface-variant hover:text-primary transition-colors duration-200" href="#about">关于</a>
+      <a class="font-interface-md text-interface-md text-on-surface-variant hover:text-primary transition-colors duration-200" href="/categories">分类</a>
+      <a class="font-interface-md text-interface-md text-on-surface-variant hover:text-primary transition-colors duration-200" href="/about">关于</a>
     </nav>
     <div class="flex items-center gap-4">
       <button type="button" class="hidden md:block text-on-surface-variant hover:text-primary transition-colors p-2" aria-label="搜索" data-search-toggle>
@@ -137,7 +137,7 @@
     </div>
   </div>
   <div class="hidden border-t border-outline-variant bg-surface-container-lowest" data-search-panel>
-    <form class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-4 flex flex-col sm:flex-row gap-3" data-search-form>
+    <form action="/search" class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-4 flex flex-col sm:flex-row gap-3" data-search-form>
       <label class="sr-only" for="site-search">搜索文章</label>
       <input id="site-search" name="keyword" class="flex-1 rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-3 font-interface-md text-interface-md text-on-surface placeholder:text-on-surface-variant focus:border-primary focus:ring-2 focus:ring-primary/20" placeholder="搜索文章标题或摘要" value="{{ with .keyword }}{{ . }}{{ end }}">
       <button type="submit" class="bg-primary text-on-primary px-6 py-3 rounded-lg font-interface-md text-interface-md font-bold">搜索</button>
@@ -156,7 +156,8 @@
     <div class="flex flex-col md:flex-row items-center gap-8">
       <nav class="flex gap-6">
         <a class="font-caption text-caption text-on-surface-variant hover:text-on-surface transition-colors" href="/">首页</a>
-        <a class="font-caption text-caption text-on-surface-variant hover:text-on-surface transition-colors" href="#categories">分类</a>
+        <a class="font-caption text-caption text-on-surface-variant hover:text-on-surface transition-colors" href="/categories">分类</a>
+        <a class="font-caption text-caption text-on-surface-variant hover:text-on-surface transition-colors" href="/about">关于</a>
         <a class="font-caption text-caption text-on-surface-variant hover:text-on-surface transition-colors" href="/admin">后台</a>
       </nav>
       <div class="flex gap-4">

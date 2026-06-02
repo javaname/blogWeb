@@ -57,6 +57,9 @@ const siteScript = fs.readFileSync(path.join(projectRoot, 'public/assets/site.js
 if (!siteScript.includes('data-search-form')) {
   fail('public/assets/site.js: public search form behavior is missing');
 }
+if (!siteScript.includes("new URL('/search'")) {
+  fail('public/assets/site.js: public search should navigate to /search');
+}
 if (!siteScript.includes('/api/newsletter/subscribe')) {
   fail('public/assets/site.js: newsletter subscribe API is not wired');
 }
@@ -87,11 +90,38 @@ if (!mainEntry.includes('ThemeProvider')) {
 
 const appShell = fs.readFileSync(path.join(projectRoot, 'client/src/components/AppShell.jsx'), 'utf8');
 const loginPage = fs.readFileSync(path.join(projectRoot, 'client/src/pages/Login.jsx'), 'utf8');
+const appRoutes = fs.readFileSync(path.join(projectRoot, 'client/src/App.jsx'), 'utf8');
 if (!appShell.includes('ThemeSwitcher')) {
   fail('client/src/components/AppShell.jsx: theme switcher is missing from admin shell');
 }
 if (!loginPage.includes('ThemeSwitcher')) {
   fail('client/src/pages/Login.jsx: theme switcher is missing from login page');
+}
+for (const [route, page, navKey] of [
+  ['media', 'Media', 'shell.navMedia'],
+  ['users', 'Users', 'shell.navUsers'],
+  ['analytics', 'Analytics', 'shell.navAnalytics'],
+]) {
+  if (!appRoutes.includes(`path="${route}"`) || !appRoutes.includes(`<${page} />`)) {
+    fail(`client/src/App.jsx: /${route} route is missing`);
+  }
+  if (!appShell.includes(navKey) || !appShell.includes(`/${route}`)) {
+    fail(`client/src/components/AppShell.jsx: /${route} navigation is missing`);
+  }
+  const pagePath = path.join(projectRoot, `client/src/pages/${page}.jsx`);
+  if (!fs.existsSync(pagePath)) {
+    fail(`client/src/pages/${page}.jsx: page is missing`);
+    continue;
+  }
+  const pageSource = fs.readFileSync(pagePath, 'utf8');
+  if (!pageSource.includes(`data-page="${route}"`)) {
+    fail(`client/src/pages/${page}.jsx: data-page="${route}" hook is missing`);
+  }
+}
+
+const baseTemplate = fs.readFileSync(path.join(projectRoot, 'templates/_base.html'), 'utf8');
+if (baseTemplate.includes('href="#categories"') || baseTemplate.includes('href="#about"')) {
+  fail('templates/_base.html: public navigation should use real /categories and /about routes');
 }
 
 const themeContextPath = path.join(projectRoot, 'client/src/contexts/ThemeContext.jsx');

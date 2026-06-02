@@ -87,6 +87,7 @@ async fn home_page_renders_public_articles_as_html() {
     assert!(body.contains("data-page=\"home\""), "{body}");
     assert!(body.contains("data-search-toggle"), "{body}");
     assert!(body.contains("data-search-form"), "{body}");
+    assert!(body.contains("action=\"/search\""), "{body}");
     assert!(body.contains("data-newsletter-form"), "{body}");
     assert!(body.contains("id=\"categories\""), "{body}");
     assert!(body.contains("href=\"/categories\""), "{body}");
@@ -103,6 +104,98 @@ async fn home_page_renders_public_articles_as_html() {
         body.contains("data-slug=\"rust-migration-baseline\""),
         "{body}"
     );
+}
+
+#[tokio::test]
+async fn search_page_renders_dedicated_results_from_snapshot() {
+    let response = app::router_with_pool(seeded_pool().await)
+        .oneshot(
+            Request::builder()
+                .uri("/search?keyword=Rust")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = body_text(response).await;
+    assert!(body.contains("data-page=\"search\""), "{body}");
+    assert!(body.contains("搜索结果"), "{body}");
+    assert!(body.contains("关键词：Rust"), "{body}");
+    assert!(body.contains("action=\"/search\""), "{body}");
+    assert!(body.contains("Rust Migration Baseline"), "{body}");
+    assert!(body.contains("Related Rust Story"), "{body}");
+    assert!(!body.contains("Design Systems"), "{body}");
+}
+
+#[tokio::test]
+async fn tag_page_renders_topic_results_from_snapshot() {
+    let response = app::router_with_pool(seeded_pool().await)
+        .oneshot(
+            Request::builder()
+                .uri("/tags/design-systems")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = body_text(response).await;
+    assert!(body.contains("data-page=\"tag\""), "{body}");
+    assert!(body.contains("Design Systems"), "{body}");
+    assert!(body.contains("标签文章"), "{body}");
+    assert!(
+        body.contains("data-article-slug=\"design-systems\""),
+        "{body}"
+    );
+    assert!(body.contains("data-newsletter-form"), "{body}");
+    assert!(body.contains("标签云"), "{body}");
+    assert!(!body.contains("Rust Migration Baseline"), "{body}");
+}
+
+#[tokio::test]
+async fn archive_page_renders_grouped_article_timeline() {
+    let response = app::router_with_pool(seeded_pool().await)
+        .oneshot(
+            Request::builder()
+                .uri("/archive")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = body_text(response).await;
+    assert!(body.contains("data-page=\"archive\""), "{body}");
+    assert!(body.contains("文章归档"), "{body}");
+    assert!(body.contains("2026 年"), "{body}");
+    assert!(body.contains("5 月"), "{body}");
+    assert!(body.contains("Rust Migration Baseline"), "{body}");
+    assert!(body.contains("Design Systems"), "{body}");
+    assert!(body.contains("Related Rust Story"), "{body}");
+}
+
+#[tokio::test]
+async fn unknown_public_route_renders_branded_404_page() {
+    let response = app::router_with_pool(seeded_pool().await)
+        .oneshot(
+            Request::builder()
+                .uri("/missing-page")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    let body = body_text(response).await;
+    assert!(body.contains("data-page=\"not-found\""), "{body}");
+    assert!(body.contains("页面未找到"), "{body}");
+    assert!(body.contains("返回首页"), "{body}");
+    assert!(body.contains("浏览分类"), "{body}");
 }
 
 #[tokio::test]

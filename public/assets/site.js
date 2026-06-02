@@ -266,7 +266,7 @@
         input?.focus();
         return;
       }
-      const target = new URL('/', window.location.origin);
+      const target = new URL('/search', window.location.origin);
       target.searchParams.set('keyword', keyword);
       window.location.href = target.pathname + target.search;
     });

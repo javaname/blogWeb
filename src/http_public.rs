@@ -147,10 +147,41 @@ pub async fn home_page(
     } else {
         None
     };
-    Ok(html_response(render_home_page(
+    Ok(html_response(render_article_list_page(
         &state.config,
+        "home",
+        "/",
         hero.as_ref(),
         &list,
+        &categories,
+        keyword.trim(),
+        articles.has_more,
+        &articles.next_cursor,
+    )))
+}
+
+pub async fn search_page(
+    State(state): State<PublicState>,
+    Query(query): Query<ListQuery>,
+) -> Result<axum::response::Response> {
+    let keyword = query.keyword.clone().unwrap_or_default();
+    let categories = public_categories(&state).await?;
+    let articles = published_summaries(
+        &state,
+        ListQuery {
+            limit: Some(12),
+            category: None,
+            keyword: query.keyword,
+            cursor: query.cursor,
+        },
+    )
+    .await?;
+    Ok(html_response(render_article_list_page(
+        &state.config,
+        "search",
+        "/search",
+        None,
+        &articles.list,
         &categories,
         keyword.trim(),
         articles.has_more,
@@ -252,6 +283,56 @@ pub async fn author_page(
         &articles,
         &categories,
     )))
+}
+
+pub async fn tag_page(
+    State(state): State<PublicState>,
+    Path(slug): Path<String>,
+) -> Result<axum::response::Response> {
+    let label = tag_label(&slug);
+    let categories = public_categories(&state).await?;
+    let articles = published_summaries(
+        &state,
+        ListQuery {
+            limit: Some(12),
+            category: None,
+            keyword: Some(label.clone()),
+            cursor: None,
+        },
+    )
+    .await?;
+    Ok(html_response(render_tag_page(
+        &state.config,
+        &slug,
+        &label,
+        &articles.list,
+        &categories,
+    )))
+}
+
+pub async fn archive_page(State(state): State<PublicState>) -> Result<axum::response::Response> {
+    let categories = public_categories(&state).await?;
+    let articles = published_summaries(
+        &state,
+        ListQuery {
+            limit: Some(50),
+            category: None,
+            keyword: None,
+            cursor: None,
+        },
+    )
+    .await?;
+    Ok(html_response(render_archive_page(
+        &state.config,
+        &articles.list,
+        &categories,
+    )))
+}
+
+pub async fn not_found_page(State(state): State<PublicState>) -> axum::response::Response {
+    let mut response = html_response(render_not_found_page(&state.config));
+    *response.status_mut() = StatusCode::NOT_FOUND;
+    response
 }
 
 pub async fn serve_asset(
@@ -671,8 +752,10 @@ fn read_time_min(content: &str) -> i64 {
     (words / 300).max(1)
 }
 
-fn render_home_page(
+fn render_article_list_page(
     config: &Config,
+    page: &str,
+    list_path: &str,
     hero: Option<&PublicArticleSummary>,
     articles: &[PublicArticleSummary],
     categories: &[PublicCategoryWithCount],
@@ -681,7 +764,7 @@ fn render_home_page(
     next_cursor: &str,
 ) -> String {
     let mut html = document_start(
-        "home",
+        page,
         &config.site.title,
         &config.site.description,
         "bg-background text-on-surface",
@@ -739,7 +822,7 @@ fn render_home_page(
     }
     html.push_str("</div>");
     if !keyword.is_empty() {
-        html.push_str("<a class=\"font-caption text-caption text-primary hover:underline\" href=\"/\">清除搜索</a>");
+        html.push_str("<a class=\"font-caption text-caption text-primary hover:underline\" href=\"/search\">清除搜索</a>");
     }
     html.push_str("</div>");
     render_article_grid(&mut html, articles);
@@ -753,10 +836,14 @@ fn render_home_page(
         html.push_str("</p></div>");
     }
     if has_more && !next_cursor.is_empty() {
-        html.push_str(
-            "<div class=\"flex items-center justify-center gap-4 pt-8\"><a href=\"/?cursor=",
-        );
+        html.push_str("<div class=\"flex items-center justify-center gap-4 pt-8\"><a href=\"");
+        html.push_str(list_path);
+        html.push_str("?cursor=");
         html.push_str(&escape_html(next_cursor));
+        if !keyword.is_empty() {
+            html.push_str("&keyword=");
+            html.push_str(&url_encode(keyword));
+        }
         html.push_str("\" class=\"px-6 py-2 rounded-lg border border-outline-variant hover:bg-surface-container transition-colors font-interface-md text-interface-md flex items-center gap-2\">更早文章 <span class=\"material-symbols-outlined text-[20px]\">chevron_right</span></a></div>");
     }
     html.push_str("</div><aside class=\"lg:col-span-4 space-y-8\">");
@@ -1042,6 +1129,132 @@ fn render_author_page(
     html
 }
 
+fn render_tag_page(
+    config: &Config,
+    slug: &str,
+    label: &str,
+    articles: &[PublicArticleSummary],
+    categories: &[PublicCategoryWithCount],
+) -> String {
+    let mut html = document_start(
+        "tag",
+        &format!("{} &mdash; {}", label, config.site.title),
+        &config.site.description,
+        "bg-background text-on-surface",
+        false,
+    );
+    html.push_str(&topnav(config, ""));
+    html.push_str("<main class=\"max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pt-10 pb-20\"><section class=\"mb-12 pb-8 border-b border-outline-variant\"><p class=\"text-primary font-label-sm text-label-sm uppercase tracking-wider mb-3\">标签文章</p><h1 class=\"font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg leading-tight mb-4\">");
+    html.push_str(&escape_html(label));
+    html.push_str("</h1><p class=\"font-interface-md text-interface-md text-on-surface-variant max-w-[720px]\">围绕该标签整理的公开文章，适合按主题连续阅读。</p></section><div class=\"grid grid-cols-1 lg:grid-cols-12 gap-12\"><section class=\"lg:col-span-8 space-y-8\">");
+    render_article_grid(&mut html, articles);
+    if articles.is_empty() {
+        html.push_str("<div class=\"text-center py-20\"><span class=\"material-symbols-outlined text-[64px] text-on-surface-variant opacity-40\">sell</span><p class=\"font-interface-md text-interface-md text-on-surface-variant mt-4\">该标签下暂无文章。</p></div>");
+    }
+    html.push_str("</section><aside class=\"lg:col-span-4 space-y-8\">");
+    html.push_str(&sidebar_newsletter());
+    html.push_str("<div class=\"p-6 rounded-xl bg-surface-container-low border border-outline-variant\"><h3 class=\"font-interface-md text-interface-md font-bold mb-6 flex items-center gap-2\"><span class=\"material-symbols-outlined text-primary\">sell</span> 标签云</h3><div class=\"flex flex-wrap gap-2\">");
+    for (tag_slug, tag_name) in tag_cloud(categories) {
+        html.push_str("<a class=\"rounded-full px-3 py-1 text-caption font-caption ");
+        if tag_slug == slug {
+            html.push_str("bg-primary text-on-primary");
+        } else {
+            html.push_str("bg-surface-container text-on-surface-variant hover:text-primary");
+        }
+        html.push_str("\" href=\"/tags/");
+        html.push_str(&escape_html(&tag_slug));
+        html.push_str("\">");
+        html.push_str(&escape_html(&tag_name));
+        html.push_str("</a>");
+    }
+    html.push_str("</div></div>");
+    html.push_str(&sidebar_categories(categories, None));
+    html.push_str("</aside></div></main>");
+    html.push_str(&site_footer(config));
+    html.push_str("<script src=\"/assets/site.js\" defer></script></body></html>");
+    html
+}
+
+fn render_archive_page(
+    config: &Config,
+    articles: &[PublicArticleSummary],
+    categories: &[PublicCategoryWithCount],
+) -> String {
+    let mut html = document_start(
+        "archive",
+        &format!("文章归档 &mdash; {}", config.site.title),
+        &config.site.description,
+        "bg-background text-on-surface",
+        false,
+    );
+    html.push_str(&topnav(config, ""));
+    html.push_str("<main class=\"max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pt-10 pb-20\"><section class=\"mb-12 pb-8 border-b border-outline-variant\"><p class=\"text-primary font-label-sm text-label-sm uppercase tracking-wider mb-3\">Archive</p><h1 class=\"font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg leading-tight mb-4\">文章归档</h1><p class=\"font-interface-md text-interface-md text-on-surface-variant max-w-[720px]\">按发布时间回看所有已发布内容。</p></section><div class=\"grid grid-cols-1 lg:grid-cols-12 gap-12\"><section class=\"lg:col-span-8 space-y-10\">");
+    let mut current_year = String::new();
+    let mut current_month = String::new();
+    for article in articles {
+        let (year, month) = archive_parts(article.published_at.as_deref());
+        if year != current_year {
+            if !current_year.is_empty() {
+                html.push_str("</div>");
+            }
+            current_year = year.clone();
+            current_month.clear();
+            html.push_str("<div class=\"space-y-6\"><h2 class=\"font-headline-md text-headline-md text-on-surface\">");
+            html.push_str(&escape_html(&year));
+            html.push_str(" 年</h2>");
+        }
+        if month != current_month {
+            current_month = month.clone();
+            html.push_str(
+                "<h3 class=\"font-interface-md text-interface-md font-bold text-primary mt-6\">",
+            );
+            html.push_str(&escape_html(&month));
+            html.push_str(" 月</h3>");
+        }
+        html.push_str("<article class=\"rounded-xl border border-outline-variant bg-surface-container-low p-5\"><a class=\"flex flex-col md:flex-row md:items-center gap-3 justify-between\" href=\"/articles/");
+        html.push_str(&escape_html(&article.slug));
+        html.push_str("\" data-article-slug=\"");
+        html.push_str(&escape_html(&article.slug));
+        html.push_str("\"><div><h4 class=\"font-interface-md text-interface-md font-bold hover:text-primary transition-colors\">");
+        html.push_str(&escape_html(&article.title));
+        html.push_str("</h4><p class=\"text-caption font-caption text-on-surface-variant mt-1\">");
+        html.push_str(&escape_html(&article.excerpt));
+        html.push_str(
+            "</p></div><span class=\"text-caption font-caption text-on-surface-variant shrink-0\">",
+        );
+        html.push_str(&format_date(article.published_at.as_deref()));
+        html.push_str("</span></a></article>");
+    }
+    if !current_year.is_empty() {
+        html.push_str("</div>");
+    }
+    if articles.is_empty() {
+        html.push_str("<div class=\"text-center py-20\"><span class=\"material-symbols-outlined text-[64px] text-on-surface-variant opacity-40\">archive</span><p class=\"font-interface-md text-interface-md text-on-surface-variant mt-4\">暂无归档文章。</p></div>");
+    }
+    html.push_str("</section><aside class=\"lg:col-span-4 space-y-8\">");
+    html.push_str(&sidebar_newsletter());
+    html.push_str(&sidebar_categories(categories, None));
+    html.push_str("</aside></div></main>");
+    html.push_str(&site_footer(config));
+    html.push_str("<script src=\"/assets/site.js\" defer></script></body></html>");
+    html
+}
+
+fn render_not_found_page(config: &Config) -> String {
+    let mut html = document_start(
+        "not-found",
+        &format!("页面未找到 &mdash; {}", config.site.title),
+        &config.site.description,
+        "bg-background text-on-surface",
+        false,
+    );
+    html.push_str(&topnav(config, ""));
+    html.push_str("<main class=\"max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-24\"><section class=\"max-w-[720px]\"><p class=\"text-primary font-label-sm text-label-sm uppercase tracking-wider mb-4\">404</p><h1 class=\"font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg leading-tight mb-6\">页面未找到</h1><p class=\"font-interface-md text-interface-md text-on-surface-variant mb-10\">这个页面可能已经移动、删除，或链接地址输入有误。</p><div class=\"flex flex-wrap gap-4\"><a class=\"bg-primary text-on-primary px-6 py-3 rounded-lg font-interface-md text-interface-md font-bold\" href=\"/\">返回首页</a><a class=\"border border-outline-variant px-6 py-3 rounded-lg font-interface-md text-interface-md font-bold hover:bg-surface-container\" href=\"/categories\">浏览分类</a><a class=\"border border-outline-variant px-6 py-3 rounded-lg font-interface-md text-interface-md font-bold hover:bg-surface-container\" href=\"/archive\">查看归档</a></div></section></main>");
+    html.push_str(&site_footer(config));
+    html.push_str("<script src=\"/assets/site.js\" defer></script></body></html>");
+    html
+}
+
 fn html_response(html: String) -> axum::response::Response {
     let mut response = html.into_response();
     response.headers_mut().insert(
@@ -1077,7 +1290,7 @@ fn document_start(
 fn topnav(config: &Config, keyword: &str) -> String {
     let mut html = String::from("<header class=\"bg-surface-container-lowest border-b border-outline-variant shadow-sm sticky top-0 z-40\"><div class=\"flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto\"><a href=\"/\" class=\"font-display-lg font-bold text-on-surface text-2xl md:text-3xl tracking-tight\">");
     html.push_str(&escape_html(&config.site.title));
-    html.push_str("</a><nav class=\"hidden md:flex items-center gap-8\"><a class=\"font-interface-md text-interface-md text-primary font-bold border-b-2 border-primary pb-1\" href=\"/\">最新</a><a class=\"font-interface-md text-interface-md text-on-surface-variant hover:text-primary transition-colors duration-200\" href=\"/categories\">分类</a><a class=\"font-interface-md text-interface-md text-on-surface-variant hover:text-primary transition-colors duration-200\" href=\"/about\">关于</a></nav><div class=\"flex items-center gap-4\"><button type=\"button\" class=\"hidden md:block text-on-surface-variant hover:text-primary transition-colors p-2\" aria-label=\"搜索\" data-search-toggle><span class=\"material-symbols-outlined\">search</span></button><a href=\"/admin\" class=\"font-interface-md text-interface-md text-on-surface-variant px-4 py-2 hover:text-primary transition-colors\">登录</a><button type=\"button\" class=\"bg-primary text-on-primary px-6 py-2 rounded-lg font-interface-md text-interface-md hover:bg-opacity-90 transition-all active:scale-95\" data-newsletter-focus>订阅</button></div></div><div class=\"hidden border-t border-outline-variant bg-surface-container-lowest\" data-search-panel><form class=\"max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-4 flex flex-col sm:flex-row gap-3\" data-search-form><label class=\"sr-only\" for=\"site-search\">搜索文章</label><input id=\"site-search\" name=\"keyword\" class=\"flex-1 rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-3 font-interface-md text-interface-md text-on-surface placeholder:text-on-surface-variant focus:border-primary focus:ring-2 focus:ring-primary/20\" placeholder=\"搜索文章标题或摘要\" value=\"");
+    html.push_str("</a><nav class=\"hidden md:flex items-center gap-8\"><a class=\"font-interface-md text-interface-md text-primary font-bold border-b-2 border-primary pb-1\" href=\"/\">最新</a><a class=\"font-interface-md text-interface-md text-on-surface-variant hover:text-primary transition-colors duration-200\" href=\"/categories\">分类</a><a class=\"font-interface-md text-interface-md text-on-surface-variant hover:text-primary transition-colors duration-200\" href=\"/about\">关于</a></nav><div class=\"flex items-center gap-4\"><button type=\"button\" class=\"hidden md:block text-on-surface-variant hover:text-primary transition-colors p-2\" aria-label=\"搜索\" data-search-toggle><span class=\"material-symbols-outlined\">search</span></button><a href=\"/admin\" class=\"font-interface-md text-interface-md text-on-surface-variant px-4 py-2 hover:text-primary transition-colors\">登录</a><button type=\"button\" class=\"bg-primary text-on-primary px-6 py-2 rounded-lg font-interface-md text-interface-md hover:bg-opacity-90 transition-all active:scale-95\" data-newsletter-focus>订阅</button></div></div><div class=\"hidden border-t border-outline-variant bg-surface-container-lowest\" data-search-panel><form action=\"/search\" class=\"max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-4 flex flex-col sm:flex-row gap-3\" data-search-form><label class=\"sr-only\" for=\"site-search\">搜索文章</label><input id=\"site-search\" name=\"keyword\" class=\"flex-1 rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-3 font-interface-md text-interface-md text-on-surface placeholder:text-on-surface-variant focus:border-primary focus:ring-2 focus:ring-primary/20\" placeholder=\"搜索文章标题或摘要\" value=\"");
     html.push_str(&escape_html(keyword));
     html.push_str("\"><button type=\"submit\" class=\"bg-primary text-on-primary px-6 py-3 rounded-lg font-interface-md text-interface-md font-bold\">搜索</button></form></div></header>");
     html
@@ -1347,6 +1560,49 @@ fn category_description(slug: &str, name: &str) -> String {
     }
 }
 
+fn tag_label(slug: &str) -> String {
+    slug.split('-')
+        .filter(|part| !part.trim().is_empty())
+        .map(|part| {
+            let mut chars = part.chars();
+            match chars.next() {
+                Some(first) => format!("{}{}", first.to_uppercase(), chars.as_str()),
+                None => String::new(),
+            }
+        })
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+fn tag_cloud(categories: &[PublicCategoryWithCount]) -> Vec<(String, String)> {
+    let mut tags = vec![
+        ("design-systems".to_string(), "Design Systems".to_string()),
+        ("rust".to_string(), "Rust".to_string()),
+        ("editorial".to_string(), "Editorial".to_string()),
+        ("workflow".to_string(), "Workflow".to_string()),
+    ];
+    for category in categories {
+        tags.push((category.slug.clone(), category.name.clone()));
+    }
+    tags
+}
+
+fn archive_parts(value: Option<&str>) -> (String, String) {
+    let Some(value) = value else {
+        return ("未归档".into(), "未知".into());
+    };
+    let date = value.split('T').next().unwrap_or(value);
+    let mut parts = date.split('-');
+    let year = parts.next().unwrap_or("未归档").to_string();
+    let month = parts
+        .next()
+        .map(|value| value.trim_start_matches('0'))
+        .filter(|value| !value.is_empty())
+        .unwrap_or("未知")
+        .to_string();
+    (year, month)
+}
+
 fn author_bio(username: &str) -> String {
     if username == "admin" {
         "关注内容系统、产品工程与可持续创作流程。".into()
@@ -1424,4 +1680,18 @@ fn escape_html(value: &str) -> String {
         .replace('<', "&lt;")
         .replace('>', "&gt;")
         .replace('"', "&quot;")
+}
+
+fn url_encode(value: &str) -> String {
+    let mut encoded = String::new();
+    for byte in value.bytes() {
+        match byte {
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => {
+                encoded.push(byte as char);
+            }
+            b' ' => encoded.push('+'),
+            _ => encoded.push_str(&format!("%{byte:02X}")),
+        }
+    }
+    encoded
 }

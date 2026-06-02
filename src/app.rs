@@ -32,8 +32,9 @@ use crate::http_interactions::{
     subscribe_newsletter,
 };
 use crate::http_public::{
-    about_page, article_detail, article_page, author_page, categories_index_page, category_page,
-    home_page, list_articles, serve_asset, serve_upload, PublicState,
+    about_page, archive_page, article_detail, article_page, author_page, categories_index_page,
+    category_page, home_page, list_articles, not_found_page, search_page, serve_asset,
+    serve_upload, tag_page, PublicState,
 };
 use crate::session::RedisSessionStore;
 
@@ -78,8 +79,11 @@ pub fn router_with_pool_and_config(
     Router::new()
         .route("/healthz", get(healthz))
         .route("/", get(home_page))
+        .route("/search", get(search_page))
         .route("/about", get(about_page))
         .route("/authors/:id", get(author_page))
+        .route("/archive", get(archive_page))
+        .route("/tags/:slug", get(tag_page))
         .route("/categories", get(categories_index_page))
         .route("/articles/:slug", get(article_page))
         .route("/categories/:slug", get(category_page))
@@ -124,6 +128,7 @@ pub fn router_with_pool_and_config(
         .route("/api/admin/comments/:id/status", put(update_comment_status))
         .route("/api/admin/comments/:id", delete(delete_comment))
         .route("/api/admin/upload", post(upload))
+        .fallback(get(not_found_page))
         .with_state(state)
         .layer(middleware::from_fn(apply_response_contract))
 }

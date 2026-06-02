@@ -12,6 +12,9 @@ const navItems = [
   { key: '/posts', labelKey: 'shell.navPosts', icon: 'article' },
   { key: '/categories', labelKey: 'shell.navCategories', icon: 'category' },
   { key: '/comments', labelKey: 'shell.navComments', icon: 'comment' },
+  { key: '/media', labelKey: 'shell.navMedia', icon: 'image' },
+  { key: '/users', labelKey: 'shell.navUsers', icon: 'group' },
+  { key: '/analytics', labelKey: 'shell.navAnalytics', icon: 'trending_up' },
   { key: '/settings', labelKey: 'shell.navSettings', icon: 'settings' },
 ];
 
