@@ -142,7 +142,7 @@ export default function ArticleEdit() {
   }
 
   return (
-    <div className="admin-page">
+    <div className="admin-page article-edit">
       <section className="admin-page__header admin-page__header--split">
         <div>
           <h2>{isCreate ? t('article.createTitle') : t('article.editTitle')}</h2>
@@ -188,7 +188,7 @@ export default function ArticleEdit() {
           </div>
         </article>
 
-        <aside className="admin-editor-sidebar">
+        <aside className="admin-editor-sidebar article-edit-sidebar">
           <article className="admin-panel">
             <div className="admin-panel__head admin-panel__head--stacked">
               <div>

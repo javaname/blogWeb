@@ -42,6 +42,14 @@
   --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.05);
   --shadow-overlay: 0 18px 50px rgba(25, 28, 29, 0.14);
   --shadow-card: 0 24px 70px rgba(8, 21, 36, 0.16);
+  --shadow-motion-lift: 0 18px 45px rgba(8, 21, 36, 0.12);
+  --motion-duration-fast: 140ms;
+  --motion-duration-base: 260ms;
+  --motion-duration-slow: 520ms;
+  --motion-duration-page: 680ms;
+  --motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --motion-ease-emphasized: cubic-bezier(0.2, 0.9, 0.2, 1);
+  --motion-stagger-step: 70ms;
   --focus-ring: rgba(0, 88, 190, 0.14);
   --chart-bar: rgba(33, 112, 228, 0.08);
   --login-glass: rgba(248, 251, 255, 0.12);
@@ -96,6 +104,7 @@
   --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.38);
   --shadow-overlay: 0 18px 50px rgba(0, 0, 0, 0.42);
   --shadow-card: 0 24px 70px rgba(0, 0, 0, 0.36);
+  --shadow-motion-lift: 0 20px 48px rgba(0, 0, 0, 0.34);
   --focus-ring: rgba(139, 184, 255, 0.22);
   --chart-bar: rgba(139, 184, 255, 0.14);
   --login-glass: rgba(237, 241, 245, 0.1);
@@ -1652,9 +1661,467 @@ button {
   grid-template-columns: minmax(0, 1.6fr) 120px 100px 100px;
 }
 
+/* Motion layer keeps the admin UI close to the Stitch prototype without adding runtime dependencies. */
+.login-page__visual {
+  animation: admin-page-enter var(--motion-duration-page) var(--motion-ease-emphasized) both;
+}
+
+.login-page__copy > * {
+  animation: admin-card-enter var(--motion-duration-slow) var(--motion-ease-emphasized) both;
+}
+
+.login-page__copy > *:nth-child(2) {
+  animation-delay: var(--motion-stagger-step);
+}
+
+.login-page__copy > *:nth-child(3) {
+  animation-delay: calc(var(--motion-stagger-step) * 2);
+}
+
+.login-page__metrics article {
+  animation: admin-card-enter var(--motion-duration-slow) var(--motion-ease-emphasized) both;
+}
+
+.login-page__metrics article:nth-child(2) {
+  animation-delay: calc(var(--motion-stagger-step) * 2);
+}
+
+.login-page__metrics article:nth-child(3) {
+  animation-delay: calc(var(--motion-stagger-step) * 3);
+}
+
+.login-page__form {
+  animation: admin-page-enter var(--motion-duration-page) var(--motion-ease-emphasized) 90ms both;
+}
+
+.login-card {
+  animation: admin-card-enter var(--motion-duration-page) var(--motion-ease-emphasized) 160ms both;
+  transition: transform var(--motion-duration-base) var(--motion-ease-emphasized), box-shadow var(--motion-duration-base) ease;
+}
+
+.login-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-motion-lift);
+}
+
+.login-card__head,
+.login-card .admin-form {
+  animation: admin-form-swap var(--motion-duration-slow) var(--motion-ease-emphasized) both;
+}
+
+.login-card__tabs button,
+.admin-primary-button,
+.admin-secondary-button,
+.admin-filter-pill,
+.admin-form input,
+.admin-form select,
+.admin-form textarea,
+.admin-settings-form input,
+.admin-settings-form textarea {
+  transition: background-color var(--motion-duration-base) ease, border-color var(--motion-duration-base) ease, box-shadow var(--motion-duration-base) ease, color var(--motion-duration-base) ease, transform var(--motion-duration-fast) var(--motion-ease-standard), filter var(--motion-duration-fast) ease;
+}
+
+.login-card__tabs button:hover,
+.admin-secondary-button:hover,
+.admin-filter-pill:hover {
+  transform: translateY(-1px);
+}
+
+.admin-primary-button:active,
+.admin-secondary-button:active,
+.login-card__tabs button:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+.admin-sidebar__brand {
+  animation: admin-page-enter var(--motion-duration-slow) var(--motion-ease-emphasized) both;
+}
+
+.admin-nav__item {
+  animation: admin-card-enter var(--motion-duration-slow) var(--motion-ease-emphasized) both;
+  transition: background-color var(--motion-duration-base) ease, color var(--motion-duration-base) ease, transform var(--motion-duration-base) var(--motion-ease-emphasized), box-shadow var(--motion-duration-base) ease;
+}
+
+.admin-nav__item:nth-child(2) {
+  animation-delay: var(--motion-stagger-step);
+}
+
+.admin-nav__item:nth-child(3) {
+  animation-delay: calc(var(--motion-stagger-step) * 2);
+}
+
+.admin-nav__item:nth-child(4) {
+  animation-delay: calc(var(--motion-stagger-step) * 3);
+}
+
+.admin-nav__item:nth-child(5) {
+  animation-delay: calc(var(--motion-stagger-step) * 4);
+}
+
+.admin-nav__item:nth-child(6) {
+  animation-delay: calc(var(--motion-stagger-step) * 5);
+}
+
+.admin-nav__item:nth-child(7) {
+  animation-delay: calc(var(--motion-stagger-step) * 6);
+}
+
+.admin-nav__item:nth-child(8) {
+  animation-delay: calc(var(--motion-stagger-step) * 7);
+}
+
+.admin-nav__item .admin-icon {
+  transition: transform var(--motion-duration-base) var(--motion-ease-emphasized);
+}
+
+.admin-nav__item:hover {
+  transform: translateX(3px);
+}
+
+.admin-nav__item:hover .admin-icon,
+.admin-nav__item.is-active .admin-icon {
+  transform: translateX(2px) scale(1.04);
+}
+
+.admin-sidebar__footer,
+.admin-usercard {
+  animation: admin-card-enter var(--motion-duration-slow) var(--motion-ease-emphasized) 280ms both;
+}
+
+.admin-topbar__actions > * {
+  animation: admin-card-enter var(--motion-duration-slow) var(--motion-ease-emphasized) both;
+}
+
+.admin-topbar__actions > *:nth-child(2) {
+  animation-delay: var(--motion-stagger-step);
+}
+
+.admin-topbar__actions > *:nth-child(3) {
+  animation-delay: calc(var(--motion-stagger-step) * 2);
+}
+
+.admin-topbar__actions > *:nth-child(4) {
+  animation-delay: calc(var(--motion-stagger-step) * 3);
+}
+
+.admin-topbar-panel {
+  transform-origin: top right;
+  animation: admin-panel-pop var(--motion-duration-base) var(--motion-ease-emphasized) both;
+}
+
+.admin-topbar-panel__item {
+  animation: admin-card-enter var(--motion-duration-base) var(--motion-ease-emphasized) both;
+}
+
+.admin-topbar-panel__item:nth-child(2) {
+  animation-delay: var(--motion-stagger-step);
+}
+
+.admin-topbar-panel__item:nth-child(3) {
+  animation-delay: calc(var(--motion-stagger-step) * 2);
+}
+
+.admin-page__header {
+  animation: admin-page-enter var(--motion-duration-page) var(--motion-ease-emphasized) both;
+}
+
+.admin-panel,
+.admin-stat-card,
+.admin-media-card,
+.admin-preview-card,
+.admin-note-grid article,
+.admin-permission-list__row {
+  transition: transform var(--motion-duration-base) var(--motion-ease-emphasized), box-shadow var(--motion-duration-base) ease, border-color var(--motion-duration-base) ease, background-color var(--motion-duration-base) ease;
+}
+
+.admin-page > .admin-panel,
+.admin-page > .admin-two-column,
+.admin-page > .admin-settings-grid,
+.admin-page > .admin-dashboard-grid,
+.admin-page > .admin-footer,
+.admin-editor-layout {
+  animation: admin-card-enter var(--motion-duration-page) var(--motion-ease-emphasized) 80ms both;
+}
+
+.admin-stat-card {
+  animation: admin-card-enter var(--motion-duration-slow) var(--motion-ease-emphasized) both;
+}
+
+.admin-stat-card:nth-child(2) {
+  animation-delay: var(--motion-stagger-step);
+}
+
+.admin-stat-card:nth-child(3) {
+  animation-delay: calc(var(--motion-stagger-step) * 2);
+}
+
+.admin-stat-card:nth-child(4) {
+  animation-delay: calc(var(--motion-stagger-step) * 3);
+}
+
+.admin-stat-card:hover,
+.admin-dashboard-grid .admin-panel:hover,
+.admin-settings-grid .admin-panel:hover,
+.admin-two-column .admin-panel:hover,
+.admin-media-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--color-primary-soft-strong);
+  box-shadow: var(--shadow-motion-lift);
+}
+
+.admin-stat-card__icon,
+.admin-activity-item__icon,
+.admin-media-card__preview,
+.admin-cover-preview img {
+  transition: transform var(--motion-duration-base) var(--motion-ease-emphasized), filter var(--motion-duration-base) ease;
+}
+
+.admin-stat-card:hover .admin-stat-card__icon,
+.admin-media-card:hover .admin-media-card__preview {
+  transform: scale(1.05) rotate(-1deg);
+}
+
+.admin-chart__bars span {
+  transform-origin: bottom;
+  animation: admin-chart-grow var(--motion-duration-page) var(--motion-ease-emphasized) both;
+}
+
+.admin-chart__bars span:nth-child(2) {
+  animation-delay: var(--motion-stagger-step);
+}
+
+.admin-chart__bars span:nth-child(3) {
+  animation-delay: calc(var(--motion-stagger-step) * 2);
+}
+
+.admin-chart__bars span:nth-child(4) {
+  animation-delay: calc(var(--motion-stagger-step) * 3);
+}
+
+.admin-chart__bars span:nth-child(5) {
+  animation-delay: calc(var(--motion-stagger-step) * 4);
+}
+
+.admin-chart__bars span:nth-child(6) {
+  animation-delay: calc(var(--motion-stagger-step) * 5);
+}
+
+.admin-chart__bars span:nth-child(7) {
+  animation-delay: calc(var(--motion-stagger-step) * 6);
+}
+
+.admin-chart__bars span:nth-child(8) {
+  animation-delay: calc(var(--motion-stagger-step) * 7);
+}
+
+.admin-chart__bars span:nth-child(9) {
+  animation-delay: calc(var(--motion-stagger-step) * 8);
+}
+
+.admin-chart__bars span:nth-child(10) {
+  animation-delay: calc(var(--motion-stagger-step) * 9);
+}
+
+.admin-chart svg path:first-of-type {
+  stroke-dasharray: 960;
+  stroke-dashoffset: 960;
+  animation: admin-line-draw 900ms var(--motion-ease-emphasized) 220ms both;
+}
+
+.admin-chart svg path:nth-of-type(2) {
+  animation: admin-form-swap var(--motion-duration-slow) ease 420ms both;
+}
+
+.admin-activity-item,
+.admin-list-table__row,
+.admin-list-table__empty,
+.admin-inline-state {
+  animation: admin-card-enter var(--motion-duration-slow) var(--motion-ease-emphasized) both;
+}
+
+.admin-list-table__row {
+  transition: background-color var(--motion-duration-base) ease, transform var(--motion-duration-base) var(--motion-ease-emphasized), box-shadow var(--motion-duration-base) ease;
+}
+
+.admin-list-table__row:nth-child(2),
+.admin-activity-item:nth-child(2),
+.admin-media-card:nth-child(2) {
+  animation-delay: var(--motion-stagger-step);
+}
+
+.admin-list-table__row:nth-child(3),
+.admin-activity-item:nth-child(3),
+.admin-media-card:nth-child(3) {
+  animation-delay: calc(var(--motion-stagger-step) * 2);
+}
+
+.admin-list-table__row:nth-child(4),
+.admin-activity-item:nth-child(4),
+.admin-media-card:nth-child(4) {
+  animation-delay: calc(var(--motion-stagger-step) * 3);
+}
+
+.admin-list-table__row:nth-child(5),
+.admin-media-card:nth-child(5) {
+  animation-delay: calc(var(--motion-stagger-step) * 4);
+}
+
+.admin-list-table__row:hover {
+  transform: translateX(4px);
+  background: var(--color-surface-muted);
+  box-shadow: inset 3px 0 0 var(--color-primary);
+}
+
+.admin-row-actions .admin-icon-button,
+.admin-inline-actions .admin-icon-button {
+  transition: background-color var(--motion-duration-base) ease, color var(--motion-duration-base) ease, transform var(--motion-duration-fast) var(--motion-ease-standard);
+}
+
+.admin-row-actions .admin-icon-button:hover,
+.admin-inline-actions .admin-icon-button:hover {
+  transform: translateY(-1px) scale(1.04);
+}
+
+.article-edit {
+  animation: admin-page-enter var(--motion-duration-page) var(--motion-ease-emphasized) both;
+}
+
+.article-edit-sidebar {
+  animation: admin-card-enter var(--motion-duration-page) var(--motion-ease-emphasized) 140ms both;
+}
+
+.article-edit-sidebar .admin-panel {
+  animation: admin-card-enter var(--motion-duration-slow) var(--motion-ease-emphasized) both;
+}
+
+.article-edit-sidebar .admin-panel:nth-child(2) {
+  animation-delay: var(--motion-stagger-step);
+}
+
+.article-edit-sidebar .admin-panel:nth-child(3) {
+  animation-delay: calc(var(--motion-stagger-step) * 2);
+}
+
+.admin-cover-preview:hover img {
+  transform: scale(1.04);
+  filter: saturate(1.08);
+}
+
+.admin-checkbox input {
+  transition: accent-color var(--motion-duration-base) ease, transform var(--motion-duration-fast) var(--motion-ease-standard);
+}
+
+.admin-checkbox input:active {
+  transform: scale(0.92);
+}
+
+.admin-inline-banner,
+.admin-form-message {
+  animation: admin-toast-in var(--motion-duration-base) var(--motion-ease-emphasized) both;
+}
+
 @keyframes admin-spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes admin-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+    filter: blur(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes admin-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes admin-panel-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes admin-form-swap {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes admin-chart-grow {
+  from {
+    opacity: 0.35;
+    transform: scaleY(0.08);
+  }
+
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+@keyframes admin-line-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes admin-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
+  }
+
+  .admin-chart__bars span,
+  .admin-chart svg path {
+    stroke-dashoffset: 0 !important;
+    transform: none !important;
   }
 }
 

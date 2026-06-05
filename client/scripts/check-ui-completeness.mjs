@@ -139,6 +139,58 @@ for (const token of ['--color-background', '--color-surface', '--color-primary',
   }
 }
 
+function requireStyleSnippet(snippet, message) {
+  if (!styles.includes(snippet)) {
+    fail(`client/src/styles.css: ${message}`);
+  }
+}
+
+function requireStylePattern(pattern, message) {
+  if (!pattern.test(styles)) {
+    fail(`client/src/styles.css: ${message}`);
+  }
+}
+
+for (const token of [
+  '--motion-duration-fast',
+  '--motion-duration-base',
+  '--motion-duration-slow',
+  '--motion-ease-standard',
+  '--motion-ease-emphasized',
+  '--motion-stagger-step',
+  '--shadow-motion-lift',
+]) {
+  requireStyleSnippet(token, `motion token ${token} is missing`);
+}
+
+for (const keyframe of [
+  'admin-page-enter',
+  'admin-card-enter',
+  'admin-panel-pop',
+  'admin-form-swap',
+  'admin-chart-grow',
+  'admin-line-draw',
+  'admin-toast-in',
+]) {
+  requireStyleSnippet(`@keyframes ${keyframe}`, `motion keyframe ${keyframe} is missing`);
+}
+
+requireStyleSnippet('@media (prefers-reduced-motion: reduce)', 'reduced-motion fallback is missing');
+requireStylePattern(/\.login-page__visual[\s\S]*?animation:\s*admin-page-enter/, 'login visual panel entry animation is missing');
+requireStylePattern(/\.login-card[\s\S]*?animation:\s*admin-card-enter/, 'login card entry animation is missing');
+requireStylePattern(/\.login-card__head[\s\S]*?animation:\s*admin-form-swap/, 'login form swap animation is missing');
+requireStylePattern(/\.admin-sidebar__brand[\s\S]*?animation:\s*admin-page-enter/, 'sidebar brand entry animation is missing');
+requireStylePattern(/\.admin-nav__item[\s\S]*?animation:\s*admin-card-enter/, 'sidebar nav stagger animation is missing');
+requireStylePattern(/\.admin-topbar-panel[\s\S]*?animation:\s*admin-panel-pop/, 'topbar panel pop animation is missing');
+requireStylePattern(/\.admin-page__header[\s\S]*?animation:\s*admin-page-enter/, 'admin page header entry animation is missing');
+requireStylePattern(/\.admin-stat-card[\s\S]*?animation:\s*admin-card-enter/, 'dashboard stat card entry animation is missing');
+requireStylePattern(/\.admin-chart__bars span[\s\S]*?animation:\s*admin-chart-grow/, 'dashboard chart bar growth animation is missing');
+requireStylePattern(/\.admin-chart svg path[\s\S]*?animation:\s*admin-line-draw/, 'dashboard chart line draw animation is missing');
+requireStylePattern(/\.admin-list-table__row[\s\S]*?animation:\s*admin-card-enter/, 'admin list row entry animation is missing');
+requireStylePattern(/\.article-edit[\s\S]*?animation:\s*admin-page-enter/, 'article editor entry animation is missing');
+requireStylePattern(/\.article-edit-sidebar[\s\S]*?animation:\s*admin-card-enter/, 'article editor sidebar stagger animation is missing');
+requireStylePattern(/\.admin-inline-banner[\s\S]*?animation:\s*admin-toast-in/, 'inline status banner animation is missing');
+
 if (hasFailure) {
   process.exit(1);
 }
