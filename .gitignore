@@ -1,6 +1,7 @@
 config.yaml
 data/
 .codex-run/
+.superpowers/
 .claude/
 .codegraph/
 .cursor/
