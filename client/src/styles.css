@@ -2020,6 +2020,18 @@ button {
   animation: admin-toast-in var(--motion-duration-base) var(--motion-ease-emphasized) both;
 }
 
+.admin-canvas.is-motion-enter .admin-page__header,
+.admin-canvas.is-motion-enter .admin-stat-card,
+.admin-canvas.is-motion-enter .admin-panel,
+.admin-canvas.is-motion-enter .admin-list-table__row,
+.admin-canvas.is-motion-enter .admin-media-card,
+.admin-canvas.is-motion-enter .admin-empty-state,
+.admin-canvas.is-motion-enter .admin-inline-state,
+.admin-canvas.is-motion-enter .admin-footer {
+  animation: admin-js-route-enter var(--motion-duration-page) var(--motion-ease-emphasized) both;
+  animation-delay: calc(var(--motion-order, 0) * 42ms);
+}
+
 @keyframes admin-spin {
   to {
     transform: rotate(360deg);
@@ -2103,6 +2115,25 @@ button {
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes admin-js-route-enter {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.985);
+    filter: blur(6px);
+  }
+
+  58% {
+    opacity: 1;
+    filter: blur(0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
   }
 }
 

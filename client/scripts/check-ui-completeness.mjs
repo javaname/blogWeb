@@ -97,6 +97,9 @@ if (!appShell.includes('ThemeSwitcher')) {
 if (!loginPage.includes('ThemeSwitcher')) {
   fail('client/src/pages/Login.jsx: theme switcher is missing from login page');
 }
+if (!appShell.includes('useAdminRouteMotion') || !appShell.includes('useAdminRouteMotion(pathname)')) {
+  fail('client/src/components/AppShell.jsx: JS route motion hook is not wired');
+}
 for (const [route, page, navKey] of [
   ['media', 'Media', 'shell.navMedia'],
   ['users', 'Users', 'shell.navUsers'],
@@ -127,6 +130,18 @@ if (baseTemplate.includes('href="#categories"') || baseTemplate.includes('href="
 const themeContextPath = path.join(projectRoot, 'client/src/contexts/ThemeContext.jsx');
 if (!fs.existsSync(themeContextPath)) {
   fail('client/src/contexts/ThemeContext.jsx: theme context is missing');
+}
+
+const adminMotionPath = path.join(projectRoot, 'client/src/hooks/useAdminRouteMotion.js');
+if (!fs.existsSync(adminMotionPath)) {
+  fail('client/src/hooks/useAdminRouteMotion.js: JS admin route motion hook is missing');
+} else {
+  const adminMotion = fs.readFileSync(adminMotionPath, 'utf8');
+  for (const snippet of ['requestAnimationFrame', 'data-route-motion', 'is-motion-enter', '--motion-order', 'prefers-reduced-motion']) {
+    if (!adminMotion.includes(snippet)) {
+      fail(`client/src/hooks/useAdminRouteMotion.js: ${snippet} is missing`);
+    }
+  }
 }
 
 const styles = fs.readFileSync(path.join(projectRoot, 'client/src/styles.css'), 'utf8');
@@ -190,6 +205,8 @@ requireStylePattern(/\.admin-list-table__row[\s\S]*?animation:\s*admin-card-ente
 requireStylePattern(/\.article-edit[\s\S]*?animation:\s*admin-page-enter/, 'article editor entry animation is missing');
 requireStylePattern(/\.article-edit-sidebar[\s\S]*?animation:\s*admin-card-enter/, 'article editor sidebar stagger animation is missing');
 requireStylePattern(/\.admin-inline-banner[\s\S]*?animation:\s*admin-toast-in/, 'inline status banner animation is missing');
+requireStyleSnippet('@keyframes admin-js-route-enter', 'JS route motion keyframe admin-js-route-enter is missing');
+requireStylePattern(/\.admin-canvas\.is-motion-enter[\s\S]*?animation:\s*admin-js-route-enter/, 'JS route motion canvas selector is missing');
 
 if (hasFailure) {
   process.exit(1);

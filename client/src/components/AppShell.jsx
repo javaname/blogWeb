@@ -6,6 +6,7 @@ import { userDisplayName } from '../i18n/displayNames';
 import AdminIcon from './AdminIcon';
 import LanguageSwitcher from './LanguageSwitcher';
 import ThemeSwitcher from './ThemeSwitcher';
+import useAdminRouteMotion from '../hooks/useAdminRouteMotion';
 
 const navItems = [
   { key: '/dashboard', labelKey: 'shell.navDashboard', icon: 'dashboard' },
@@ -31,6 +32,7 @@ export default function AppShell() {
   const { user, logout } = useAuth();
   const { t } = useI18n();
   const [openPanel, setOpenPanel] = useState('');
+  useAdminRouteMotion(pathname);
 
   const adminActivity = useMemo(
     () => [
