@@ -296,7 +296,7 @@
       <div class="meta">
         <span class="pill">版本：最终版</span>
         <span class="pill">日期：2026-06-08</span>
-        <span class="pill">范围：Web 安全、上传、幂等、反爬、运维</span>
+        <span class="pill">范围：Web 安全、上传、幂等、反爬、运维、供应链</span>
       </div>
       <ul class="toc">
         <li><a href="#priority">优先级说明</a></li>
@@ -305,6 +305,7 @@
         <li><a href="#upload">图片上传安全</a></li>
         <li><a href="#crawler">反爬虫与流量防护</a></li>
         <li><a href="#ops">运维与持续安全</a></li>
+        <li><a href="#missed-risks">易遗漏专项风险</a></li>
       </ul>
     </header>
 
@@ -568,8 +569,79 @@
       </ul>
     </section>
 
+    <section id="missed-risks">
+      <h2>七、易遗漏专项风险</h2>
+
+      <h3>1. SSRF 服务端请求伪造</h3>
+      <ul>
+        <li><span class="tag tag-p0">P0</span> 凡是允许用户提交 URL 的功能都必须评估 SSRF 风险，例如远程图片抓取、文章链接预览、Webhook、RSS 导入和头像同步。</li>
+        <li><span class="tag tag-p0">P0</span> 服务端发起外部请求时必须使用域名或 IP 白名单，禁止访问内网地址、本机地址、云厂商元数据地址和保留地址段。</li>
+        <li><span class="tag tag-p0">P0</span> 请求前后都要校验解析结果，防止 DNS 重绑定、跳转绕过、IPv6 表达绕过和十进制 IP 绕过。</li>
+        <li><span class="tag tag-p1">P1</span> 限制服务端外连协议，只允许必要的 <code>http</code> 和 <code>https</code>，禁止 <code>file</code>、<code>gopher</code>、<code>ftp</code> 等危险协议。</li>
+        <li><span class="tag tag-p1">P1</span> 外部抓取设置超时、响应大小上限、重定向次数上限和内容类型校验。</li>
+      </ul>
+
+      <h3>2. 开放重定向与跳转安全</h3>
+      <ul>
+        <li><span class="tag tag-p0">P0</span> 登录后跳转、分享跳转、OAuth 回调和错误页跳转不能直接信任请求中的 <code>redirect</code>、<code>next</code>、<code>returnUrl</code> 参数。</li>
+        <li><span class="tag tag-p0">P0</span> 跳转目标必须使用相对路径或服务端白名单，禁止跳转到任意外部域名。</li>
+        <li><span class="tag tag-p1">P1</span> OAuth 登录必须校验 <code>state</code> 参数，回调地址必须与平台注册白名单完全匹配。</li>
+        <li><span class="tag tag-p1">P1</span> 外链跳转页应展示目标域名并设置确认步骤，避免被钓鱼链接滥用。</li>
+      </ul>
+
+      <h3>3. CORS、缓存与跨域资源策略</h3>
+      <ul>
+        <li><span class="tag tag-p0">P0</span> CORS 不能配置为对所有来源开放凭证请求，禁止同时使用 <code>Access-Control-Allow-Origin: *</code> 和 <code>Access-Control-Allow-Credentials: true</code>。</li>
+        <li><span class="tag tag-p0">P0</span> 管理后台、用户资料、草稿、私密图片和带身份信息的 API 必须设置正确的缓存策略，避免被浏览器、CDN 或共享代理缓存。</li>
+        <li><span class="tag tag-p1">P1</span> 静态资源可长期缓存，但文件名应带内容哈希；用户私有内容应使用 <code>Cache-Control: private, no-store</code> 或按业务设置短缓存。</li>
+        <li><span class="tag tag-p1">P1</span> 跨域资源策略应限制不必要的嵌入和读取，降低数据被其他站点滥用的风险。</li>
+      </ul>
+
+      <h3>4. 非 SQL 注入、模板注入与命令执行</h3>
+      <ul>
+        <li><span class="tag tag-p0">P0</span> 搜索语法、正则表达式、模板变量、Markdown 扩展、后台脚本参数等输入都不能直接进入解释器、模板引擎或命令行。</li>
+        <li><span class="tag tag-p0">P0</span> 禁止将用户输入拼接到系统命令；确需调用外部程序时，使用参数数组、白名单参数和最小权限运行账号。</li>
+        <li><span class="tag tag-p0">P0</span> 禁止把用户可控内容作为服务端模板执行，避免服务端模板注入。</li>
+        <li><span class="tag tag-p1">P1</span> 用户可提交的正则或搜索表达式必须限制长度和复杂度，防止 ReDoS 导致 CPU 被耗尽。</li>
+        <li><span class="tag tag-p1">P1</span> XML、YAML、JSON 等解析器使用安全配置，禁用外部实体、危险类型解析和不必要的自动对象绑定。</li>
+      </ul>
+
+      <h3>5. 反序列化与对象绑定安全</h3>
+      <ul>
+        <li><span class="tag tag-p0">P0</span> 不接受来自用户的原生序列化对象，禁止反序列化不可信数据。</li>
+        <li><span class="tag tag-p0">P0</span> 接口入参使用明确 DTO，只绑定允许修改的字段，防止批量赋值修改角色、状态、作者 ID 等敏感字段。</li>
+        <li><span class="tag tag-p1">P1</span> 对 JSON、表单和 GraphQL 入参设置字段白名单、嵌套深度限制和数组长度限制。</li>
+        <li><span class="tag tag-p1">P1</span> Token、Cookie 或缓存中如存储结构化数据，应使用签名和过期时间，服务端校验失败立即拒绝。</li>
+      </ul>
+
+      <h3>6. 加密、随机数与令牌安全</h3>
+      <ul>
+        <li><span class="tag tag-p0">P0</span> CSRF Token、重置密码令牌、邮箱验证令牌、API Token 和会话 ID 必须使用密码学安全随机数生成。</li>
+        <li><span class="tag tag-p0">P0</span> 令牌必须设置有效期，并在使用后或风险事件后失效。</li>
+        <li><span class="tag tag-p0">P0</span> 不自定义加密算法，不使用 ECB 等不安全模式；需要加密时使用成熟库和经过审查的方案。</li>
+        <li><span class="tag tag-p1">P1</span> JWT 如用于登录态，应限制有效期、校验签名算法、校验签发方和受众，禁止接受 <code>none</code> 算法。</li>
+        <li><span class="tag tag-p1">P1</span> 敏感令牌只保存哈希值或不可逆摘要，避免数据库泄露后令牌可直接使用。</li>
+      </ul>
+
+      <h3>7. 错误处理与信息泄露</h3>
+      <ul>
+        <li><span class="tag tag-p0">P0</span> 生产环境禁止向用户展示堆栈、SQL、文件路径、依赖版本、环境变量和内部服务地址。</li>
+        <li><span class="tag tag-p0">P0</span> 登录失败、找回密码和注册校验返回信息应避免泄露账号是否存在。</li>
+        <li><span class="tag tag-p1">P1</span> 对外错误响应使用统一错误码和可理解提示，详细错误只写入受控日志。</li>
+        <li><span class="tag tag-p1">P1</span> 调试接口、测试账号、Swagger 或管理面板不得在生产环境公开暴露。</li>
+      </ul>
+
+      <h3>8. 供应链与构建完整性</h3>
+      <ul>
+        <li><span class="tag tag-p0">P0</span> 构建环境、部署脚本和 CI 密钥必须限制权限，禁止把生产密钥暴露给不可信分支或外部 Pull Request。</li>
+        <li><span class="tag tag-p1">P1</span> 依赖安装使用锁文件，发布前校验锁文件变更，避免依赖投毒和意外升级。</li>
+        <li><span class="tag tag-p1">P1</span> 管理 npm、Cargo、Maven、Docker 镜像等来源，只允许可信仓库和可信镜像。</li>
+        <li><span class="tag tag-p2">P2</span> 对生产镜像和发布包生成校验摘要或 SBOM，便于漏洞追踪和回滚。</li>
+      </ul>
+    </section>
+
     <section id="baseline">
-      <h2>七、上线前安全检查清单</h2>
+      <h2>八、上线前安全检查清单</h2>
       <ul class="checklist">
         <li>数据库查询未拼接用户输入，动态字段使用白名单。</li>
         <li>所有写接口具备认证、授权和服务端校验。</li>
@@ -587,6 +659,14 @@
         <li>日志已脱敏，不记录密码和完整 Token。</li>
         <li>数据库和上传文件已自动备份并完成恢复验证。</li>
         <li>robots、限流、验证码和反爬策略不会误伤正常用户。</li>
+        <li>远程图片抓取、链接预览、Webhook、RSS 导入已限制 SSRF 风险。</li>
+        <li>登录后跳转、OAuth 回调和外链跳转已使用白名单或相对路径。</li>
+        <li>CORS 未对任意来源开放凭证请求，私有接口缓存策略正确。</li>
+        <li>用户输入不会直接进入命令行、模板引擎、正则引擎或危险解析器。</li>
+        <li>接口 DTO 已限制可绑定字段，用户不能批量修改角色、状态和归属字段。</li>
+        <li>重置密码、邮箱验证、CSRF、会话等令牌使用安全随机数并设置有效期。</li>
+        <li>生产环境不会暴露堆栈、SQL、路径、版本、环境变量和调试接口。</li>
+        <li>构建环境、依赖锁文件、镜像来源和 CI 密钥已完成安全检查。</li>
       </ul>
     </section>
   </main>
