@@ -1695,7 +1695,7 @@ button {
 }
 
 .admin-user-grid {
-  grid-template-columns: minmax(180px, 1.4fr) 118px minmax(150px, 1fr) 72px 72px;
+  grid-template-columns: minmax(180px, 1.4fr) 118px minmax(150px, 1fr) 72px 104px;
 }
 
 .admin-user-cell {
@@ -1813,6 +1813,107 @@ button {
 
 .admin-permission-list__row .admin-icon {
   color: var(--color-primary);
+}
+
+.user-detail-page {
+  animation: admin-page-enter var(--motion-duration-page) var(--motion-ease-emphasized) both;
+}
+
+.admin-user-detail-layout {
+  align-items: start;
+}
+
+.admin-user-detail-profile__head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.admin-user-detail-profile__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  background: var(--color-primary-soft);
+  color: var(--color-primary-soft-text);
+  font-weight: 800;
+  letter-spacing: 0;
+  flex-shrink: 0;
+}
+
+.admin-user-detail-profile__head h3 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 20px;
+  line-height: 28px;
+}
+
+.admin-user-detail-profile__head p {
+  margin: 4px 0 0;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.admin-user-detail-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.admin-user-detail-meta div {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--color-border-soft);
+  border-radius: 8px;
+  background: var(--color-background);
+}
+
+.admin-user-detail-meta span {
+  display: block;
+  color: var(--color-text-subtle);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.admin-user-detail-meta strong {
+  display: block;
+  margin-top: 4px;
+  overflow: hidden;
+  color: var(--color-text);
+  font-size: 14px;
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-user-detail-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.admin-related-article-row {
+  grid-template-columns: minmax(0, 1.5fr) 104px 120px 150px 44px;
+}
+
+.admin-related-article-row > div {
+  min-width: 0;
+}
+
+.admin-related-article-row strong,
+.admin-related-article-row p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-related-article-row .admin-icon-button {
+  justify-self: end;
 }
 
 .admin-chart--compact {
@@ -2390,8 +2491,13 @@ button {
   .admin-category-grid,
   .admin-comment-grid,
   .admin-user-grid,
+  .admin-related-article-row,
   .admin-analytics-row,
   .admin-media-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-user-detail-meta {
     grid-template-columns: 1fr;
   }
 

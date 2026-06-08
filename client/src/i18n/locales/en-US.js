@@ -340,6 +340,22 @@ const enUS = {
   users: {
     pageTitle: 'Users & Permissions',
     pageDesc: 'Manage admin members, roles, and content permissions so publishing, moderation, and settings access stay clear.',
+    detailTitle: 'User Detail',
+    detailDesc: 'Review member account data, role permissions, and directly linked articles while maintaining login details.',
+    backToUsers: 'Back to Users',
+    loadingDetail: 'Loading user detail...',
+    saveDetail: 'Save User',
+    detailSaved: 'User profile saved',
+    detailMeta: {
+      role: 'Current role',
+      articles: 'Linked articles',
+      created: 'Joined',
+    },
+    detailPermissionsTitle: 'Current Role Permissions',
+    detailPermissionsDesc: 'Permissions are calculated from the role. Per-user custom permissions are not part of the first version.',
+    relatedArticlesTitle: 'Linked Articles',
+    relatedArticlesDesc: 'These articles point to this user through `articles.author_id`, which is also the delete blocker.',
+    noRelatedArticles: 'No linked articles',
     stats: {
       total: 'Members',
       admins: 'Admins',

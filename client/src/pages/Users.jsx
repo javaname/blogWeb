@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AdminIcon from '../components/AdminIcon';
 import { useI18n } from '../contexts/I18nContext';
 import { userDisplayName } from '../i18n/displayNames';
@@ -42,6 +43,7 @@ function articleCountLabel(t, user) {
 }
 
 export default function Users() {
+  const navigate = useNavigate();
   const { locale, t } = useI18n();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -200,6 +202,16 @@ export default function Users() {
                     <span>{deleteBlocked ? t('users.articleDeleteBlocked') : t('users.articleDeleteAvailable')}</span>
                   </div>
                   <div className="admin-row-actions">
+                    <button
+                      type="button"
+                      className="admin-icon-button"
+                      data-user-edit
+                      onClick={() => navigate(`/users/${user.id}`)}
+                      aria-label={t('common.edit')}
+                      title={t('common.edit')}
+                    >
+                      <AdminIcon name="edit" />
+                    </button>
                     <button
                       type="button"
                       className="admin-icon-button is-danger"

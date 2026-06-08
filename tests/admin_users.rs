@@ -208,7 +208,10 @@ async fn admin_can_get_user_detail_with_related_articles() {
     assert_eq!(payload["recent_articles"][0]["title"], "Editor story");
     assert_eq!(payload["recent_articles"][0]["slug"], "editor-story");
     assert_eq!(payload["recent_articles"][0]["status"], "published");
-    assert_eq!(payload["recent_articles"][0]["category"]["name"], "Technology");
+    assert_eq!(
+        payload["recent_articles"][0]["category"]["name"],
+        "Technology"
+    );
     assert_eq!(payload["roles"][0]["key"], "admin");
     assert_eq!(payload["permissions"][0]["key"], "publish");
 }
@@ -240,12 +243,13 @@ async fn admin_can_update_user_profile_and_role() {
         .iter()
         .any(|value| value == "users"));
 
-    let row: (String, String, String) =
-        sqlx::query_as(db::sql("SELECT username, email, role FROM users WHERE id = ?"))
-            .bind(2_i64)
-            .fetch_one(&pool)
-            .await
-            .unwrap();
+    let row: (String, String, String) = sqlx::query_as(db::sql(
+        "SELECT username, email, role FROM users WHERE id = ?",
+    ))
+    .bind(2_i64)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
     assert_eq!(row.0, "editor-chief");
     assert_eq!(row.1, "chief@example.com");
     assert_eq!(row.2, "admin");

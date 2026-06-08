@@ -340,6 +340,22 @@ const zhCN = {
   users: {
     pageTitle: '用户与权限',
     pageDesc: '管理后台成员、角色和内容权限，明确谁可以发布、审核和配置站点。',
+    detailTitle: '用户详情',
+    detailDesc: '查看成员账号、角色权限和直接关联的文章，并维护可登录资料。',
+    backToUsers: '返回用户列表',
+    loadingDetail: '正在加载用户详情...',
+    saveDetail: '保存用户资料',
+    detailSaved: '用户资料已保存',
+    detailMeta: {
+      role: '当前角色',
+      articles: '关联文章',
+      created: '加入时间',
+    },
+    detailPermissionsTitle: '当前角色权限',
+    detailPermissionsDesc: '权限随角色自动计算，第一版不开放单人自定义权限。',
+    relatedArticlesTitle: '关联文章',
+    relatedArticlesDesc: '这里展示 `articles.author_id` 指向该用户的文章，也是删除拦截依据。',
+    noRelatedArticles: '暂无关联文章',
     stats: {
       total: '成员总数',
       admins: '管理员',

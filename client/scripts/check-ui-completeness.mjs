@@ -95,6 +95,7 @@ const appShell = fs.readFileSync(path.join(projectRoot, 'client/src/components/A
 const loginPage = fs.readFileSync(path.join(projectRoot, 'client/src/pages/Login.jsx'), 'utf8');
 const appRoutes = fs.readFileSync(path.join(projectRoot, 'client/src/App.jsx'), 'utf8');
 const usersPage = fs.readFileSync(path.join(projectRoot, 'client/src/pages/Users.jsx'), 'utf8');
+const adminApi = fs.readFileSync(path.join(projectRoot, 'client/src/utils/adminApi.js'), 'utf8');
 if (!appShell.includes('ThemeSwitcher')) {
   fail('client/src/components/AppShell.jsx: theme switcher is missing from admin shell');
 }
@@ -140,6 +141,40 @@ for (const snippet of ['data-user-create-form', 'data-user-role-select', 'data-u
 }
 if (!usersPage.includes('showAdminToast')) {
   fail('client/src/pages/Users.jsx: success popup toast is not wired');
+}
+if (!appRoutes.includes('UserDetail') || !appRoutes.includes('path="users/:id"')) {
+  fail('client/src/App.jsx: /users/:id detail route is missing');
+}
+for (const snippet of ['fetchUser', 'updateUser']) {
+  if (!adminApi.includes(snippet)) {
+    fail(`client/src/utils/adminApi.js: ${snippet} is not wired`);
+  }
+}
+if (!usersPage.includes('/users/${user.id}') || !usersPage.includes('data-user-edit')) {
+  fail('client/src/pages/Users.jsx: user detail edit navigation is missing');
+}
+const userDetailPath = path.join(projectRoot, 'client/src/pages/UserDetail.jsx');
+if (!fs.existsSync(userDetailPath)) {
+  fail('client/src/pages/UserDetail.jsx: page is missing');
+} else {
+  const userDetailPage = fs.readFileSync(userDetailPath, 'utf8');
+  for (const snippet of [
+    'data-page="user-detail"',
+    'data-user-detail-form',
+    'fetchUser',
+    'updateUser',
+    'showAdminToast',
+    'recent_articles',
+    'admin-user-detail-profile',
+    'admin-related-articles',
+    'users.detailTitle',
+    'users.detailSaved',
+    'users.relatedArticlesTitle',
+  ]) {
+    if (!userDetailPage.includes(snippet)) {
+      fail(`client/src/pages/UserDetail.jsx: detail page snippet ${snippet} is missing`);
+    }
+  }
 }
 for (const snippet of [
   'userDisplayName',

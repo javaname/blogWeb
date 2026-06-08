@@ -54,9 +54,20 @@ export function fetchUsers() {
   return apiRequest('/admin/users');
 }
 
+export function fetchUser(id) {
+  return apiRequest(`/admin/users/${id}`);
+}
+
 export function createUser(payload) {
   return apiRequest('/admin/users', {
     method: 'POST',
+    body: payload,
+  });
+}
+
+export function updateUser(id, payload) {
+  return apiRequest(`/admin/users/${id}`, {
+    method: 'PUT',
     body: payload,
   });
 }

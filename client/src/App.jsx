@@ -10,6 +10,7 @@ import Analytics from './pages/Analytics';
 import Media from './pages/Media';
 import Posts from './pages/Posts';
 import Settings from './pages/Settings';
+import UserDetail from './pages/UserDetail';
 import Users from './pages/Users';
 
 export default function App() {
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="comments" element={<Comments />} />
         <Route path="media" element={<Media />} />
         <Route path="users" element={<Users />} />
+        <Route path="users/:id" element={<UserDetail />} />
         <Route path="analytics" element={<Analytics />} />
         <Route path="settings" element={<Settings />} />
       </Route>
