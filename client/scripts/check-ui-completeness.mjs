@@ -87,6 +87,9 @@ const mainEntry = fs.readFileSync(path.join(projectRoot, 'client/src/main.jsx'),
 if (!mainEntry.includes('ThemeProvider')) {
   fail('client/src/main.jsx: ThemeProvider is not wired');
 }
+if (!mainEntry.includes('ToastProvider')) {
+  fail('client/src/main.jsx: ToastProvider is not wired');
+}
 
 const appShell = fs.readFileSync(path.join(projectRoot, 'client/src/components/AppShell.jsx'), 'utf8');
 const loginPage = fs.readFileSync(path.join(projectRoot, 'client/src/pages/Login.jsx'), 'utf8');
@@ -133,6 +136,21 @@ for (const snippet of ['fetchUsers', 'createUser', 'updateUserRole', 'deleteUser
 for (const snippet of ['data-user-create-form', 'data-user-role-select', 'data-user-delete']) {
   if (!usersPage.includes(snippet)) {
     fail(`client/src/pages/Users.jsx: ${snippet} hook is missing`);
+  }
+}
+if (!usersPage.includes('showAdminToast')) {
+  fail('client/src/pages/Users.jsx: success popup toast is not wired');
+}
+
+const toastProviderPath = path.join(projectRoot, 'client/src/components/ToastProvider.jsx');
+if (!fs.existsSync(toastProviderPath)) {
+  fail('client/src/components/ToastProvider.jsx: global toast provider is missing');
+} else {
+  const toastProvider = fs.readFileSync(toastProviderPath, 'utf8');
+  for (const snippet of ['__BLOG_ADMIN_TOAST__', 'success', 'error', 'info', 'admin-toast-viewport', 'role="status"']) {
+    if (!toastProvider.includes(snippet)) {
+      fail(`client/src/components/ToastProvider.jsx: ${snippet} is missing`);
+    }
   }
 }
 
@@ -224,6 +242,10 @@ requireStylePattern(/\.article-edit-sidebar[\s\S]*?animation:\s*admin-card-enter
 requireStylePattern(/\.admin-inline-banner[\s\S]*?animation:\s*admin-toast-in/, 'inline status banner animation is missing');
 requireStyleSnippet('@keyframes admin-js-route-enter', 'JS route motion keyframe admin-js-route-enter is missing');
 requireStylePattern(/\.admin-canvas\.is-motion-enter[\s\S]*?animation:\s*admin-js-route-enter/, 'JS route motion canvas selector is missing');
+requireStylePattern(/\.admin-toast-viewport[\s\S]*?position:\s*fixed/, 'global toast viewport is missing');
+requireStylePattern(/\.admin-toast[\s\S]*?animation:\s*admin-toast-in/, 'global toast animation is missing');
+requireStylePattern(/\.admin-toast\.is-error[\s\S]*?color:\s*var\(--color-danger-text\)/, 'error toast style is missing');
+requireStylePattern(/\.admin-toast\.is-success[\s\S]*?color:\s*var\(--color-success-text\)/, 'success toast style is missing');
 
 if (hasFailure) {
   process.exit(1);

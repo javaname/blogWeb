@@ -32,6 +32,12 @@ const icons = {
   chevron_left: <path d="M15 6l-6 6 6 6" />,
   chevron_right: <path d="M9 6l6 6-6 6" />,
   comment: <path d="M5 5h14v10H9l-4 4V5z" />,
+  close: (
+    <>
+      <path d="M6 6l12 12" />
+      <path d="M18 6L6 18" />
+    </>
+  ),
   dashboard: (
     <>
       <path d="M4 4h7v8H4z" />

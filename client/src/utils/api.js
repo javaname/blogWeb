@@ -37,7 +37,7 @@ export function configureApiMessages({ resolveErrorMessage } = {}) {
   errorMessageResolver = resolveErrorMessage || null;
 }
 
-function showToast(type, content) {
+export function showAdminToast(type, content) {
   const toast = window.__BLOG_ADMIN_TOAST__;
   if (toast?.[type]) {
     toast[type](content);
@@ -103,7 +103,7 @@ export async function apiRequest(path, options = {}) {
 
   const message = resolveErrorMessage(payload, response.status);
   if (!skipErrorToast && response.status !== 401) {
-    showToast('error', message);
+    showAdminToast('error', message);
   }
 
   throw new ApiError(message, response.status, payload);

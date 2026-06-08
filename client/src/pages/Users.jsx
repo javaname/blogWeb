@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import AdminIcon from '../components/AdminIcon';
 import { useI18n } from '../contexts/I18nContext';
 import { createUser, deleteUser, fetchUsers, updateUserRole } from '../utils/adminApi';
+import { showAdminToast } from '../utils/api';
 
 const initialForm = {
   username: '',
@@ -65,8 +66,10 @@ export default function Users() {
     setMessage('');
     try {
       await createUser(form);
+      const successMessage = t('users.created');
       setForm(initialForm);
-      setMessage(t('users.created'));
+      setMessage(successMessage);
+      showAdminToast('success', successMessage);
       await loadUsers();
     } finally {
       setSaving(false);
@@ -75,13 +78,17 @@ export default function Users() {
 
   async function handleRoleChange(id, role) {
     await updateUserRole(id, { role });
-    setMessage(t('users.roleUpdated'));
+    const successMessage = t('users.roleUpdated');
+    setMessage(successMessage);
+    showAdminToast('success', successMessage);
     await loadUsers();
   }
 
   async function handleDelete(id) {
     await deleteUser(id);
-    setMessage(t('users.deleted'));
+    const successMessage = t('users.deleted');
+    setMessage(successMessage);
+    showAdminToast('success', successMessage);
     await loadUsers();
   }
 
