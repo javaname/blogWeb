@@ -542,6 +542,14 @@ button {
   width: 40px;
 }
 
+.w-12 {
+  width: 48px;
+}
+
+.w-8 {
+  width: 32px;
+}
+
 .w-24 {
   width: 96px;
 }
@@ -552,6 +560,14 @@ button {
 
 .h-10 {
   height: 40px;
+}
+
+.h-12 {
+  height: 48px;
+}
+
+.h-8 {
+  height: 32px;
 }
 
 .h-24 {
@@ -1006,6 +1022,11 @@ article p {
   padding: 20px 24px;
   color: var(--on-surface-variant);
   font-style: italic;
+}
+
+.article-author-card__avatar {
+  width: 64px;
+  height: 64px;
 }
 
 .like-button {

@@ -350,6 +350,11 @@ async fn article_page_renders_approved_comments_replies_and_related_articles() {
     assert!(body.contains("Related Rust Story"), "{body}");
     assert!(body.contains("/articles/related-rust-story"), "{body}");
     assert!(!body.contains("Design Systems"), "{body}");
+    assert!(body.contains("article-author-card__avatar"), "{body}");
+    assert!(
+        !body.contains("class=\"w-24 h-24 rounded-full shrink-0 object-cover\""),
+        "{body}"
+    );
 }
 
 #[tokio::test]

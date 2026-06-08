@@ -933,7 +933,7 @@ fn render_article_page(
     }
     html.push_str("</header><article class=\"max-w-article-max mx-auto px-margin-mobile md:px-0 py-16\"><div class=\"font-article-body-mobile md:font-article-body text-article-body-mobile md:text-article-body text-on-surface\"><div class=\"article-html\">");
     html.push_str(&detail.content_html);
-    html.push_str("</div></div><section class=\"mt-20 pt-12 border-t border-outline-variant\"><div class=\"flex flex-col md:flex-row gap-8 items-center bg-surface-container-low p-8 rounded-xl\"><img class=\"w-24 h-24 rounded-full shrink-0 object-cover\" src=\"");
+    html.push_str("</div></div><section class=\"mt-20 pt-12 border-t border-outline-variant\"><div class=\"flex flex-col md:flex-row gap-8 items-center bg-surface-container-low p-8 rounded-xl\"><img class=\"article-author-card__avatar rounded-full shrink-0 object-cover\" src=\"");
     html.push_str(&author_avatar(&detail.summary.author.username));
     html.push_str("\" alt=\"");
     html.push_str(&author_name(&detail.summary.author.username));
