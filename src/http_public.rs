@@ -8,19 +8,20 @@ use axum::{
     Json,
 };
 use serde::{Deserialize, Serialize};
-use sqlx::{Pool, QueryBuilder, Row, Sqlite};
+use sqlx::{Pool, QueryBuilder, Row};
 use std::path::{Component, Path as FsPath, PathBuf};
 use tokio::fs;
 
 use crate::{
     config::Config,
+    db::{Db as DbBackend, DbRow},
     error::{AppError, Result},
     renderer,
 };
 
 #[derive(Clone)]
 pub struct PublicState {
-    pub db: Pool<Sqlite>,
+    pub db: Pool<DbBackend>,
     pub assets_dir: PathBuf,
     pub admin_dir: PathBuf,
     pub upload_dir: PathBuf,
@@ -214,11 +215,13 @@ pub async fn category_page(
     State(state): State<PublicState>,
     Path(slug): Path<String>,
 ) -> Result<axum::response::Response> {
-    let category = sqlx::query("SELECT id, name, slug FROM categories WHERE slug = ?")
-        .bind(&slug)
-        .fetch_optional(&state.db)
-        .await?
-        .ok_or_else(|| AppError::HttpStatus(404, "not_found".into()))?;
+    let category = sqlx::query(crate::db::sql(
+        "SELECT id, name, slug FROM categories WHERE slug = ?",
+    ))
+    .bind(&slug)
+    .fetch_optional(&state.db)
+    .await?
+    .ok_or_else(|| AppError::HttpStatus(404, "not_found".into()))?;
     let category_id: i64 = category.try_get("id")?;
     let category_name: String = category.try_get("name")?;
     let category_slug: String = category.try_get("slug")?;
@@ -252,7 +255,7 @@ pub async fn categories_index_page(
         "SELECT COUNT(*)
          FROM articles
          WHERE status = 'published'
-           AND (published_at IS NULL OR published_at <= datetime('now'))",
+           AND (published_at IS NULL OR published_at::timestamp <= CURRENT_TIMESTAMP)",
     )
     .fetch_one(&state.db)
     .await?;
@@ -401,7 +404,7 @@ async fn published_summaries(state: &PublicState, query: ListQuery) -> Result<Li
          INNER JOIN users ON users.id = articles.author_id
          LEFT JOIN likes ON likes.article_id = articles.id
          WHERE articles.status = 'published'
-           AND (articles.published_at IS NULL OR articles.published_at <= datetime('now'))",
+           AND (articles.published_at IS NULL OR articles.published_at::timestamp <= CURRENT_TIMESTAMP)",
     );
     if let Some(category) = query
         .category
@@ -441,7 +444,7 @@ async fn published_summaries(state: &PublicState, query: ListQuery) -> Result<Li
         builder.push("))");
     }
     builder.push(
-        " GROUP BY articles.id
+        " GROUP BY articles.id, categories.id, users.id
           ORDER BY articles.is_pinned DESC, articles.published_at DESC, articles.id DESC
           LIMIT ",
     );
@@ -497,8 +500,11 @@ pub async fn article_detail(
     Ok(Json(serde_json::to_value(detail)?).into_response())
 }
 
-async fn published_detail(pool: &Pool<Sqlite>, slug: &str) -> Result<Option<PublicArticleDetail>> {
-    let row = sqlx::query(
+async fn published_detail(
+    pool: &Pool<DbBackend>,
+    slug: &str,
+) -> Result<Option<PublicArticleDetail>> {
+    let row = sqlx::query(crate::db::sql(
         "SELECT
             articles.id,
             articles.title,
@@ -522,9 +528,9 @@ async fn published_detail(pool: &Pool<Sqlite>, slug: &str) -> Result<Option<Publ
          LEFT JOIN likes ON likes.article_id = articles.id
          WHERE articles.slug = ?
            AND articles.status = 'published'
-           AND (articles.published_at IS NULL OR articles.published_at <= datetime('now'))
-         GROUP BY articles.id",
-    )
+           AND (articles.published_at IS NULL OR articles.published_at::timestamp <= CURRENT_TIMESTAMP)
+         GROUP BY articles.id, categories.id, users.id",
+    ))
     .bind(&slug)
     .fetch_optional(pool)
     .await?;
@@ -544,13 +550,16 @@ async fn published_detail(pool: &Pool<Sqlite>, slug: &str) -> Result<Option<Publ
     }))
 }
 
-async fn approved_comments(pool: &Pool<Sqlite>, article_id: i64) -> Result<Vec<PublicCommentNode>> {
-    let rows = sqlx::query(
+async fn approved_comments(
+    pool: &Pool<DbBackend>,
+    article_id: i64,
+) -> Result<Vec<PublicCommentNode>> {
+    let rows = sqlx::query(crate::db::sql(
         "SELECT id, parent_id, author_name, content
          FROM comments
          WHERE article_id = ? AND status = 'approved'
          ORDER BY created_at ASC, id ASC",
-    )
+    ))
     .bind(article_id)
     .fetch_all(pool)
     .await?;
@@ -584,7 +593,7 @@ async fn related_articles(
     let Some(category) = &article.category else {
         return Ok(Vec::new());
     };
-    let rows = sqlx::query(
+    let rows = sqlx::query(crate::db::sql(
         "SELECT
             articles.id,
             articles.title,
@@ -606,11 +615,11 @@ async fn related_articles(
          WHERE articles.id <> ?
            AND articles.category_id = ?
            AND articles.status = 'published'
-           AND (articles.published_at IS NULL OR articles.published_at <= datetime('now'))
-         GROUP BY articles.id
+           AND (articles.published_at IS NULL OR articles.published_at::timestamp <= CURRENT_TIMESTAMP)
+         GROUP BY articles.id, categories.id, users.id
          ORDER BY articles.published_at DESC, articles.id DESC
          LIMIT 3",
-    )
+    ))
     .bind(article.id)
     .bind(category.id)
     .fetch_all(&state.db)
@@ -620,13 +629,13 @@ async fn related_articles(
         .collect::<Result<Vec<_>>>()
 }
 
-async fn lookup_current_slug(pool: &Pool<Sqlite>, old_slug: &str) -> Result<Option<String>> {
-    let slug = sqlx::query_scalar(
+async fn lookup_current_slug(pool: &Pool<DbBackend>, old_slug: &str) -> Result<Option<String>> {
+    let slug = sqlx::query_scalar(crate::db::sql(
         "SELECT articles.slug
          FROM slug_history
          INNER JOIN articles ON articles.id = slug_history.article_id
          WHERE slug_history.old_slug = ?",
-    )
+    ))
     .bind(old_slug)
     .fetch_optional(pool)
     .await?;
@@ -642,7 +651,7 @@ async fn public_categories(state: &PublicState) -> Result<Vec<PublicCategoryWith
             COUNT(articles.id) AS article_count
          FROM categories
          LEFT JOIN articles ON articles.category_id = categories.id
-         GROUP BY categories.id
+         GROUP BY categories.id, categories.name, categories.slug, categories.sort_order
          ORDER BY categories.sort_order ASC, categories.id ASC",
     )
     .fetch_all(&state.db)
@@ -663,7 +672,7 @@ async fn public_author_profile(
     state: &PublicState,
     author_id: i64,
 ) -> Result<Option<PublicAuthorProfile>> {
-    let row = sqlx::query(
+    let row = sqlx::query(crate::db::sql(
         "SELECT
             users.id,
             users.username,
@@ -672,11 +681,11 @@ async fn public_author_profile(
          FROM users
          LEFT JOIN articles ON articles.author_id = users.id
             AND articles.status = 'published'
-            AND (articles.published_at IS NULL OR articles.published_at <= datetime('now'))
+            AND (articles.published_at IS NULL OR articles.published_at::timestamp <= CURRENT_TIMESTAMP)
          LEFT JOIN author_follows ON author_follows.author_id = users.id
          WHERE users.id = ?
-         GROUP BY users.id",
-    )
+         GROUP BY users.id, users.username",
+    ))
     .bind(author_id)
     .fetch_optional(&state.db)
     .await?;
@@ -696,7 +705,7 @@ async fn published_summaries_by_author(
     author_id: i64,
     limit: i64,
 ) -> Result<Vec<PublicArticleSummary>> {
-    let rows = sqlx::query(
+    let rows = sqlx::query(crate::db::sql(
         "SELECT
             articles.id,
             articles.title,
@@ -717,11 +726,11 @@ async fn published_summaries_by_author(
          LEFT JOIN likes ON likes.article_id = articles.id
          WHERE articles.author_id = ?
            AND articles.status = 'published'
-           AND (articles.published_at IS NULL OR articles.published_at <= datetime('now'))
-         GROUP BY articles.id
+           AND (articles.published_at IS NULL OR articles.published_at::timestamp <= CURRENT_TIMESTAMP)
+         GROUP BY articles.id, categories.id, users.id
          ORDER BY articles.is_pinned DESC, articles.published_at DESC, articles.id DESC
          LIMIT ?",
-    )
+    ))
     .bind(author_id)
     .bind(limit.clamp(1, 50))
     .fetch_all(&state.db)
@@ -729,7 +738,7 @@ async fn published_summaries_by_author(
     rows.into_iter().map(|row| summary_from_row(&row)).collect()
 }
 
-fn summary_from_row(row: &sqlx::sqlite::SqliteRow) -> Result<PublicArticleSummary> {
+fn summary_from_row(row: &DbRow) -> Result<PublicArticleSummary> {
     let category_id: Option<i64> = row.try_get("category_id")?;
     let category = match category_id {
         Some(id) => Some(PublicCategory {

@@ -12,3 +12,4 @@ pub mod http_public;
 pub mod mcp;
 pub mod renderer;
 pub mod session;
+pub mod sqlite_sync;

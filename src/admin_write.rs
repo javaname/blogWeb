@@ -77,17 +77,18 @@ pub async fn create_category(
             "分类 slug 不合法",
         ));
     }
-    let result = sqlx::query(
+    let category_id = sqlx::query_scalar::<_, i64>(crate::db::sql(
         "INSERT INTO categories (name, slug, sort_order, created_at)
-         VALUES (?, ?, ?, CURRENT_TIMESTAMP)",
-    )
+         VALUES (?, ?, ?, CURRENT_TIMESTAMP::text)
+         RETURNING id",
+    ))
     .bind(name)
     .bind(&slug)
     .bind(request.sort_order.unwrap_or_default())
-    .execute(&state.db)
+    .fetch_one(&state.db)
     .await;
-    let result = match result {
-        Ok(result) => result,
+    let category_id = match category_id {
+        Ok(category_id) => category_id,
         Err(_) => {
             return Ok(json_error(
                 StatusCode::CONFLICT,
@@ -99,7 +100,7 @@ pub async fn create_category(
     Ok((
         StatusCode::CREATED,
         Json(json!({
-            "id": result.last_insert_rowid(),
+            "id": category_id,
             "name": name,
             "slug": slug,
         })),
@@ -148,10 +149,12 @@ pub async fn create_article(
         ));
     }
     if let Some(category_id) = request.category_id {
-        let exists: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM categories WHERE id = ?")
-            .bind(category_id)
-            .fetch_one(&state.db)
-            .await?;
+        let exists: i64 = sqlx::query_scalar(crate::db::sql(
+            "SELECT COUNT(*) FROM categories WHERE id = ?",
+        ))
+        .bind(category_id)
+        .fetch_one(&state.db)
+        .await?;
         if exists == 0 {
             return Ok(json_error(
                 StatusCode::BAD_REQUEST,
@@ -177,13 +180,14 @@ pub async fn create_article(
         Some(published_at.as_str())
     };
 
-    let result = if status == "published" && published_at_value.is_none() {
-        sqlx::query(
+    let result: i64 = if status == "published" && published_at_value.is_none() {
+        sqlx::query_scalar(crate::db::sql(
             "INSERT INTO articles (
                 title, slug, content, cover_image, excerpt, category_id, author_id,
                 status, is_pinned, published_at, created_at, updated_at
-             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
-        )
+             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP::text, CURRENT_TIMESTAMP::text, CURRENT_TIMESTAMP::text)
+             RETURNING id",
+        ))
         .bind(title)
         .bind(&slug)
         .bind(&request.content)
@@ -193,15 +197,16 @@ pub async fn create_article(
         .bind(user.id)
         .bind(&status)
         .bind(i64::from(request.is_pinned.unwrap_or(false)))
-        .execute(&state.db)
+        .fetch_one(&state.db)
         .await?
     } else {
-        sqlx::query(
+        sqlx::query_scalar(crate::db::sql(
             "INSERT INTO articles (
                 title, slug, content, cover_image, excerpt, category_id, author_id,
                 status, is_pinned, published_at, created_at, updated_at
-             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
-        )
+             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP::text, CURRENT_TIMESTAMP::text)
+             RETURNING id",
+        ))
         .bind(title)
         .bind(&slug)
         .bind(&request.content)
@@ -212,14 +217,14 @@ pub async fn create_article(
         .bind(&status)
         .bind(i64::from(request.is_pinned.unwrap_or(false)))
         .bind(published_at_value)
-        .execute(&state.db)
+        .fetch_one(&state.db)
         .await?
     };
 
     Ok((
         StatusCode::CREATED,
         Json(json!({
-            "id": result.last_insert_rowid(),
+            "id": result,
             "slug": slug,
         })),
     )
@@ -253,11 +258,11 @@ pub async fn update_comment_status(
     } else {
         String::new()
     };
-    let result = sqlx::query(
+    let result = sqlx::query(crate::db::sql(
         "UPDATE comments
          SET status = ?, rejection_reason = ?, updated_at = CURRENT_TIMESTAMP
          WHERE id = ?",
-    )
+    ))
     .bind(&request.status)
     .bind(&rejection_reason)
     .bind(id)
@@ -285,10 +290,10 @@ pub async fn update_article(
             "请求体格式错误",
         ));
     };
-    let row = sqlx::query(
+    let row = sqlx::query(crate::db::sql(
         "SELECT title, slug, content, cover_image, category_id, status, is_pinned, published_at
          FROM articles WHERE id = ?",
-    )
+    ))
     .bind(id)
     .fetch_optional(&state.db)
     .await?;
@@ -349,10 +354,12 @@ pub async fn update_article(
             let next = value.as_i64().ok_or_else(|| {
                 crate::error::AppError::HttpStatus(400, "category_id 类型错误".into())
             })?;
-            let exists: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM categories WHERE id = ?")
-                .bind(next)
-                .fetch_one(&state.db)
-                .await?;
+            let exists: i64 = sqlx::query_scalar(crate::db::sql(
+                "SELECT COUNT(*) FROM categories WHERE id = ?",
+            ))
+            .bind(next)
+            .fetch_one(&state.db)
+            .await?;
             if exists == 0 {
                 return Ok(json_error(
                     StatusCode::BAD_REQUEST,
@@ -391,20 +398,24 @@ pub async fn update_article(
 
     let (_, excerpt) = renderer::render_safe_html(&content)?;
     if slug_changed {
-        sqlx::query("INSERT OR IGNORE INTO slug_history (article_id, old_slug, created_at) VALUES (?, ?, CURRENT_TIMESTAMP)")
-            .bind(id)
-            .bind(&old_slug)
-            .execute(&state.db)
-            .await?;
+        sqlx::query(crate::db::sql(
+            "INSERT INTO slug_history (article_id, old_slug, created_at)
+             VALUES (?, ?, CURRENT_TIMESTAMP::text)
+             ON CONFLICT(old_slug) DO NOTHING",
+        ))
+        .bind(id)
+        .bind(&old_slug)
+        .execute(&state.db)
+        .await?;
     }
     if published_at.as_deref() == Some("CURRENT_TIMESTAMP") {
-        sqlx::query(
+        sqlx::query(crate::db::sql(
             "UPDATE articles SET
                 title = ?, slug = ?, content = ?, cover_image = ?, excerpt = ?,
-                category_id = ?, status = ?, is_pinned = ?, published_at = CURRENT_TIMESTAMP,
-                updated_at = CURRENT_TIMESTAMP
+                category_id = ?, status = ?, is_pinned = ?, published_at = CURRENT_TIMESTAMP::text,
+                updated_at = CURRENT_TIMESTAMP::text
              WHERE id = ?",
-        )
+        ))
         .bind(&title)
         .bind(&slug)
         .bind(&content)
@@ -417,13 +428,13 @@ pub async fn update_article(
         .execute(&state.db)
         .await?;
     } else {
-        sqlx::query(
+        sqlx::query(crate::db::sql(
             "UPDATE articles SET
                 title = ?, slug = ?, content = ?, cover_image = ?, excerpt = ?,
                 category_id = ?, status = ?, is_pinned = ?, published_at = ?,
-                updated_at = CURRENT_TIMESTAMP
+                updated_at = CURRENT_TIMESTAMP::text
              WHERE id = ?",
-        )
+        ))
         .bind(&title)
         .bind(&slug)
         .bind(&content)
@@ -459,24 +470,29 @@ pub async fn delete_article(
     let Some(_) = require_csrf(&state, &headers).await else {
         return Ok(csrf_error(&state, &headers).await);
     };
-    let slug: Option<String> = sqlx::query_scalar("SELECT slug FROM articles WHERE id = ?")
-        .bind(id)
-        .fetch_optional(&state.db)
-        .await?;
+    let slug: Option<String> =
+        sqlx::query_scalar(crate::db::sql("SELECT slug FROM articles WHERE id = ?"))
+            .bind(id)
+            .fetch_optional(&state.db)
+            .await?;
     let Some(slug) = slug else {
         return Ok(json_error(StatusCode::NOT_FOUND, "not_found", "文章不存在"));
     };
-    sqlx::query(
-        "INSERT OR IGNORE INTO slug_history (old_slug, created_at) VALUES (?, CURRENT_TIMESTAMP)",
-    )
+    sqlx::query(crate::db::sql(
+        "INSERT INTO slug_history (old_slug, created_at)
+         VALUES (?, CURRENT_TIMESTAMP::text)
+         ON CONFLICT(old_slug) DO NOTHING",
+    ))
     .bind(&slug)
     .execute(&state.db)
     .await?;
-    sqlx::query("UPDATE slug_history SET article_id = NULL WHERE article_id = ?")
-        .bind(id)
-        .execute(&state.db)
-        .await?;
-    sqlx::query("DELETE FROM articles WHERE id = ?")
+    sqlx::query(crate::db::sql(
+        "UPDATE slug_history SET article_id = NULL WHERE article_id = ?",
+    ))
+    .bind(id)
+    .execute(&state.db)
+    .await?;
+    sqlx::query(crate::db::sql("DELETE FROM articles WHERE id = ?"))
         .bind(id)
         .execute(&state.db)
         .await?;
@@ -492,10 +508,12 @@ pub async fn update_category(
     let Some(_) = require_csrf(&state, &headers).await else {
         return Ok(csrf_error(&state, &headers).await);
     };
-    let row = sqlx::query("SELECT name, slug, sort_order FROM categories WHERE id = ?")
-        .bind(id)
-        .fetch_optional(&state.db)
-        .await?;
+    let row = sqlx::query(crate::db::sql(
+        "SELECT name, slug, sort_order FROM categories WHERE id = ?",
+    ))
+    .bind(id)
+    .fetch_optional(&state.db)
+    .await?;
     let Some(row) = row else {
         return Ok(json_error(StatusCode::NOT_FOUND, "not_found", "分类不存在"));
     };
@@ -540,14 +558,15 @@ pub async fn update_category(
             ));
         }
     }
-    let result =
-        sqlx::query("UPDATE categories SET name = ?, slug = ?, sort_order = ? WHERE id = ?")
-            .bind(&name)
-            .bind(&slug)
-            .bind(sort_order)
-            .bind(id)
-            .execute(&state.db)
-            .await;
+    let result = sqlx::query(crate::db::sql(
+        "UPDATE categories SET name = ?, slug = ?, sort_order = ? WHERE id = ?",
+    ))
+    .bind(&name)
+    .bind(&slug)
+    .bind(sort_order)
+    .bind(id)
+    .execute(&state.db)
+    .await;
     if result.is_err() {
         return Ok(json_error(
             StatusCode::CONFLICT,
@@ -572,16 +591,18 @@ pub async fn delete_category(
     let Some(_) = require_csrf(&state, &headers).await else {
         return Ok(csrf_error(&state, &headers).await);
     };
-    let exists: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM categories WHERE id = ?")
-        .bind(id)
-        .fetch_one(&state.db)
-        .await?;
+    let exists: i64 = sqlx::query_scalar(crate::db::sql(
+        "SELECT COUNT(*) FROM categories WHERE id = ?",
+    ))
+    .bind(id)
+    .fetch_one(&state.db)
+    .await?;
     if exists == 0 {
         return Ok(json_error(StatusCode::NOT_FOUND, "not_found", "分类不存在"));
     }
-    let published_count: i64 = sqlx::query_scalar(
+    let published_count: i64 = sqlx::query_scalar(crate::db::sql(
         "SELECT COUNT(*) FROM articles WHERE category_id = ? AND status = 'published'",
-    )
+    ))
     .bind(id)
     .fetch_one(&state.db)
     .await?;
@@ -592,11 +613,13 @@ pub async fn delete_category(
             "该分类下存在已发布文章，无法删除",
         ));
     }
-    sqlx::query("UPDATE articles SET category_id = NULL WHERE category_id = ?")
-        .bind(id)
-        .execute(&state.db)
-        .await?;
-    sqlx::query("DELETE FROM categories WHERE id = ?")
+    sqlx::query(crate::db::sql(
+        "UPDATE articles SET category_id = NULL WHERE category_id = ?",
+    ))
+    .bind(id)
+    .execute(&state.db)
+    .await?;
+    sqlx::query(crate::db::sql("DELETE FROM categories WHERE id = ?"))
         .bind(id)
         .execute(&state.db)
         .await?;
@@ -619,11 +642,13 @@ pub async fn sort_categories(
         ));
     }
     for (index, id) in request.ids.iter().enumerate() {
-        sqlx::query("UPDATE categories SET sort_order = ? WHERE id = ?")
-            .bind(index as i64)
-            .bind(id)
-            .execute(&state.db)
-            .await?;
+        sqlx::query(crate::db::sql(
+            "UPDATE categories SET sort_order = ? WHERE id = ?",
+        ))
+        .bind(index as i64)
+        .bind(id)
+        .execute(&state.db)
+        .await?;
     }
     Ok(Json(json!({"message":"排序更新成功"})).into_response())
 }
@@ -636,7 +661,7 @@ pub async fn delete_comment(
     let Some(_) = require_csrf(&state, &headers).await else {
         return Ok(csrf_error(&state, &headers).await);
     };
-    let result = sqlx::query("DELETE FROM comments WHERE id = ?")
+    let result = sqlx::query(crate::db::sql("DELETE FROM comments WHERE id = ?"))
         .bind(id)
         .execute(&state.db)
         .await?;
@@ -833,10 +858,12 @@ async fn next_unique_slug(state: &PublicState, base: &str) -> Result<String> {
         } else {
             format!("{base}-{index}")
         };
-        let exists: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM articles WHERE slug = ?")
-            .bind(&candidate)
-            .fetch_one(&state.db)
-            .await?;
+        let exists: i64 = sqlx::query_scalar(crate::db::sql(
+            "SELECT COUNT(*) FROM articles WHERE slug = ?",
+        ))
+        .bind(&candidate)
+        .fetch_one(&state.db)
+        .await?;
         if exists == 0 {
             return Ok(candidate);
         }
@@ -860,12 +887,13 @@ async fn next_unique_slug_excluding(
         } else {
             format!("{base}-{index}")
         };
-        let exists: i64 =
-            sqlx::query_scalar("SELECT COUNT(*) FROM articles WHERE slug = ? AND id <> ?")
-                .bind(&candidate)
-                .bind(excluded_id)
-                .fetch_one(&state.db)
-                .await?;
+        let exists: i64 = sqlx::query_scalar(crate::db::sql(
+            "SELECT COUNT(*) FROM articles WHERE slug = ? AND id <> ?",
+        ))
+        .bind(&candidate)
+        .bind(excluded_id)
+        .fetch_one(&state.db)
+        .await?;
         if exists == 0 {
             return Ok(candidate);
         }

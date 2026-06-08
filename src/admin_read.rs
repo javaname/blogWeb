@@ -10,6 +10,7 @@ use sqlx::{QueryBuilder, Row};
 
 use crate::{
     admin_auth::{auth_required, session_user},
+    db::Db as DbBackend,
     error::Result,
     http_public::PublicState,
 };
@@ -113,25 +114,28 @@ pub async fn dashboard(State(state): State<PublicState>, headers: HeaderMap) -> 
         return Ok(auth_required());
     }
 
-    let total_articles: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM articles")
+    let total_articles: i64 = sqlx::query_scalar(crate::db::sql("SELECT COUNT(*) FROM articles"))
         .fetch_one(&state.db)
         .await?;
-    let published_articles: i64 =
-        sqlx::query_scalar("SELECT COUNT(*) FROM articles WHERE status = 'published'")
-            .fetch_one(&state.db)
-            .await?;
-    let draft_articles: i64 =
-        sqlx::query_scalar("SELECT COUNT(*) FROM articles WHERE status = 'draft'")
-            .fetch_one(&state.db)
-            .await?;
-    let total_comments: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM comments")
+    let published_articles: i64 = sqlx::query_scalar(crate::db::sql(
+        "SELECT COUNT(*) FROM articles WHERE status = 'published'",
+    ))
+    .fetch_one(&state.db)
+    .await?;
+    let draft_articles: i64 = sqlx::query_scalar(crate::db::sql(
+        "SELECT COUNT(*) FROM articles WHERE status = 'draft'",
+    ))
+    .fetch_one(&state.db)
+    .await?;
+    let total_comments: i64 = sqlx::query_scalar(crate::db::sql("SELECT COUNT(*) FROM comments"))
         .fetch_one(&state.db)
         .await?;
-    let pending_comments: i64 =
-        sqlx::query_scalar("SELECT COUNT(*) FROM comments WHERE status = 'pending'")
-            .fetch_one(&state.db)
-            .await?;
-    let total_likes: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM likes")
+    let pending_comments: i64 = sqlx::query_scalar(crate::db::sql(
+        "SELECT COUNT(*) FROM comments WHERE status = 'pending'",
+    ))
+    .fetch_one(&state.db)
+    .await?;
+    let total_likes: i64 = sqlx::query_scalar(crate::db::sql("SELECT COUNT(*) FROM likes"))
         .fetch_one(&state.db)
         .await?;
     let monthly_views = estimate_monthly_views(published_articles, total_likes);
@@ -227,7 +231,7 @@ pub async fn list_articles(
          LEFT JOIN likes ON likes.article_id = articles.id",
     );
     push_article_filters(&mut builder, &query);
-    builder.push(" GROUP BY articles.id ");
+    builder.push(" GROUP BY articles.id, categories.id, users.id ");
     match query.sort_by.as_deref() {
         Some("published_at") => builder.push("ORDER BY articles.published_at "),
         Some("created_at") => builder.push("ORDER BY articles.created_at "),
@@ -290,13 +294,13 @@ pub async fn get_article(
         return Ok(auth_required());
     }
 
-    let row = sqlx::query(
+    let row = sqlx::query(crate::db::sql(
         "SELECT
             id, title, slug, content, cover_image, category_id, status, is_pinned,
             published_at, created_at, updated_at
          FROM articles
          WHERE id = ?",
-    )
+    ))
     .bind(id)
     .fetch_optional(&state.db)
     .await?;
@@ -342,7 +346,7 @@ pub async fn list_categories(
             COUNT(articles.id) AS article_count
          FROM categories
          LEFT JOIN articles ON articles.category_id = categories.id
-         GROUP BY categories.id
+         GROUP BY categories.id, categories.name, categories.slug, categories.sort_order, categories.created_at
          ORDER BY categories.sort_order ASC, categories.id ASC",
     )
     .fetch_all(&state.db)
@@ -426,7 +430,7 @@ pub async fn list_comments(
 }
 
 fn push_article_filters<'a>(
-    builder: &mut QueryBuilder<'a, sqlx::Sqlite>,
+    builder: &mut QueryBuilder<'a, DbBackend>,
     query: &'a ArticleListQuery,
 ) {
     let mut has_where = false;
@@ -459,7 +463,7 @@ fn push_article_filters<'a>(
 }
 
 fn push_comment_filters<'a>(
-    builder: &mut QueryBuilder<'a, sqlx::Sqlite>,
+    builder: &mut QueryBuilder<'a, DbBackend>,
     query: &'a CommentListQuery,
 ) {
     let mut has_where = false;

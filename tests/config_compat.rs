@@ -12,7 +12,7 @@ fn load_config_keeps_go_defaults_and_seed_defaults_safe() {
 server:
   port: 3000
 database:
-  path: "data/blog.db"
+  url: "postgres://localhost:5432/blogweb"
 redis:
   addr: "127.0.0.1:6379"
   pool_size: 10
@@ -37,7 +37,7 @@ admin:
     let cfg = config::load(&path).unwrap();
 
     assert_eq!(cfg.server.port, 3000);
-    assert_eq!(cfg.database.path, "data/blog.db");
+    assert_eq!(cfg.database.url, "postgres://localhost:5432/blogweb");
     assert_eq!(cfg.redis.addr, "127.0.0.1:6379");
     assert_eq!(cfg.redis.pool_size, 10);
     assert_eq!(cfg.session.max_age, 86400);
@@ -58,7 +58,7 @@ fn load_config_merges_with_go_defaults_when_sections_are_omitted() {
         &path,
         r#"
 database:
-  path: "custom/blog.db"
+  url: "postgres://postgres:secret@localhost:5432/custom_blog"
 session:
   secret: "custom-session-secret-with-32-bytes"
 admin:
@@ -70,7 +70,10 @@ admin:
     let cfg = config::load(&path).unwrap();
 
     assert_eq!(cfg.server.port, 3000);
-    assert_eq!(cfg.database.path, "custom/blog.db");
+    assert_eq!(
+        cfg.database.url,
+        "postgres://postgres:secret@localhost:5432/custom_blog"
+    );
     assert_eq!(cfg.redis.addr, "127.0.0.1:6379");
     assert_eq!(cfg.session.secret, "custom-session-secret-with-32-bytes");
     assert_eq!(cfg.session.max_age, 86400);

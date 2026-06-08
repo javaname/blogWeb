@@ -71,10 +71,11 @@ pub async fn like_article(
     }
     match request.action.trim() {
         "like" => {
-            let result = sqlx::query(
-                "INSERT OR IGNORE INTO likes (article_id, anonymous_id, ip_address, user_agent, created_at)
-                 VALUES (?, ?, '', '', CURRENT_TIMESTAMP)",
-            )
+            let result = sqlx::query(crate::db::sql(
+                "INSERT INTO likes (article_id, anonymous_id, ip_address, user_agent, created_at)
+                 VALUES (?, ?, '', '', CURRENT_TIMESTAMP::text)
+                 ON CONFLICT(article_id, anonymous_id) DO NOTHING",
+            ))
             .bind(article_id)
             .bind(&reader_id)
             .execute(&state.db)
@@ -84,11 +85,13 @@ pub async fn like_article(
             }
         }
         "unlike" => {
-            let result = sqlx::query("DELETE FROM likes WHERE article_id = ? AND anonymous_id = ?")
-                .bind(article_id)
-                .bind(&reader_id)
-                .execute(&state.db)
-                .await?;
+            let result = sqlx::query(crate::db::sql(
+                "DELETE FROM likes WHERE article_id = ? AND anonymous_id = ?",
+            ))
+            .bind(article_id)
+            .bind(&reader_id)
+            .execute(&state.db)
+            .await?;
             if result.rows_affected() == 0 {
                 return Ok(json_error(
                     StatusCode::CONFLICT,
@@ -149,10 +152,11 @@ pub async fn bookmark_article(
     }
     let bookmarked = match request.action.trim() {
         "bookmark" => {
-            sqlx::query(
-                "INSERT OR IGNORE INTO bookmarks (article_id, anonymous_id, ip_address, user_agent, created_at)
-                 VALUES (?, ?, '', '', CURRENT_TIMESTAMP)",
-            )
+            sqlx::query(crate::db::sql(
+                "INSERT INTO bookmarks (article_id, anonymous_id, ip_address, user_agent, created_at)
+                 VALUES (?, ?, '', '', CURRENT_TIMESTAMP::text)
+                 ON CONFLICT(article_id, anonymous_id) DO NOTHING",
+            ))
             .bind(article_id)
             .bind(&reader_id)
             .execute(&state.db)
@@ -160,11 +164,13 @@ pub async fn bookmark_article(
             true
         }
         "unbookmark" => {
-            sqlx::query("DELETE FROM bookmarks WHERE article_id = ? AND anonymous_id = ?")
-                .bind(article_id)
-                .bind(&reader_id)
-                .execute(&state.db)
-                .await?;
+            sqlx::query(crate::db::sql(
+                "DELETE FROM bookmarks WHERE article_id = ? AND anonymous_id = ?",
+            ))
+            .bind(article_id)
+            .bind(&reader_id)
+            .execute(&state.db)
+            .await?;
             false
         }
         _ => {
@@ -196,7 +202,7 @@ pub async fn follow_author(
             "缺少匿名访客标识",
         ));
     };
-    let exists: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM users WHERE id = ?")
+    let exists: i64 = sqlx::query_scalar(crate::db::sql("SELECT COUNT(*) FROM users WHERE id = ?"))
         .bind(author_id)
         .fetch_one(&state.db)
         .await?;
@@ -225,10 +231,11 @@ pub async fn follow_author(
     }
     let following = match request.action.trim() {
         "follow" => {
-            sqlx::query(
-                "INSERT OR IGNORE INTO author_follows (author_id, anonymous_id, ip_address, user_agent, created_at)
-                 VALUES (?, ?, '', '', CURRENT_TIMESTAMP)",
-            )
+            sqlx::query(crate::db::sql(
+                "INSERT INTO author_follows (author_id, anonymous_id, ip_address, user_agent, created_at)
+                 VALUES (?, ?, '', '', CURRENT_TIMESTAMP::text)
+                 ON CONFLICT(author_id, anonymous_id) DO NOTHING",
+            ))
             .bind(author_id)
             .bind(&reader_id)
             .execute(&state.db)
@@ -236,11 +243,13 @@ pub async fn follow_author(
             true
         }
         "unfollow" => {
-            sqlx::query("DELETE FROM author_follows WHERE author_id = ? AND anonymous_id = ?")
-                .bind(author_id)
-                .bind(&reader_id)
-                .execute(&state.db)
-                .await?;
+            sqlx::query(crate::db::sql(
+                "DELETE FROM author_follows WHERE author_id = ? AND anonymous_id = ?",
+            ))
+            .bind(author_id)
+            .bind(&reader_id)
+            .execute(&state.db)
+            .await?;
             false
         }
         _ => {
@@ -251,11 +260,12 @@ pub async fn follow_author(
             ));
         }
     };
-    let follower_count: i64 =
-        sqlx::query_scalar("SELECT COUNT(*) FROM author_follows WHERE author_id = ?")
-            .bind(author_id)
-            .fetch_one(&state.db)
-            .await?;
+    let follower_count: i64 = sqlx::query_scalar(crate::db::sql(
+        "SELECT COUNT(*) FROM author_follows WHERE author_id = ?",
+    ))
+    .bind(author_id)
+    .fetch_one(&state.db)
+    .await?;
     Ok(Json(json!({
         "following": following,
         "follower_count": follower_count,
@@ -290,15 +300,15 @@ pub async fn subscribe_newsletter(
     {
         return Ok(response);
     }
-    sqlx::query(
+    sqlx::query(crate::db::sql(
         "INSERT INTO newsletter_subscriptions (
             email, anonymous_id, status, ip_address, user_agent, created_at, updated_at
-         ) VALUES (?, ?, 'subscribed', '', '', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+         ) VALUES (?, ?, 'subscribed', '', '', CURRENT_TIMESTAMP::text, CURRENT_TIMESTAMP::text)
          ON CONFLICT(email) DO UPDATE SET
             anonymous_id = excluded.anonymous_id,
             status = 'subscribed',
-            updated_at = CURRENT_TIMESTAMP",
-    )
+            updated_at = CURRENT_TIMESTAMP::text",
+    ))
     .bind(&email)
     .bind(anonymous_id(&headers).unwrap_or_default())
     .execute(&state.db)
@@ -384,10 +394,10 @@ pub async fn create_comment(
         ));
     }
     if let Some(parent_id) = request.parent_id {
-        let exists: i64 = sqlx::query_scalar(
+        let exists: i64 = sqlx::query_scalar(crate::db::sql(
             "SELECT COUNT(*) FROM comments
              WHERE id = ? AND article_id = ? AND status = 'approved' AND parent_id IS NULL",
-        )
+        ))
         .bind(parent_id)
         .bind(article_id)
         .fetch_one(&state.db)
@@ -400,23 +410,24 @@ pub async fn create_comment(
             ));
         }
     }
-    let result = sqlx::query(
+    let comment_id: i64 = sqlx::query_scalar(crate::db::sql(
         "INSERT INTO comments (
             article_id, parent_id, author_name, content, status, anonymous_id,
             ip_address, user_agent, created_at, updated_at
-         ) VALUES (?, ?, ?, ?, 'approved', ?, '', '', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
-    )
+         ) VALUES (?, ?, ?, ?, 'approved', ?, '', '', CURRENT_TIMESTAMP::text, CURRENT_TIMESTAMP::text)
+         RETURNING id",
+    ))
     .bind(article_id)
     .bind(request.parent_id)
     .bind(author_name)
     .bind(content)
     .bind(reader_id)
-    .execute(&state.db)
+    .fetch_one(&state.db)
     .await?;
     Ok((
         StatusCode::CREATED,
         Json(json!({
-            "id": result.last_insert_rowid(),
+            "id": comment_id,
             "parent_id": request.parent_id,
             "status": "approved",
             "message": "评论已发布",
@@ -456,12 +467,12 @@ pub async fn batch_likes(
     }
     let mut liked_map = serde_json::Map::new();
     for slug in request.article_slugs {
-        let liked: i64 = sqlx::query_scalar(
+        let liked: i64 = sqlx::query_scalar(crate::db::sql(
             "SELECT COUNT(*)
              FROM likes
              INNER JOIN articles ON articles.id = likes.article_id
              WHERE likes.anonymous_id = ? AND articles.slug = ?",
-        )
+        ))
         .bind(&reader_id)
         .bind(&slug)
         .fetch_one(&state.db)
@@ -474,13 +485,13 @@ pub async fn batch_likes(
 }
 
 async fn published_article_id(state: &PublicState, slug: &str) -> Result<i64> {
-    let row = sqlx::query(
+    let row = sqlx::query(crate::db::sql(
         "SELECT id
          FROM articles
          WHERE slug = ?
            AND status = 'published'
-           AND (published_at IS NULL OR published_at <= datetime('now'))",
-    )
+           AND (published_at IS NULL OR published_at::timestamp <= CURRENT_TIMESTAMP)",
+    ))
     .bind(slug)
     .fetch_optional(&state.db)
     .await?;
@@ -492,8 +503,8 @@ async fn published_article_id(state: &PublicState, slug: &str) -> Result<i64> {
 
 async fn count_by_article(state: &PublicState, table: &str, article_id: i64) -> Result<i64> {
     let sql = match table {
-        "likes" => "SELECT COUNT(*) FROM likes WHERE article_id = ?",
-        "bookmarks" => "SELECT COUNT(*) FROM bookmarks WHERE article_id = ?",
+        "likes" => "SELECT COUNT(*) FROM likes WHERE article_id = $1",
+        "bookmarks" => "SELECT COUNT(*) FROM bookmarks WHERE article_id = $1",
         _ => unreachable!(),
     };
     Ok(sqlx::query_scalar(sql)

@@ -10,6 +10,7 @@ use sqlx::Row;
 
 use crate::{
     admin_auth::{auth_required, session_user},
+    db::DbRow,
     error::{AppError, Result},
     http_public::PublicState,
     session::SessionUser,
@@ -28,6 +29,13 @@ pub struct UpdateUserRoleRequest {
     role: String,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct UpdateUserRequest {
+    username: String,
+    email: String,
+    role: String,
+}
+
 #[derive(Debug, Serialize)]
 struct ManagedUser {
     id: i64,
@@ -37,6 +45,24 @@ struct ManagedUser {
     article_count: i64,
     created_at: String,
     permissions: Vec<&'static str>,
+}
+
+#[derive(Debug, Serialize)]
+struct RelatedArticleCategory {
+    id: i64,
+    name: String,
+    slug: String,
+}
+
+#[derive(Debug, Serialize)]
+struct RelatedUserArticle {
+    id: i64,
+    title: String,
+    slug: String,
+    status: String,
+    published_at: Option<String>,
+    updated_at: String,
+    category: Option<RelatedArticleCategory>,
 }
 
 #[derive(Debug, Serialize)]
@@ -69,7 +95,7 @@ pub async fn list_users(State(state): State<PublicState>, headers: HeaderMap) ->
             COUNT(articles.id) AS article_count
          FROM users
          LEFT JOIN articles ON articles.author_id = users.id
-         GROUP BY users.id
+         GROUP BY users.id, users.username, users.email, users.role, users.created_at
          ORDER BY users.id ASC",
     )
     .fetch_all(&state.db)
@@ -81,6 +107,28 @@ pub async fn list_users(State(state): State<PublicState>, headers: HeaderMap) ->
 
     Ok(Json(json!({
         "list": list,
+        "roles": role_definitions(),
+        "permissions": permission_definitions(),
+    }))
+    .into_response())
+}
+
+pub async fn get_user(
+    State(state): State<PublicState>,
+    headers: HeaderMap,
+    Path(id): Path<i64>,
+) -> Result<Response> {
+    if let Err(response) = require_admin(&state, &headers).await {
+        return Ok(response);
+    }
+    let Some(user) = fetch_managed_user(&state, id).await? else {
+        return Ok(json_error(StatusCode::NOT_FOUND, "not_found", "用户不存在"));
+    };
+    let recent_articles = fetch_related_user_articles(&state, id).await?;
+
+    Ok(Json(json!({
+        "user": user,
+        "recent_articles": recent_articles,
         "roles": role_definitions(),
         "permissions": permission_definitions(),
     }))
@@ -124,14 +172,78 @@ pub async fn create_user(
     let password_hash = bcrypt::hash(password, bcrypt::DEFAULT_COST)
         .map_err(|err| AppError::Config(err.to_string()))?;
 
-    let result = sqlx::query(
+    let user_id = sqlx::query_scalar(crate::db::sql(
         "INSERT INTO users (username, password, role, email, email_verified_at, created_at)
-         VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
-    )
+         VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP::text, CURRENT_TIMESTAMP::text)
+         RETURNING id",
+    ))
     .bind(username)
     .bind(password_hash)
     .bind(role)
     .bind(&email)
+    .fetch_one(&state.db)
+    .await;
+    let user_id = match user_id {
+        Ok(user_id) => user_id,
+        Err(_) => {
+            return Ok(json_error(
+                StatusCode::CONFLICT,
+                "conflict",
+                "用户名或邮箱已存在",
+            ));
+        }
+    };
+    let Some(user) = fetch_managed_user(&state, user_id).await? else {
+        return Ok(json_error(StatusCode::NOT_FOUND, "not_found", "用户不存在"));
+    };
+
+    Ok((StatusCode::CREATED, Json(json!({ "user": user }))).into_response())
+}
+
+pub async fn update_user(
+    State(state): State<PublicState>,
+    headers: HeaderMap,
+    Path(id): Path<i64>,
+    Json(request): Json<UpdateUserRequest>,
+) -> Result<Response> {
+    let admin = match require_admin_csrf(&state, &headers).await {
+        Ok(admin) => admin,
+        Err(response) => return Ok(response),
+    };
+    let username = request.username.trim();
+    if !valid_username(username) {
+        return Ok(json_error(
+            StatusCode::BAD_REQUEST,
+            "invalid_params",
+            "用户名需为 3-64 位字母、数字、点、下划线或短横线",
+        ));
+    }
+    let email = request.email.trim().to_lowercase();
+    if !valid_email(&email) {
+        return Ok(json_error(
+            StatusCode::BAD_REQUEST,
+            "invalid_params",
+            "邮箱格式不正确",
+        ));
+    }
+    let role = normalize_role(&request.role)?;
+    if id == admin.id && role != "admin" {
+        return Ok(json_error(
+            StatusCode::BAD_REQUEST,
+            "invalid_params",
+            "不能移除当前登录管理员的 admin 角色",
+        ));
+    }
+
+    let result = sqlx::query(crate::db::sql(
+        "UPDATE users
+         SET username = ?, email = ?, role = ?
+         WHERE id = ?",
+    ))
+    .bind(username)
+    .bind(&email)
+    .bind(role)
+    .bind(id)
     .execute(&state.db)
     .await;
     let result = match result {
@@ -144,11 +256,21 @@ pub async fn create_user(
             ));
         }
     };
-    let Some(user) = fetch_managed_user(&state, result.last_insert_rowid()).await? else {
+    if result.rows_affected() == 0 {
+        return Ok(json_error(StatusCode::NOT_FOUND, "not_found", "用户不存在"));
+    }
+    let Some(user) = fetch_managed_user(&state, id).await? else {
         return Ok(json_error(StatusCode::NOT_FOUND, "not_found", "用户不存在"));
     };
+    let recent_articles = fetch_related_user_articles(&state, id).await?;
 
-    Ok((StatusCode::CREATED, Json(json!({ "user": user }))).into_response())
+    Ok(Json(json!({
+        "user": user,
+        "recent_articles": recent_articles,
+        "roles": role_definitions(),
+        "permissions": permission_definitions(),
+    }))
+    .into_response())
 }
 
 pub async fn update_user_role(
@@ -170,7 +292,7 @@ pub async fn update_user_role(
         ));
     }
 
-    let result = sqlx::query("UPDATE users SET role = ? WHERE id = ?")
+    let result = sqlx::query(crate::db::sql("UPDATE users SET role = ? WHERE id = ?"))
         .bind(role)
         .bind(id)
         .execute(&state.db)
@@ -202,7 +324,7 @@ pub async fn delete_user(
         ));
     }
 
-    let result = sqlx::query("DELETE FROM users WHERE id = ?")
+    let result = sqlx::query(crate::db::sql("DELETE FROM users WHERE id = ?"))
         .bind(id)
         .execute(&state.db)
         .await;
@@ -260,7 +382,7 @@ async fn require_admin_csrf(
 }
 
 async fn fetch_managed_user(state: &PublicState, id: i64) -> Result<Option<ManagedUser>> {
-    let row = sqlx::query(
+    let row = sqlx::query(crate::db::sql(
         "SELECT
             users.id,
             users.username,
@@ -271,15 +393,60 @@ async fn fetch_managed_user(state: &PublicState, id: i64) -> Result<Option<Manag
          FROM users
          LEFT JOIN articles ON articles.author_id = users.id
          WHERE users.id = ?
-         GROUP BY users.id",
-    )
+         GROUP BY users.id, users.username, users.email, users.role, users.created_at",
+    ))
     .bind(id)
     .fetch_optional(&state.db)
     .await?;
     row.map(managed_user_from_row).transpose()
 }
 
-fn managed_user_from_row(row: sqlx::sqlite::SqliteRow) -> Result<ManagedUser> {
+async fn fetch_related_user_articles(
+    state: &PublicState,
+    user_id: i64,
+) -> Result<Vec<RelatedUserArticle>> {
+    let rows = sqlx::query(crate::db::sql(
+        "SELECT
+            articles.id,
+            articles.title,
+            articles.slug,
+            articles.status,
+            articles.published_at,
+            articles.updated_at,
+            categories.id AS category_id,
+            categories.name AS category_name,
+            categories.slug AS category_slug
+         FROM articles
+         LEFT JOIN categories ON categories.id = articles.category_id
+         WHERE articles.author_id = ?
+         ORDER BY articles.updated_at DESC, articles.id DESC
+         LIMIT 20",
+    ))
+    .bind(user_id)
+    .fetch_all(&state.db)
+    .await?;
+
+    rows.into_iter()
+        .map(|row| {
+            let category_id: Option<i64> = row.try_get("category_id")?;
+            Ok(RelatedUserArticle {
+                id: row.try_get("id")?,
+                title: row.try_get("title")?,
+                slug: row.try_get("slug")?,
+                status: row.try_get("status")?,
+                published_at: row.try_get("published_at")?,
+                updated_at: row.try_get("updated_at")?,
+                category: category_id.map(|id| RelatedArticleCategory {
+                    id,
+                    name: row.try_get("category_name").unwrap_or_default(),
+                    slug: row.try_get("category_slug").unwrap_or_default(),
+                }),
+            })
+        })
+        .collect()
+}
+
+fn managed_user_from_row(row: DbRow) -> Result<ManagedUser> {
     let role: String = row.try_get("role")?;
     Ok(ManagedUser {
         id: row.try_get("id")?,

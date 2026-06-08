@@ -1,16 +1,14 @@
-PRAGMA foreign_keys = ON;
-
 CREATE TABLE IF NOT EXISTS mcp_clients (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id BIGSERIAL PRIMARY KEY,
   name TEXT NOT NULL UNIQUE,
   token_hash TEXT NOT NULL UNIQUE,
   scopes TEXT NOT NULL,
   transport TEXT NOT NULL DEFAULT 'http',
-  is_enabled INTEGER NOT NULL DEFAULT 1,
-  created_by INTEGER NULL,
-  last_used_at DATETIME NULL,
-  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  is_enabled BIGINT NOT NULL DEFAULT 1,
+  created_by BIGINT NULL,
+  last_used_at TEXT NULL,
+  created_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP::text),
+  updated_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP::text),
   FOREIGN KEY(created_by) REFERENCES users(id) ON DELETE SET NULL
 );
 
@@ -19,8 +17,8 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_mcp_clients_token_hash ON mcp_clients(token
 CREATE INDEX IF NOT EXISTS idx_mcp_clients_is_enabled ON mcp_clients(is_enabled);
 
 CREATE TABLE IF NOT EXISTS mcp_audit_logs (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  client_id INTEGER NULL,
+  id BIGSERIAL PRIMARY KEY,
+  client_id BIGINT NULL,
   transport TEXT NOT NULL,
   action_type TEXT NOT NULL,
   target TEXT NOT NULL,
@@ -30,7 +28,7 @@ CREATE TABLE IF NOT EXISTS mcp_audit_logs (
   actor_ip TEXT NOT NULL DEFAULT '',
   error_code TEXT NOT NULL DEFAULT '',
   payload_digest TEXT NOT NULL DEFAULT '',
-  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP::text),
   FOREIGN KEY(client_id) REFERENCES mcp_clients(id) ON DELETE SET NULL
 );
 

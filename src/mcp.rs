@@ -8,7 +8,7 @@ use axum::{
 use serde::Deserialize;
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
-use sqlx::{Pool, QueryBuilder, Row, Sqlite};
+use sqlx::{Pool, QueryBuilder, Row};
 use std::collections::HashMap;
 use std::io::{Read, Write};
 use std::path::PathBuf;
@@ -18,6 +18,7 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use crate::{
     config::Config,
+    db::{Db as DbBackend, DbRow},
     error::{AppError, Result},
     renderer,
     session::RedisSessionStore,
@@ -34,7 +35,7 @@ static TOKEN_COUNTER: AtomicU64 = AtomicU64::new(1);
 
 #[derive(Clone)]
 struct McpState {
-    db: Pool<Sqlite>,
+    db: Pool<DbBackend>,
     config: Config,
     rate_limiter: RedisSessionStore,
     rate_limits: Arc<Mutex<HashMap<String, RateBucket>>>,
@@ -68,7 +69,7 @@ struct McpClient {
     scopes: String,
 }
 
-pub fn router_with_pool_and_config(pool: Pool<Sqlite>, config: Config) -> Router {
+pub fn router_with_pool_and_config(pool: Pool<DbBackend>, config: Config) -> Router {
     let path = config.mcp.http_path.clone();
     Router::new()
         .route(&path, post(http_handler))
@@ -81,7 +82,7 @@ pub fn router_with_pool_and_config(pool: Pool<Sqlite>, config: Config) -> Router
 }
 
 pub async fn issue_token(
-    pool: &Pool<Sqlite>,
+    pool: &Pool<DbBackend>,
     config: &Config,
     name: &str,
     scopes: &[String],
@@ -104,18 +105,18 @@ pub async fn issue_token(
     let token_hash = hmac_sha256_hex(&config.session.secret, &token);
     let scope_json = serde_json::to_string(&scopes)?;
 
-    sqlx::query(
+    sqlx::query(crate::db::sql(
         "INSERT INTO mcp_clients
          (name, token_hash, scopes, transport, is_enabled, last_used_at, created_at, updated_at)
-         VALUES (?, ?, ?, ?, 1, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+         VALUES (?, ?, ?, ?, 1, NULL, CURRENT_TIMESTAMP::text, CURRENT_TIMESTAMP::text)
          ON CONFLICT(name) DO UPDATE SET
            token_hash = excluded.token_hash,
            scopes = excluded.scopes,
            transport = excluded.transport,
            is_enabled = 1,
            last_used_at = NULL,
-           updated_at = CURRENT_TIMESTAMP",
-    )
+           updated_at = CURRENT_TIMESTAMP::text",
+    ))
     .bind(name)
     .bind(token_hash)
     .bind(scope_json)
@@ -126,14 +127,14 @@ pub async fn issue_token(
     Ok(token)
 }
 
-pub async fn revoke_token(pool: &Pool<Sqlite>, name: &str) -> Result<()> {
+pub async fn revoke_token(pool: &Pool<DbBackend>, name: &str) -> Result<()> {
     let name = name.trim();
     if name.is_empty() {
         return Err(AppError::Config("client name is required".into()));
     }
-    sqlx::query(
-        "UPDATE mcp_clients SET is_enabled = 0, updated_at = CURRENT_TIMESTAMP WHERE name = ?",
-    )
+    sqlx::query(crate::db::sql(
+        "UPDATE mcp_clients SET is_enabled = 0, updated_at = CURRENT_TIMESTAMP::text WHERE name = ?",
+    ))
     .bind(name)
     .execute(pool)
     .await?;
@@ -179,10 +180,12 @@ async fn http_handler(
             return mcp_error_response(request.id, err);
         }
     };
-    let _ = sqlx::query("UPDATE mcp_clients SET last_used_at = CURRENT_TIMESTAMP WHERE id = ?")
-        .bind(client.id)
-        .execute(&state.db)
-        .await;
+    let _ = sqlx::query(crate::db::sql(
+        "UPDATE mcp_clients SET last_used_at = CURRENT_TIMESTAMP::text WHERE id = ?",
+    ))
+    .bind(client.id)
+    .execute(&state.db)
+    .await;
     if let Some(err) = enforce_rate_limit(&state, &client, &request).await {
         write_audit(
             &state.db,
@@ -432,7 +435,7 @@ async fn dispatch_rpc(
 }
 
 pub async fn serve_stdio<R, W, E>(
-    pool: Pool<Sqlite>,
+    pool: Pool<DbBackend>,
     config: Config,
     mut input: R,
     mut output: W,
@@ -777,12 +780,13 @@ async fn create_article_draft(
     let (_, excerpt) =
         renderer::render_safe_html(&content).map_err(|err| internal_error(err.to_string()))?;
 
-    let result = sqlx::query(
+    let article_id = sqlx::query_scalar::<_, i64>(crate::db::sql(
         "INSERT INTO articles (
             title, slug, content, cover_image, excerpt, category_id, author_id,
             status, is_pinned, published_at, created_at, updated_at
-         ) VALUES (?, ?, ?, ?, ?, ?, ?, 'draft', ?, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
-    )
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, 'draft', ?, NULL, CURRENT_TIMESTAMP::text, CURRENT_TIMESTAMP::text)
+         RETURNING id",
+    ))
     .bind(&title)
     .bind(&slug)
     .bind(&content)
@@ -791,12 +795,12 @@ async fn create_article_draft(
     .bind(category_id)
     .bind(author_id)
     .bind(if is_pinned { 1_i64 } else { 0_i64 })
-    .execute(&state.db)
+    .fetch_one(&state.db)
     .await
     .map_err(|err| internal_error(err.to_string()))?;
 
     Ok(json!({
-        "id": result.last_insert_rowid(),
+        "id": article_id,
         "slug": slug,
     }))
 }
@@ -806,10 +810,10 @@ async fn update_article(
     arguments: &Value,
 ) -> std::result::Result<Value, McpError> {
     let id = required_i64_arg(arguments, "id")?;
-    let row = sqlx::query(
+    let row = sqlx::query(crate::db::sql(
         "SELECT title, slug, content, cover_image, category_id, is_pinned
          FROM articles WHERE id = ?",
-    )
+    ))
     .bind(id)
     .fetch_optional(&state.db)
     .await
@@ -841,20 +845,24 @@ async fn update_article(
         renderer::render_safe_html(&content).map_err(|err| internal_error(err.to_string()))?;
 
     if new_slug != old_slug {
-        sqlx::query("INSERT OR IGNORE INTO slug_history (article_id, old_slug) VALUES (?, ?)")
-            .bind(id)
-            .bind(&old_slug)
-            .execute(&state.db)
-            .await
-            .map_err(|err| internal_error(err.to_string()))?;
+        sqlx::query(crate::db::sql(
+            "INSERT INTO slug_history (article_id, old_slug)
+             VALUES (?, ?)
+             ON CONFLICT(old_slug) DO NOTHING",
+        ))
+        .bind(id)
+        .bind(&old_slug)
+        .execute(&state.db)
+        .await
+        .map_err(|err| internal_error(err.to_string()))?;
     }
 
-    sqlx::query(
+    sqlx::query(crate::db::sql(
         "UPDATE articles
          SET title = ?, slug = ?, content = ?, cover_image = ?, excerpt = ?,
-             category_id = ?, is_pinned = ?, updated_at = CURRENT_TIMESTAMP
+             category_id = ?, is_pinned = ?, updated_at = CURRENT_TIMESTAMP::text
          WHERE id = ?",
-    )
+    ))
     .bind(&title)
     .bind(&new_slug)
     .bind(&content)
@@ -871,28 +879,28 @@ async fn update_article(
 }
 
 async fn set_article_publication(
-    pool: &Pool<Sqlite>,
+    pool: &Pool<DbBackend>,
     arguments: &Value,
     publish: bool,
 ) -> std::result::Result<Value, McpError> {
     let id = required_i64_arg(arguments, "id")?;
     let result = if publish {
-        sqlx::query(
+        sqlx::query(crate::db::sql(
             "UPDATE articles
              SET status = 'published',
-                 published_at = COALESCE(published_at, CURRENT_TIMESTAMP),
-                 updated_at = CURRENT_TIMESTAMP
+                 published_at = COALESCE(published_at, CURRENT_TIMESTAMP::text),
+                 updated_at = CURRENT_TIMESTAMP::text
              WHERE id = ?",
-        )
+        ))
         .bind(id)
         .execute(pool)
         .await
     } else {
-        sqlx::query(
+        sqlx::query(crate::db::sql(
             "UPDATE articles
-             SET status = 'draft', published_at = NULL, updated_at = CURRENT_TIMESTAMP
+             SET status = 'draft', published_at = NULL, updated_at = CURRENT_TIMESTAMP::text
              WHERE id = ?",
-        )
+        ))
         .bind(id)
         .execute(pool)
         .await
@@ -905,11 +913,13 @@ async fn set_article_publication(
             "文章不存在",
         ));
     }
-    let row = sqlx::query("SELECT status, published_at FROM articles WHERE id = ?")
-        .bind(id)
-        .fetch_one(pool)
-        .await
-        .map_err(|err| internal_error(err.to_string()))?;
+    let row = sqlx::query(crate::db::sql(
+        "SELECT status, published_at FROM articles WHERE id = ?",
+    ))
+    .bind(id)
+    .fetch_one(pool)
+    .await
+    .map_err(|err| internal_error(err.to_string()))?;
     Ok(json!({
         "id": id,
         "status": try_string(&row, "status")?,
@@ -918,7 +928,7 @@ async fn set_article_publication(
 }
 
 async fn create_category(
-    pool: &Pool<Sqlite>,
+    pool: &Pool<DbBackend>,
     arguments: &Value,
 ) -> std::result::Result<Value, McpError> {
     let name = required_string_arg(arguments, "name")?;
@@ -927,18 +937,19 @@ async fn create_category(
     validate_slug(&slug)?;
     let slug = next_unique_category_slug(pool, &slug, None).await?;
     let sort_order = optional_i64_arg(arguments, "sort_order")?.unwrap_or_else(|| 0);
-    let result = sqlx::query(
+    let category_id = sqlx::query_scalar::<_, i64>(crate::db::sql(
         "INSERT INTO categories (name, slug, sort_order, created_at)
-         VALUES (?, ?, ?, CURRENT_TIMESTAMP)",
-    )
+         VALUES (?, ?, ?, CURRENT_TIMESTAMP::text)
+         RETURNING id",
+    ))
     .bind(&name)
     .bind(&slug)
     .bind(sort_order)
-    .execute(pool)
+    .fetch_one(pool)
     .await
     .map_err(|err| internal_error(err.to_string()))?;
     Ok(json!({
-        "id": result.last_insert_rowid(),
+        "id": category_id,
         "name": name,
         "slug": slug,
         "sort_order": sort_order,
@@ -993,16 +1004,18 @@ async fn upload_image(state: &McpState, arguments: &Value) -> std::result::Resul
 }
 
 async fn update_category(
-    pool: &Pool<Sqlite>,
+    pool: &Pool<DbBackend>,
     arguments: &Value,
 ) -> std::result::Result<Value, McpError> {
     let id = required_i64_arg(arguments, "id")?;
-    let row = sqlx::query("SELECT name, slug, sort_order FROM categories WHERE id = ?")
-        .bind(id)
-        .fetch_optional(pool)
-        .await
-        .map_err(|err| internal_error(err.to_string()))?
-        .ok_or_else(|| McpError::new(StatusCode::NOT_FOUND, "not_found", "分类不存在"))?;
+    let row = sqlx::query(crate::db::sql(
+        "SELECT name, slug, sort_order FROM categories WHERE id = ?",
+    ))
+    .bind(id)
+    .fetch_optional(pool)
+    .await
+    .map_err(|err| internal_error(err.to_string()))?
+    .ok_or_else(|| McpError::new(StatusCode::NOT_FOUND, "not_found", "分类不存在"))?;
     let name = optional_string_arg(arguments, "name")?.unwrap_or(try_string(&row, "name")?);
     validate_category_name(&name)?;
     let slug = optional_string_arg(arguments, "slug")?.unwrap_or(try_string(&row, "slug")?);
@@ -1010,14 +1023,16 @@ async fn update_category(
     let slug = next_unique_category_slug(pool, &slug, Some(id)).await?;
     let sort_order = optional_i64_arg(arguments, "sort_order")?
         .unwrap_or_else(|| try_i64(&row, "sort_order").unwrap_or_default());
-    sqlx::query("UPDATE categories SET name = ?, slug = ?, sort_order = ? WHERE id = ?")
-        .bind(&name)
-        .bind(&slug)
-        .bind(sort_order)
-        .bind(id)
-        .execute(pool)
-        .await
-        .map_err(|err| internal_error(err.to_string()))?;
+    sqlx::query(crate::db::sql(
+        "UPDATE categories SET name = ?, slug = ?, sort_order = ? WHERE id = ?",
+    ))
+    .bind(&name)
+    .bind(&slug)
+    .bind(sort_order)
+    .bind(id)
+    .execute(pool)
+    .await
+    .map_err(|err| internal_error(err.to_string()))?;
     Ok(json!({
         "id": id,
         "name": name,
@@ -1026,7 +1041,9 @@ async fn update_category(
     }))
 }
 
-async fn list_categories_value(pool: &Pool<Sqlite>) -> std::result::Result<Vec<Value>, McpError> {
+async fn list_categories_value(
+    pool: &Pool<DbBackend>,
+) -> std::result::Result<Vec<Value>, McpError> {
     let rows = sqlx::query(
         "SELECT id, name, slug, sort_order, created_at
          FROM categories
@@ -1039,19 +1056,21 @@ async fn list_categories_value(pool: &Pool<Sqlite>) -> std::result::Result<Vec<V
 }
 
 async fn category_by_slug(
-    pool: &Pool<Sqlite>,
+    pool: &Pool<DbBackend>,
     slug: &str,
 ) -> std::result::Result<Option<Value>, McpError> {
-    let row = sqlx::query("SELECT id, name, slug FROM categories WHERE slug = ?")
-        .bind(slug)
-        .fetch_optional(pool)
-        .await
-        .map_err(|err| internal_error(err.to_string()))?;
+    let row = sqlx::query(crate::db::sql(
+        "SELECT id, name, slug FROM categories WHERE slug = ?",
+    ))
+    .bind(slug)
+    .fetch_optional(pool)
+    .await
+    .map_err(|err| internal_error(err.to_string()))?;
     row.as_ref().map(category_brief_from_row).transpose()
 }
 
 async fn list_published_articles(
-    pool: &Pool<Sqlite>,
+    pool: &Pool<DbBackend>,
     category: Option<&str>,
     _cursor: Option<&str>,
     limit: Option<i64>,
@@ -1078,14 +1097,14 @@ async fn list_published_articles(
          INNER JOIN users ON users.id = articles.author_id
          LEFT JOIN likes ON likes.article_id = articles.id
          WHERE articles.status = 'published'
-           AND (articles.published_at IS NULL OR articles.published_at <= datetime('now'))",
+           AND (articles.published_at IS NULL OR articles.published_at::timestamp <= CURRENT_TIMESTAMP)",
     );
     if let Some(category) = category {
         builder.push(" AND categories.slug = ");
         builder.push_bind(category);
     }
     builder.push(
-        " GROUP BY articles.id
+        " GROUP BY articles.id, categories.id, users.id
           ORDER BY articles.is_pinned DESC, articles.published_at DESC, articles.id DESC
           LIMIT ",
     );
@@ -1125,10 +1144,10 @@ async fn list_published_articles(
 }
 
 async fn published_article_detail(
-    pool: &Pool<Sqlite>,
+    pool: &Pool<DbBackend>,
     slug: &str,
 ) -> std::result::Result<Option<Value>, McpError> {
-    let row = sqlx::query(
+    let row = sqlx::query(crate::db::sql(
         "SELECT
             articles.id,
             articles.title,
@@ -1152,9 +1171,9 @@ async fn published_article_detail(
          LEFT JOIN likes ON likes.article_id = articles.id
          WHERE articles.slug = ?
            AND articles.status = 'published'
-           AND (articles.published_at IS NULL OR articles.published_at <= datetime('now'))
-         GROUP BY articles.id",
-    )
+           AND (articles.published_at IS NULL OR articles.published_at::timestamp <= CURRENT_TIMESTAMP)
+         GROUP BY articles.id, categories.id, users.id",
+    ))
     .bind(slug)
     .fetch_optional(pool)
     .await
@@ -1163,8 +1182,8 @@ async fn published_article_detail(
     row.as_ref().map(article_detail_from_row).transpose()
 }
 
-async fn draft_article(pool: &Pool<Sqlite>, id: i64) -> std::result::Result<Value, McpError> {
-    let row = sqlx::query(
+async fn draft_article(pool: &Pool<DbBackend>, id: i64) -> std::result::Result<Value, McpError> {
+    let row = sqlx::query(crate::db::sql(
         "SELECT
             articles.id,
             articles.title,
@@ -1181,7 +1200,7 @@ async fn draft_article(pool: &Pool<Sqlite>, id: i64) -> std::result::Result<Valu
             articles.updated_at
          FROM articles
          WHERE articles.id = ?",
-    )
+    ))
     .bind(id)
     .fetch_optional(pool)
     .await
@@ -1210,7 +1229,7 @@ async fn draft_article(pool: &Pool<Sqlite>, id: i64) -> std::result::Result<Valu
     }))
 }
 
-fn article_detail_from_row(row: &sqlx::sqlite::SqliteRow) -> std::result::Result<Value, McpError> {
+fn article_detail_from_row(row: &DbRow) -> std::result::Result<Value, McpError> {
     let mut summary = article_summary_from_row(row)?;
     let content = try_string(row, "content")?;
     let (content_html, _) =
@@ -1224,7 +1243,7 @@ fn article_detail_from_row(row: &sqlx::sqlite::SqliteRow) -> std::result::Result
     Ok(summary)
 }
 
-fn article_summary_from_row(row: &sqlx::sqlite::SqliteRow) -> std::result::Result<Value, McpError> {
+fn article_summary_from_row(row: &DbRow) -> std::result::Result<Value, McpError> {
     let category = match try_optional_i64(row, "category_id")? {
         Some(id) => json!({
             "id": id,
@@ -1252,7 +1271,7 @@ fn article_summary_from_row(row: &sqlx::sqlite::SqliteRow) -> std::result::Resul
     }))
 }
 
-fn category_from_row(row: &sqlx::sqlite::SqliteRow) -> std::result::Result<Value, McpError> {
+fn category_from_row(row: &DbRow) -> std::result::Result<Value, McpError> {
     Ok(json!({
         "id": try_i64(row, "id")?,
         "name": try_string(row, "name")?,
@@ -1262,7 +1281,7 @@ fn category_from_row(row: &sqlx::sqlite::SqliteRow) -> std::result::Result<Value
     }))
 }
 
-fn category_brief_from_row(row: &sqlx::sqlite::SqliteRow) -> std::result::Result<Value, McpError> {
+fn category_brief_from_row(row: &DbRow) -> std::result::Result<Value, McpError> {
     Ok(json!({
         "id": try_i64(row, "id")?,
         "name": try_string(row, "name")?,
@@ -1426,7 +1445,7 @@ fn upload_type_allowed(config: &Config, mime_type: &str) -> bool {
 }
 
 async fn write_audit(
-    pool: &Pool<Sqlite>,
+    pool: &Pool<DbBackend>,
     client_id: Option<i64>,
     transport: &str,
     action_type: &str,
@@ -1442,12 +1461,12 @@ async fn write_audit(
     } else {
         hash_digest(payload)
     };
-    let _ = sqlx::query(
+    let _ = sqlx::query(crate::db::sql(
         "INSERT INTO mcp_audit_logs (
             client_id, transport, action_type, target, scope, status,
             request_id, actor_ip, error_code, payload_digest, created_at
-         ) VALUES (?, ?, ?, ?, ?, ?, ?, '', ?, ?, CURRENT_TIMESTAMP)",
-    )
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, '', ?, ?, CURRENT_TIMESTAMP::text)",
+    ))
     .bind(client_id)
     .bind(transport)
     .bind(action_type)
@@ -1623,15 +1642,16 @@ fn civil_from_days(days_since_epoch: i64) -> (i32, u32, u32) {
 }
 
 async fn default_author_id(
-    pool: &Pool<Sqlite>,
+    pool: &Pool<DbBackend>,
     config: &Config,
 ) -> std::result::Result<i64, McpError> {
-    let configured: Option<i64> =
-        sqlx::query_scalar("SELECT id FROM users WHERE username = ? AND role = 'admin' LIMIT 1")
-            .bind(&config.admin.init_username)
-            .fetch_optional(pool)
-            .await
-            .map_err(|err| internal_error(err.to_string()))?;
+    let configured: Option<i64> = sqlx::query_scalar(crate::db::sql(
+        "SELECT id FROM users WHERE username = ? AND role = 'admin' LIMIT 1",
+    ))
+    .bind(&config.admin.init_username)
+    .fetch_optional(pool)
+    .await
+    .map_err(|err| internal_error(err.to_string()))?;
     if let Some(id) = configured {
         return Ok(id);
     }
@@ -1643,7 +1663,7 @@ async fn default_author_id(
 }
 
 async fn next_unique_article_slug(
-    pool: &Pool<Sqlite>,
+    pool: &Pool<DbBackend>,
     base: &str,
     exclude_id: Option<i64>,
 ) -> std::result::Result<String, McpError> {
@@ -1651,7 +1671,7 @@ async fn next_unique_article_slug(
 }
 
 async fn next_unique_category_slug(
-    pool: &Pool<Sqlite>,
+    pool: &Pool<DbBackend>,
     base: &str,
     exclude_id: Option<i64>,
 ) -> std::result::Result<String, McpError> {
@@ -1659,7 +1679,7 @@ async fn next_unique_category_slug(
 }
 
 async fn next_unique_slug(
-    pool: &Pool<Sqlite>,
+    pool: &Pool<DbBackend>,
     table: &str,
     column: &str,
     base: &str,
@@ -1676,8 +1696,9 @@ async fn next_unique_slug(
         } else {
             format!("{base}-{}", index + 1)
         };
-        let sql =
-            format!("SELECT id FROM {table} WHERE {column} = ? AND (? IS NULL OR id != ?) LIMIT 1");
+        let sql = format!(
+            "SELECT id FROM {table} WHERE {column} = $1 AND ($2 IS NULL OR id != $3) LIMIT 1"
+        );
         let existing: Option<i64> = sqlx::query_scalar(&sql)
             .bind(&candidate)
             .bind(exclude_id)
@@ -1780,28 +1801,22 @@ fn optional_bool_arg(arguments: &Value, name: &str) -> Option<bool> {
     arguments.get(name).and_then(Value::as_bool)
 }
 
-fn try_string(row: &sqlx::sqlite::SqliteRow, name: &str) -> std::result::Result<String, McpError> {
+fn try_string(row: &DbRow, name: &str) -> std::result::Result<String, McpError> {
     row.try_get(name)
         .map_err(|err| internal_error(err.to_string()))
 }
 
-fn try_optional_string(
-    row: &sqlx::sqlite::SqliteRow,
-    name: &str,
-) -> std::result::Result<Option<String>, McpError> {
+fn try_optional_string(row: &DbRow, name: &str) -> std::result::Result<Option<String>, McpError> {
     row.try_get(name)
         .map_err(|err| internal_error(err.to_string()))
 }
 
-fn try_i64(row: &sqlx::sqlite::SqliteRow, name: &str) -> std::result::Result<i64, McpError> {
+fn try_i64(row: &DbRow, name: &str) -> std::result::Result<i64, McpError> {
     row.try_get(name)
         .map_err(|err| internal_error(err.to_string()))
 }
 
-fn try_optional_i64(
-    row: &sqlx::sqlite::SqliteRow,
-    name: &str,
-) -> std::result::Result<Option<i64>, McpError> {
+fn try_optional_i64(row: &DbRow, name: &str) -> std::result::Result<Option<i64>, McpError> {
     row.try_get(name)
         .map_err(|err| internal_error(err.to_string()))
 }

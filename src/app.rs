@@ -9,7 +9,6 @@ use axum::{
     Json, Router,
 };
 use serde_json::json;
-use sqlx::{Pool, Sqlite};
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -22,7 +21,8 @@ use crate::admin_read::{
     list_categories, list_comments, settings,
 };
 use crate::admin_users::{
-    create_user, delete_user, list_users as list_admin_users, update_user_role,
+    create_user, delete_user, get_user, list_users as list_admin_users, update_user,
+    update_user_role,
 };
 use crate::admin_write::{
     create_article, create_category, delete_article, delete_category, delete_comment,
@@ -30,6 +30,7 @@ use crate::admin_write::{
     upload,
 };
 use crate::config::Config;
+use crate::db::DbPool;
 use crate::http_interactions::{
     batch_likes, bookmark_article, create_comment, follow_author, like_article,
     subscribe_newsletter,
@@ -49,7 +50,7 @@ pub fn router() -> Router {
         .layer(middleware::from_fn(apply_response_contract))
 }
 
-pub fn router_with_pool(pool: Pool<Sqlite>) -> Router {
+pub fn router_with_pool(pool: DbPool) -> Router {
     router_with_pool_and_config(
         pool,
         PathBuf::from("public/assets"),
@@ -59,7 +60,7 @@ pub fn router_with_pool(pool: Pool<Sqlite>) -> Router {
 }
 
 pub fn router_with_pool_and_paths(
-    pool: Pool<Sqlite>,
+    pool: DbPool,
     assets_dir: impl Into<PathBuf>,
     upload_dir: impl Into<PathBuf>,
 ) -> Router {
@@ -67,7 +68,7 @@ pub fn router_with_pool_and_paths(
 }
 
 pub fn router_with_pool_and_config(
-    pool: Pool<Sqlite>,
+    pool: DbPool,
     assets_dir: impl Into<PathBuf>,
     upload_dir: impl Into<PathBuf>,
     config: Config,
@@ -120,7 +121,10 @@ pub fn router_with_pool_and_config(
         .route("/api/admin/settings", get(settings).put(update_settings))
         .route("/api/admin/users", get(list_admin_users).post(create_user))
         .route("/api/admin/users/:id/role", put(update_user_role))
-        .route("/api/admin/users/:id", delete(delete_user))
+        .route(
+            "/api/admin/users/:id",
+            get(get_user).put(update_user).delete(delete_user),
+        )
         .route(
             "/api/admin/articles",
             get(list_admin_articles).post(create_article),

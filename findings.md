@@ -180,3 +180,8 @@
 - 多个测试使用 `db::connect_memory()` 或 `SqlitePoolOptions` 创建内存 SQLite。
 - PostgreSQL 迁移风险点：占位符重编号、QueryBuilder 泛型、PgRow 行类型、布尔/时间字段读取、迁移事务语义、序列重置。
 - 当前工作区存在与本任务无关的前端改动：`client/scripts/check-ui-completeness.mjs` 和 `client/src/components/ToastProvider.jsx`，本任务不应提交或覆盖这些文件。
+- 本地 PostgreSQL 最终采用 `blogweb` 库 + 本机用户 `xiaojie` 连接，开发便利性通过 `pg_hba.conf` 中仅针对 `blogweb` 的 `127.0.0.1/32` 和 `::1/128` trust 规则实现；临时 `postgres` 管理 trust 已移除。
+- SQLite runtime 已退役，`sqlx` 的 `sqlite` feature 仅服务 `db sync-sqlite` 一次性导入源读取；正常运行路径使用 `PgPool`。
+- PostgreSQL 手工指定 ID 后不会自动推进序列；同步命令和测试 seed 都必须显式重置序列，否则后续 `RETURNING id` 插入会撞主键或表现为业务 409。
+- PostgreSQL 下 `SELECT 1` 不能继续按 `i64` 解码为存在性检查；`table_exists`/`column_exists` 改为 `SELECT EXISTS (...)` 返回 bool。
+- 本地真实同步结果已核对：users=7、categories=6、articles=7、likes=1、slug_history=1、bookmarks=1、author_follows=1。

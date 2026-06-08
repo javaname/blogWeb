@@ -1,4 +1,4 @@
-use std::{ffi::OsString, path::Path};
+use std::ffi::OsString;
 
 use blogweb::{app, config, db, error::Result};
 use clap::{Args, Parser, Subcommand};
@@ -84,6 +84,7 @@ struct RevokeTokenArgs {
 enum DbAction {
     Check(ConfigArg),
     Migrate(MigrateArgs),
+    SyncSqlite(SyncSqliteArgs),
 }
 
 #[derive(Debug, Args)]
@@ -112,6 +113,19 @@ struct MigrateArgs {
     config: String,
 }
 
+#[derive(Debug, Args)]
+struct SyncSqliteArgs {
+    #[arg(long = "source", default_value = "data/blog.db")]
+    source: String,
+    #[arg(
+        long = "config",
+        short = 'c',
+        alias = "config",
+        default_value = "config.yaml"
+    )]
+    config: String,
+}
+
 #[tokio::main]
 async fn main() {
     if let Err(err) = run().await {
@@ -125,13 +139,7 @@ async fn run() -> Result<()> {
     match cli.command {
         Command::ServeWeb(args) => {
             let cfg = config::load(&args.config)?;
-            if !Path::new(&cfg.database.path).exists() {
-                return Err(blogweb::error::AppError::Migration(
-                    "schema_migrations table is missing; run db migrate --apply".into(),
-                ));
-            }
-            let pool = db::connect_existing(&cfg.database.path).await?;
-            db::check_migrations(&pool).await?;
+            let pool = connect_checked_existing(&cfg).await?;
             let addr = format!("0.0.0.0:{}", cfg.server.port);
             let router = app::router_with_pool_and_config(
                 pool,
@@ -219,22 +227,28 @@ async fn run() -> Result<()> {
                     println!("database migration dry-run succeeded");
                     return Ok(());
                 }
-                let pool = db::connect(&cfg.database.path).await?;
+                let pool = db::connect(&cfg.database.url).await?;
                 db::apply_migrations(&pool).await?;
                 println!("database migration applied");
+                Ok(())
+            }
+            DbAction::SyncSqlite(args) => {
+                let cfg = config::load(&args.config)?;
+                let pool = db::connect(&cfg.database.url).await?;
+                db::apply_migrations(&pool).await?;
+                let report = blogweb::sqlite_sync::sync_file(&args.source, &pool).await?;
+                println!("sqlite source synced source={}", args.source);
+                for (table, count) in report.table_counts() {
+                    println!("{table}={count}");
+                }
                 Ok(())
             }
         },
     }
 }
 
-async fn connect_checked_existing(cfg: &config::Config) -> Result<sqlx::Pool<sqlx::Sqlite>> {
-    if !Path::new(&cfg.database.path).exists() {
-        return Err(blogweb::error::AppError::Migration(
-            "schema_migrations table is missing; run db migrate --apply".into(),
-        ));
-    }
-    let pool = db::connect_existing(&cfg.database.path).await?;
+async fn connect_checked_existing(cfg: &config::Config) -> Result<db::DbPool> {
+    let pool = db::connect_existing(&cfg.database.url).await?;
     db::check_migrations(&pool).await?;
     Ok(pool)
 }

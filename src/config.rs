@@ -29,7 +29,7 @@ pub struct ServerConfig {
 #[derive(Debug, Clone, Deserialize)]
 #[serde(default)]
 pub struct DatabaseConfig {
-    pub path: String,
+    pub url: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -165,7 +165,7 @@ impl Default for ServerConfig {
 impl Default for DatabaseConfig {
     fn default() -> Self {
         Self {
-            path: "data/blog.db".into(),
+            url: "postgres://localhost:5432/blogweb".into(),
         }
     }
 }
@@ -318,8 +318,8 @@ impl Config {
                 "server.port must be greater than 0".into(),
             ));
         }
-        if self.database.path.is_empty() {
-            return Err(AppError::Config("database.path is required".into()));
+        if self.database.url.trim().is_empty() {
+            return Err(AppError::Config("database.url is required".into()));
         }
         if self.redis.addr.is_empty() {
             return Err(AppError::Config("redis.addr is required".into()));

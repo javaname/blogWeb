@@ -2,10 +2,9 @@ use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use blogweb::{app, db};
 use serde_json::Value;
-use sqlx::Pool;
 use tower::ServiceExt;
 
-async fn seeded_pool() -> Pool<sqlx::Sqlite> {
+async fn seeded_pool() -> db::DbPool {
     let pool = db::connect_memory().await.unwrap();
     db::apply_migrations(&pool).await.unwrap();
     sqlx::query(
@@ -51,7 +50,7 @@ async fn seeded_pool() -> Pool<sqlx::Sqlite> {
     pool
 }
 
-async fn seeded_pool_with_extra_articles() -> Pool<sqlx::Sqlite> {
+async fn seeded_pool_with_extra_articles() -> db::DbPool {
     let pool = seeded_pool().await;
     sqlx::query(
         "INSERT INTO articles (

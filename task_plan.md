@@ -328,25 +328,29 @@ Stitch 项目：
 - [complete] 用户确认采用推荐方案：PostgreSQL-only。
 - [complete] 用户确认本地连接使用 `localhost:5432/blogweb`。
 - [complete] 用户要求当前项目数据库数据同步到 `blogweb`。
-- [in_progress] 追加任务计划、发现和进度记录。
-- [pending] 切片 1：配置与数据库连接测试
-  - [pending] 配置读取 `database.url`。
-  - [pending] 默认连接串指向本地 `blogweb`。
-  - [pending] `db check/migrate` 使用 PostgreSQL 连接，不检查 SQLite 文件路径。
-- [pending] 切片 2：PostgreSQL 迁移 SQL
-  - [pending] 将建表 SQL 改为 PostgreSQL 方言。
-  - [pending] `schema_migrations`、核心表、关键列检查使用 PostgreSQL 系统视图。
-  - [pending] 迁移 dry-run 使用临时 PostgreSQL schema 或隔离测试库。
-- [pending] 切片 3：业务 SQL 方言调整
-  - [pending] `?` 占位符改为 PostgreSQL `$1/$2`。
-  - [pending] `INSERT OR IGNORE` 改为 `ON CONFLICT DO NOTHING`。
-  - [pending] 行类型和 `QueryBuilder` 泛型切换到 PostgreSQL。
-- [pending] 切片 4：SQLite 到 PostgreSQL 数据同步
-  - [pending] 新增 CLI 同步命令或迁移子命令参数。
-  - [pending] 从 `data/blog.db` 读取全量表数据写入 PostgreSQL。
-  - [pending] 同步后修复 PostgreSQL 自增序列。
-- [pending] 切片 5：验证、提交和推送
-  - [pending] `cargo fmt --check`
-  - [pending] PostgreSQL 定向测试
-  - [pending] `cargo test`
-  - [pending] 阶段提交并推送到远程
+- [complete] 追加任务计划、发现和进度记录。
+- [complete] 切片 1：配置与数据库连接测试
+  - [complete] 配置读取 `database.url`。
+  - [complete] 默认连接串指向本地 `blogweb`。
+  - [complete] `db check/migrate` 使用 PostgreSQL 连接，不检查 SQLite 文件路径。
+- [complete] 切片 2：PostgreSQL 迁移 SQL
+  - [complete] 将建表 SQL 改为 PostgreSQL 方言。
+  - [complete] `schema_migrations`、核心表、关键列检查使用 PostgreSQL 系统视图。
+  - [complete] 迁移 dry-run 使用临时 PostgreSQL schema 或隔离测试库。
+- [complete] 切片 3：业务 SQL 方言调整
+  - [complete] `?` 占位符改为 PostgreSQL `$1/$2`。
+  - [complete] `INSERT OR IGNORE` 改为 `ON CONFLICT DO NOTHING`。
+  - [complete] 行类型和 `QueryBuilder` 泛型切换到 PostgreSQL。
+- [complete] 切片 4：SQLite 到 PostgreSQL 数据同步
+  - [complete] 新增 `db sync-sqlite --source data/blog.db --config config.yaml` 同步命令。
+  - [complete] 实现从 SQLite 源读取全量表数据写入 PostgreSQL。
+  - [complete] 同步后修复 PostgreSQL 自增序列。
+  - [complete] 实际执行同步到本机 `blogweb`，核心数据已核对：users=7、categories=6、articles=7、likes=1、slug_history=1、bookmarks=1、author_follows=1。
+- [in_progress] 切片 5：验证、提交和推送
+  - [complete] `cargo fmt --check`
+  - [complete] `cargo check`
+  - [complete] `cargo test --no-run`
+  - [complete] PostgreSQL 定向测试：`db_migration`、`sqlite_sync`、后台认证/读/写/用户测试。
+  - [complete] `cargo test`
+  - [complete] 阶段本地提交
+  - [pending] 推送到远程：GitHub 443 连接失败，待网络恢复后执行 `git push`

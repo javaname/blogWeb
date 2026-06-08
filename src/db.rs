@@ -1,7 +1,17 @@
 use sha2::{Digest, Sha256};
-use sqlx::{sqlite::SqlitePoolOptions, Pool, Row, Sqlite, SqliteConnection};
+use sqlx::{postgres::PgPoolOptions, PgConnection, Pool, Postgres};
+use std::{
+    collections::HashMap,
+    sync::atomic::{AtomicU64, Ordering},
+    sync::{Mutex, OnceLock},
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 use crate::error::{AppError, Result};
+
+pub type Db = Postgres;
+pub type DbPool = Pool<Db>;
+pub type DbRow = sqlx::postgres::PgRow;
 
 struct Migration {
     version: &'static str,
@@ -118,47 +128,42 @@ pub enum MigrationCheckStatus {
     NeedsRegistration,
 }
 
-pub async fn connect(path: &str) -> Result<Pool<Sqlite>> {
-    let options = sqlx::sqlite::SqliteConnectOptions::new()
-        .filename(path)
-        .create_if_missing(true);
-    Ok(SqlitePoolOptions::new()
-        .max_connections(1)
-        .connect_with(options)
-        .await?)
+pub async fn connect(url: &str) -> Result<DbPool> {
+    Ok(PgPoolOptions::new().max_connections(5).connect(url).await?)
 }
 
-pub async fn connect_existing(path: &str) -> Result<Pool<Sqlite>> {
-    let options = sqlx::sqlite::SqliteConnectOptions::new()
-        .filename(path)
-        .create_if_missing(false);
-    Ok(SqlitePoolOptions::new()
-        .max_connections(1)
-        .connect_with(options)
-        .await?)
+pub async fn connect_existing(url: &str) -> Result<DbPool> {
+    connect(url).await
 }
 
-pub async fn connect_memory() -> Result<Pool<Sqlite>> {
-    Ok(SqlitePoolOptions::new()
+pub async fn connect_memory() -> Result<DbPool> {
+    let url = std::env::var("BLOGWEB_TEST_DATABASE_URL")
+        .unwrap_or_else(|_| crate::config::DatabaseConfig::default().url);
+    let schema = format!("test_{}", unique_suffix());
+    let pool = PgPoolOptions::new()
         .max_connections(1)
-        .connect("sqlite::memory:")
-        .await?)
+        .connect(&url)
+        .await?;
+    sqlx::query(&format!("CREATE SCHEMA {}", pg_ident(&schema)?))
+        .execute(&pool)
+        .await?;
+    sqlx::query(&format!("SET search_path TO {}", pg_ident(&schema)?))
+        .execute(&pool)
+        .await?;
+    Ok(pool)
 }
 
-pub async fn check_migrations(pool: &Pool<Sqlite>) -> Result<MigrationCheckStatus> {
-    let has_table: Option<i64> = sqlx::query_scalar(
-        "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'schema_migrations'",
-    )
-    .fetch_optional(pool)
-    .await?;
+pub async fn check_migrations(pool: &DbPool) -> Result<MigrationCheckStatus> {
+    let has_table = table_exists(pool, "schema_migrations").await?;
 
-    if has_table.is_some() {
+    if has_table {
         for migration in MIGRATIONS {
-            let recorded: Option<String> =
-                sqlx::query_scalar("SELECT sha256 FROM schema_migrations WHERE version = ?")
-                    .bind(migration.version)
-                    .fetch_optional(pool)
-                    .await?;
+            let recorded: Option<String> = sqlx::query_scalar(sql(
+                "SELECT sha256 FROM schema_migrations WHERE version = ?",
+            ))
+            .bind(migration.version)
+            .fetch_optional(pool)
+            .await?;
             match recorded {
                 Some(hash) if hash == migration_hash(migration.sql) => {}
                 Some(_) => {
@@ -184,7 +189,7 @@ pub async fn check_migrations(pool: &Pool<Sqlite>) -> Result<MigrationCheckStatu
     }
 }
 
-async fn smoke_check_schema(pool: &Pool<Sqlite>) -> Result<()> {
+async fn smoke_check_schema(pool: &DbPool) -> Result<()> {
     for (table, columns) in REQUIRED_SCHEMA {
         if !table_exists(pool, table).await? {
             return Err(AppError::Migration(format!("missing table {table}")));
@@ -200,44 +205,51 @@ async fn smoke_check_schema(pool: &Pool<Sqlite>) -> Result<()> {
     Ok(())
 }
 
-async fn table_exists(pool: &Pool<Sqlite>, table: &str) -> Result<bool> {
-    let exists: Option<i64> =
-        sqlx::query_scalar("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?")
-            .bind(table)
-            .fetch_optional(pool)
-            .await?;
-    Ok(exists.is_some())
+async fn table_exists(pool: &DbPool, table: &str) -> Result<bool> {
+    let exists: bool = sqlx::query_scalar(sql("SELECT EXISTS (
+             SELECT 1
+             FROM information_schema.tables
+             WHERE table_schema = current_schema() AND table_name = ?
+         )"))
+    .bind(table)
+    .fetch_one(pool)
+    .await?;
+    Ok(exists)
 }
 
-pub async fn apply_migrations(pool: &Pool<Sqlite>) -> Result<()> {
+pub async fn apply_migrations(pool: &DbPool) -> Result<()> {
     let mut conn = pool.acquire().await?;
-    sqlx::query("BEGIN IMMEDIATE").execute(&mut *conn).await?;
+    sqlx::query(crate::db::sql("BEGIN"))
+        .execute(&mut *conn)
+        .await?;
     let result = apply_migrations_in_transaction(&mut conn).await;
     match result {
         Ok(()) => {
-            sqlx::query("COMMIT").execute(&mut *conn).await?;
+            sqlx::query(crate::db::sql("COMMIT"))
+                .execute(&mut *conn)
+                .await?;
             Ok(())
         }
         Err(err) => {
-            let _ = sqlx::query("ROLLBACK").execute(&mut *conn).await;
+            let _ = sqlx::query(crate::db::sql("ROLLBACK"))
+                .execute(&mut *conn)
+                .await;
             Err(err)
         }
     }
 }
 
-async fn apply_migrations_in_transaction(conn: &mut SqliteConnection) -> Result<()> {
-    sqlx::query("PRAGMA foreign_keys = ON")
-        .execute(&mut *conn)
-        .await?;
+async fn apply_migrations_in_transaction(conn: &mut PgConnection) -> Result<()> {
     ensure_schema_migrations(conn).await?;
 
     for migration in MIGRATIONS {
         let expected_hash = migration_hash(migration.sql);
-        let recorded: Option<String> =
-            sqlx::query_scalar("SELECT sha256 FROM schema_migrations WHERE version = ?")
-                .bind(migration.version)
-                .fetch_optional(&mut *conn)
-                .await?;
+        let recorded: Option<String> = sqlx::query_scalar(sql(
+            "SELECT sha256 FROM schema_migrations WHERE version = ?",
+        ))
+        .bind(migration.version)
+        .fetch_optional(&mut *conn)
+        .await?;
         match recorded {
             Some(hash) if hash == expected_hash => continue,
             Some(_) => {
@@ -248,10 +260,10 @@ async fn apply_migrations_in_transaction(conn: &mut SqliteConnection) -> Result<
             }
             None => {
                 execute_migration_sql(conn, migration.sql).await?;
-                sqlx::query(
+                sqlx::query(sql(
                     "INSERT INTO schema_migrations (version, filename, sha256, applied_at)
-                     VALUES (?, ?, ?, CURRENT_TIMESTAMP)",
-                )
+                         VALUES (?, ?, ?, CURRENT_TIMESTAMP::text)",
+                ))
                 .bind(migration.version)
                 .bind(migration.filename)
                 .bind(expected_hash)
@@ -266,13 +278,14 @@ async fn apply_migrations_in_transaction(conn: &mut SqliteConnection) -> Result<
     Ok(())
 }
 
-async fn verify_migration_hashes(conn: &mut SqliteConnection) -> Result<()> {
+async fn verify_migration_hashes(conn: &mut PgConnection) -> Result<()> {
     for migration in MIGRATIONS {
-        let recorded: Option<String> =
-            sqlx::query_scalar("SELECT sha256 FROM schema_migrations WHERE version = ?")
-                .bind(migration.version)
-                .fetch_optional(&mut *conn)
-                .await?;
+        let recorded: Option<String> = sqlx::query_scalar(sql(
+            "SELECT sha256 FROM schema_migrations WHERE version = ?",
+        ))
+        .bind(migration.version)
+        .fetch_optional(&mut *conn)
+        .await?;
         match recorded {
             Some(hash) if hash == migration_hash(migration.sql) => {}
             Some(_) => {
@@ -292,7 +305,7 @@ async fn verify_migration_hashes(conn: &mut SqliteConnection) -> Result<()> {
     Ok(())
 }
 
-async fn smoke_check_schema_conn(conn: &mut SqliteConnection) -> Result<()> {
+async fn smoke_check_schema_conn(conn: &mut PgConnection) -> Result<()> {
     for (table, columns) in REQUIRED_SCHEMA {
         if !table_exists_conn(conn, table).await? {
             return Err(AppError::Migration(format!("missing table {table}")));
@@ -308,22 +321,25 @@ async fn smoke_check_schema_conn(conn: &mut SqliteConnection) -> Result<()> {
     Ok(())
 }
 
-async fn table_exists_conn(conn: &mut SqliteConnection, table: &str) -> Result<bool> {
-    let exists: Option<i64> =
-        sqlx::query_scalar("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?")
-            .bind(table)
-            .fetch_optional(&mut *conn)
-            .await?;
-    Ok(exists.is_some())
+async fn table_exists_conn(conn: &mut PgConnection, table: &str) -> Result<bool> {
+    let exists: bool = sqlx::query_scalar(sql("SELECT EXISTS (
+             SELECT 1
+             FROM information_schema.tables
+             WHERE table_schema = current_schema() AND table_name = ?
+         )"))
+    .bind(table)
+    .fetch_one(&mut *conn)
+    .await?;
+    Ok(exists)
 }
 
-async fn ensure_schema_migrations(conn: &mut SqliteConnection) -> Result<()> {
+async fn ensure_schema_migrations(conn: &mut PgConnection) -> Result<()> {
     sqlx::query(
         "CREATE TABLE IF NOT EXISTS schema_migrations (
             version TEXT NOT NULL PRIMARY KEY,
             filename TEXT NOT NULL,
             sha256 TEXT NOT NULL,
-            applied_at DATETIME NOT NULL
+            applied_at TEXT NOT NULL
         )",
     )
     .execute(&mut *conn)
@@ -331,10 +347,10 @@ async fn ensure_schema_migrations(conn: &mut SqliteConnection) -> Result<()> {
     Ok(())
 }
 
-async fn execute_migration_sql(conn: &mut SqliteConnection, sql: &str) -> Result<()> {
-    for statement in sql.split(';') {
+async fn execute_migration_sql(conn: &mut PgConnection, migration_sql: &str) -> Result<()> {
+    for statement in migration_sql.split(';') {
         let statement = statement.trim();
-        if statement.is_empty() || statement.eq_ignore_ascii_case("PRAGMA foreign_keys = ON") {
+        if statement.is_empty() {
             continue;
         }
         if let Some((table, column)) = parse_add_column(statement) {
@@ -362,31 +378,37 @@ fn parse_add_column(statement: &str) -> Option<(&str, &str)> {
     normalized.get(5).map(|column| (normalized[2], *column))
 }
 
-async fn column_exists_conn(
-    conn: &mut SqliteConnection,
-    table: &str,
-    column: &str,
-) -> Result<bool> {
-    let pragma = format!("PRAGMA table_info({})", sqlite_ident(table)?);
-    let rows = sqlx::query(&pragma).fetch_all(&mut *conn).await?;
-    let mut names = Vec::with_capacity(rows.len());
-    for row in rows {
-        names.push(row.try_get::<String, _>("name")?);
-    }
-    Ok(names.iter().any(|name| name == column))
+async fn column_exists_conn(conn: &mut PgConnection, table: &str, column: &str) -> Result<bool> {
+    let exists: bool = sqlx::query_scalar(sql("SELECT EXISTS (
+             SELECT 1
+             FROM information_schema.columns
+             WHERE table_schema = current_schema()
+               AND table_name = ?
+               AND column_name = ?
+         )"))
+    .bind(table)
+    .bind(column)
+    .fetch_one(&mut *conn)
+    .await?;
+    Ok(exists)
 }
 
-async fn column_exists(pool: &Pool<Sqlite>, table: &str, column: &str) -> Result<bool> {
-    let pragma = format!("PRAGMA table_info({})", sqlite_ident(table)?);
-    let rows = sqlx::query(&pragma).fetch_all(pool).await?;
-    let mut names = Vec::with_capacity(rows.len());
-    for row in rows {
-        names.push(row.try_get::<String, _>("name")?);
-    }
-    Ok(names.iter().any(|name| name == column))
+async fn column_exists(pool: &DbPool, table: &str, column: &str) -> Result<bool> {
+    let exists: bool = sqlx::query_scalar(sql("SELECT EXISTS (
+             SELECT 1
+             FROM information_schema.columns
+             WHERE table_schema = current_schema()
+               AND table_name = ?
+               AND column_name = ?
+         )"))
+    .bind(table)
+    .bind(column)
+    .fetch_one(pool)
+    .await?;
+    Ok(exists)
 }
 
-fn sqlite_ident(value: &str) -> Result<String> {
+fn pg_ident(value: &str) -> Result<String> {
     if value
         .chars()
         .all(|ch| ch == '_' || ch.is_ascii_alphanumeric())
@@ -394,9 +416,50 @@ fn sqlite_ident(value: &str) -> Result<String> {
         Ok(format!("\"{}\"", value))
     } else {
         Err(AppError::Migration(format!(
-            "invalid sqlite identifier {value}"
+            "invalid postgres identifier {value}"
         )))
     }
+}
+
+pub fn sql(statement: &'static str) -> &'static str {
+    if !statement.contains('?') {
+        return statement;
+    }
+    static CACHE: OnceLock<Mutex<HashMap<&'static str, &'static str>>> = OnceLock::new();
+    let cache = CACHE.get_or_init(|| Mutex::new(HashMap::new()));
+    let mut cache = cache.lock().expect("sql cache poisoned");
+    if let Some(converted) = cache.get(statement) {
+        return converted;
+    }
+    let converted = convert_placeholders(statement);
+    let leaked = Box::leak(converted.into_boxed_str());
+    cache.insert(statement, leaked);
+    leaked
+}
+
+fn convert_placeholders(statement: &str) -> String {
+    let mut converted = String::with_capacity(statement.len());
+    let mut next = 1;
+    for ch in statement.chars() {
+        if ch == '?' {
+            converted.push('$');
+            converted.push_str(&next.to_string());
+            next += 1;
+        } else {
+            converted.push(ch);
+        }
+    }
+    converted
+}
+
+fn unique_suffix() -> String {
+    static COUNTER: AtomicU64 = AtomicU64::new(1);
+    let nanos = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|duration| duration.as_nanos())
+        .unwrap_or_default();
+    let counter = COUNTER.fetch_add(1, Ordering::Relaxed);
+    format!("{}_{}_{}", std::process::id(), counter, nanos)
 }
 
 fn migration_hash(sql: &str) -> String {

@@ -1,7 +1,6 @@
 #![allow(dead_code)]
 
-use blogweb::{app, config::Config};
-use sqlx::{Pool, Sqlite};
+use blogweb::{app, config::Config, db};
 use std::{
     collections::HashMap,
     io::{BufRead, BufReader, Read, Write},
@@ -48,7 +47,7 @@ impl FakeRedis {
     }
 }
 
-pub fn router_with_redis(pool: Pool<Sqlite>, redis: &FakeRedis) -> axum::Router {
+pub fn router_with_redis(pool: db::DbPool, redis: &FakeRedis) -> axum::Router {
     let mut config = Config::default();
     config.redis.addr = redis.addr.clone();
     app::router_with_pool_and_config(
@@ -57,6 +56,24 @@ pub fn router_with_redis(pool: Pool<Sqlite>, redis: &FakeRedis) -> axum::Router 
         std::path::PathBuf::from("public/uploads"),
         config,
     )
+}
+
+pub async fn reset_id_sequence(pool: &db::DbPool, table: &str) {
+    let table = match table {
+        "articles" => "articles",
+        "categories" => "categories",
+        "comments" => "comments",
+        "users" => "users",
+        _ => panic!("unsupported id sequence table: {table}"),
+    };
+    let statement = format!(
+        "SELECT setval(
+            pg_get_serial_sequence('{table}', 'id'),
+            GREATEST(COALESCE((SELECT MAX(id) FROM {table}), 1), 1),
+            COALESCE((SELECT MAX(id) FROM {table}), 0) > 0
+        )"
+    );
+    sqlx::query(&statement).execute(pool).await.unwrap();
 }
 
 #[derive(Clone)]

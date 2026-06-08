@@ -2,12 +2,11 @@ use axum::body::Body;
 use axum::http::{Method, Request, StatusCode};
 use blogweb::{app, config::Config, db};
 use serde_json::Value;
-use sqlx::Pool;
 use tower::ServiceExt;
 
 mod support;
 
-async fn seeded_pool() -> Pool<sqlx::Sqlite> {
+async fn seeded_pool() -> db::DbPool {
     let pool = db::connect_memory().await.unwrap();
     db::apply_migrations(&pool).await.unwrap();
     sqlx::query(

@@ -2,18 +2,17 @@ use axum::body::Body;
 use axum::http::{header::SET_COOKIE, Request, StatusCode};
 use blogweb::db;
 use serde_json::Value;
-use sqlx::Pool;
 use tower::ServiceExt;
 
 mod support;
 
-async fn seeded_pool() -> Pool<sqlx::Sqlite> {
+async fn seeded_pool() -> db::DbPool {
     let pool = db::connect_memory().await.unwrap();
     db::apply_migrations(&pool).await.unwrap();
-    sqlx::query(
+    sqlx::query(db::sql(
         "INSERT INTO users (id, username, password, role, email, created_at)
          VALUES (1, 'admin', ?, 'admin', '', '2026-05-29T00:00:00Z')",
-    )
+    ))
     .bind(support::ADMIN_PASSWORD_HASH)
     .execute(&pool)
     .await

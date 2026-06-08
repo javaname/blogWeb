@@ -10,9 +10,9 @@ use axum::{
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sha2::{Digest, Sha256};
-use sqlx::{Pool, Row, Sqlite};
+use sqlx::{Pool, Row};
 
-use crate::{error::Result, http_public::PublicState, session::SessionUser};
+use crate::{db::Db as DbBackend, error::Result, http_public::PublicState, session::SessionUser};
 
 #[derive(Debug, Deserialize)]
 pub struct LoginRequest {
@@ -121,11 +121,12 @@ pub async fn request_registration_code(
         Ok(email) => email,
         Err(response) => return Ok(response),
     };
-    let exists: i64 =
-        sqlx::query_scalar("SELECT COUNT(*) FROM users WHERE LOWER(email) = LOWER(?)")
-            .bind(&email)
-            .fetch_one(&state.db)
-            .await?;
+    let exists: i64 = sqlx::query_scalar(crate::db::sql(
+        "SELECT COUNT(*) FROM users WHERE LOWER(email) = LOWER(?)",
+    ))
+    .bind(&email)
+    .fetch_one(&state.db)
+    .await?;
     if exists > 0 {
         return Ok(json_error(StatusCode::CONFLICT, "conflict", "邮箱已注册"));
     }
@@ -140,10 +141,10 @@ pub async fn request_registration_code(
         )
         .await?;
     }
-    sqlx::query(
+    sqlx::query(crate::db::sql(
         "INSERT INTO email_verification_codes (email, code_hash, expires_at, created_at)
-         VALUES (?, ?, datetime('now', '+' || ? || ' seconds'), CURRENT_TIMESTAMP)",
-    )
+         VALUES (?, ?, (CURRENT_TIMESTAMP + (? * INTERVAL '1 second'))::text, CURRENT_TIMESTAMP::text)",
+    ))
     .bind(&email)
     .bind(verification_code_hash(&email, &code))
     .bind(ttl as i64)
@@ -191,21 +192,22 @@ pub async fn register_with_email(
             "密码不能少于 8 个字符",
         ));
     }
-    let exists: i64 =
-        sqlx::query_scalar("SELECT COUNT(*) FROM users WHERE LOWER(email) = LOWER(?)")
-            .bind(&email)
-            .fetch_one(&state.db)
-            .await?;
+    let exists: i64 = sqlx::query_scalar(crate::db::sql(
+        "SELECT COUNT(*) FROM users WHERE LOWER(email) = LOWER(?)",
+    ))
+    .bind(&email)
+    .fetch_one(&state.db)
+    .await?;
     if exists > 0 {
         return Ok(json_error(StatusCode::CONFLICT, "conflict", "邮箱已注册"));
     }
-    let row = sqlx::query(
+    let row = sqlx::query(crate::db::sql(
         "SELECT id, code_hash
          FROM email_verification_codes
-         WHERE email = ? AND used_at IS NULL AND expires_at > CURRENT_TIMESTAMP
+         WHERE email = ? AND used_at IS NULL AND expires_at::timestamp > CURRENT_TIMESTAMP
          ORDER BY created_at DESC, id DESC
          LIMIT 1",
-    )
+    ))
     .bind(&email)
     .fetch_optional(&state.db)
     .await?;
@@ -228,24 +230,27 @@ pub async fn register_with_email(
     let username = next_registration_username(&state.db, &email).await?;
     let password_hash = bcrypt::hash(password, bcrypt::DEFAULT_COST)
         .map_err(|err| crate::error::AppError::Config(err.to_string()))?;
-    let result = sqlx::query(
+    let user_id: i64 = sqlx::query_scalar(crate::db::sql(
         "INSERT INTO users (username, password, role, email, email_verified_at, created_at)
-         VALUES (?, ?, 'user', ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
-    )
+         VALUES (?, ?, 'user', ?, CURRENT_TIMESTAMP::text, CURRENT_TIMESTAMP::text)
+         RETURNING id",
+    ))
     .bind(&username)
     .bind(&password_hash)
     .bind(&email)
+    .fetch_one(&state.db)
+    .await?;
+    sqlx::query(crate::db::sql(
+        "UPDATE email_verification_codes SET used_at = CURRENT_TIMESTAMP::text WHERE id = ?",
+    ))
+    .bind(verification_id)
     .execute(&state.db)
     .await?;
-    sqlx::query("UPDATE email_verification_codes SET used_at = CURRENT_TIMESTAMP WHERE id = ?")
-        .bind(verification_id)
-        .execute(&state.db)
-        .await?;
     Ok((
         StatusCode::CREATED,
         Json(json!({
             "user": {
-                "id": result.last_insert_rowid(),
+                "id": user_id,
                 "username": username,
                 "email": email,
                 "role": "user",
@@ -316,22 +321,22 @@ struct StoredUser {
     email: String,
 }
 
-async fn find_user(pool: &Pool<Sqlite>, username: &str) -> Result<Option<StoredUser>> {
+async fn find_user(pool: &Pool<DbBackend>, username: &str) -> Result<Option<StoredUser>> {
     let row = if username.contains('@') {
-        sqlx::query(
+        sqlx::query(crate::db::sql(
             "SELECT id, username, password, role, COALESCE(email, '') AS email
              FROM users
              WHERE LOWER(email) = LOWER(?)",
-        )
+        ))
         .bind(username)
         .fetch_optional(pool)
         .await?
     } else {
-        sqlx::query(
+        sqlx::query(crate::db::sql(
             "SELECT id, username, password, role, COALESCE(email, '') AS email
              FROM users
              WHERE username = ?",
-        )
+        ))
         .bind(username)
         .fetch_optional(pool)
         .await?
@@ -401,7 +406,7 @@ fn verification_code_hash(email: &str, code: &str) -> String {
     digest.iter().map(|byte| format!("{byte:02x}")).collect()
 }
 
-async fn next_registration_username(pool: &Pool<Sqlite>, email: &str) -> Result<String> {
+async fn next_registration_username(pool: &Pool<DbBackend>, email: &str) -> Result<String> {
     let base = username_base_from_email(email);
     for index in 0..1000 {
         let candidate = if index == 0 {
@@ -409,10 +414,12 @@ async fn next_registration_username(pool: &Pool<Sqlite>, email: &str) -> Result<
         } else {
             format!("{}-{}", truncate_username_base(&base, 116), index + 1)
         };
-        let exists: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM users WHERE username = ?")
-            .bind(&candidate)
-            .fetch_one(pool)
-            .await?;
+        let exists: i64 = sqlx::query_scalar(crate::db::sql(
+            "SELECT COUNT(*) FROM users WHERE username = ?",
+        ))
+        .bind(&candidate)
+        .fetch_one(pool)
+        .await?;
         if exists == 0 {
             return Ok(candidate);
         }

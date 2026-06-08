@@ -1,11 +1,10 @@
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use blogweb::{app, db};
-use sqlx::Pool;
 use std::fs;
 use tower::ServiceExt;
 
-async fn seeded_pool() -> Pool<sqlx::Sqlite> {
+async fn seeded_pool() -> db::DbPool {
     let pool = db::connect_memory().await.unwrap();
     db::apply_migrations(&pool).await.unwrap();
     sqlx::query(

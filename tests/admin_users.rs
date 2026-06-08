@@ -2,20 +2,19 @@ use axum::body::Body;
 use axum::http::{header::SET_COOKIE, Method, Request, StatusCode};
 use blogweb::db;
 use serde_json::{json, Value};
-use sqlx::Pool;
 use tower::ServiceExt;
 
 mod support;
 
-async fn seeded_pool() -> Pool<sqlx::Sqlite> {
+async fn seeded_pool() -> db::DbPool {
     let pool = db::connect_memory().await.unwrap();
     db::apply_migrations(&pool).await.unwrap();
-    sqlx::query(
+    sqlx::query(db::sql(
         "INSERT INTO users (id, username, password, role, email, created_at)
          VALUES
          (1, 'admin', ?, 'admin', 'admin@example.com', '2026-05-29T00:00:00Z'),
          (2, 'editor', ?, 'editor', 'editor@example.com', '2026-05-29T01:00:00Z')",
-    )
+    ))
     .bind(support::ADMIN_PASSWORD_HASH)
     .bind(support::ADMIN_PASSWORD_HASH)
     .execute(&pool)
@@ -41,6 +40,7 @@ async fn seeded_pool() -> Pool<sqlx::Sqlite> {
     .execute(&pool)
     .await
     .unwrap();
+    support::reset_id_sequence(&pool, "users").await;
     pool
 }
 
@@ -190,6 +190,108 @@ async fn admin_can_list_users_with_permissions_and_article_counts() {
 }
 
 #[tokio::test]
+async fn admin_can_get_user_detail_with_related_articles() {
+    let redis = support::FakeRedis::start();
+    let router = support::router_with_redis(seeded_pool().await, &redis);
+    let (cookie, _) = admin_session(router.clone(), "admin").await;
+
+    let (status, payload) = get_json(router, "/api/admin/users/2", Some(&cookie)).await;
+
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(payload["user"]["id"], 2);
+    assert_eq!(payload["user"]["username"], "editor");
+    assert_eq!(payload["user"]["email"], "editor@example.com");
+    assert_eq!(payload["user"]["role"], "editor");
+    assert_eq!(payload["user"]["article_count"], 1);
+    assert_eq!(payload["user"]["permissions"][0], "publish");
+    assert_eq!(payload["recent_articles"][0]["id"], 1);
+    assert_eq!(payload["recent_articles"][0]["title"], "Editor story");
+    assert_eq!(payload["recent_articles"][0]["slug"], "editor-story");
+    assert_eq!(payload["recent_articles"][0]["status"], "published");
+    assert_eq!(payload["recent_articles"][0]["category"]["name"], "Technology");
+    assert_eq!(payload["roles"][0]["key"], "admin");
+    assert_eq!(payload["permissions"][0]["key"], "publish");
+}
+
+#[tokio::test]
+async fn admin_can_update_user_profile_and_role() {
+    let redis = support::FakeRedis::start();
+    let pool = seeded_pool().await;
+    let router = support::router_with_redis(pool.clone(), &redis);
+    let (cookie, csrf) = admin_session(router.clone(), "admin").await;
+
+    let (status, payload) = json_request(
+        router,
+        Method::PUT,
+        "/api/admin/users/2",
+        &cookie,
+        &csrf,
+        r#"{"username":"editor-chief","email":"chief@example.com","role":"admin"}"#,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(payload["user"]["username"], "editor-chief");
+    assert_eq!(payload["user"]["email"], "chief@example.com");
+    assert_eq!(payload["user"]["role"], "admin");
+    assert!(payload["user"]["permissions"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|value| value == "users"));
+
+    let row: (String, String, String) =
+        sqlx::query_as(db::sql("SELECT username, email, role FROM users WHERE id = ?"))
+            .bind(2_i64)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(row.0, "editor-chief");
+    assert_eq!(row.1, "chief@example.com");
+    assert_eq!(row.2, "admin");
+}
+
+#[tokio::test]
+async fn admin_update_user_rejects_duplicate_identity() {
+    let redis = support::FakeRedis::start();
+    let router = support::router_with_redis(seeded_pool().await, &redis);
+    let (cookie, csrf) = admin_session(router.clone(), "admin").await;
+
+    let (status, payload) = json_request(
+        router,
+        Method::PUT,
+        "/api/admin/users/2",
+        &cookie,
+        &csrf,
+        r#"{"username":"admin","email":"admin@example.com","role":"editor"}"#,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::CONFLICT);
+    assert_eq!(payload["code"], "conflict");
+}
+
+#[tokio::test]
+async fn admin_cannot_remove_own_admin_role_from_detail_update() {
+    let redis = support::FakeRedis::start();
+    let router = support::router_with_redis(seeded_pool().await, &redis);
+    let (cookie, csrf) = admin_session(router.clone(), "admin").await;
+
+    let (status, payload) = json_request(
+        router,
+        Method::PUT,
+        "/api/admin/users/1",
+        &cookie,
+        &csrf,
+        r#"{"username":"admin","email":"admin@example.com","role":"editor"}"#,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_eq!(payload["code"], "invalid_params");
+}
+
+#[tokio::test]
 async fn admin_can_create_update_and_delete_users() {
     let redis = support::FakeRedis::start();
     let pool = seeded_pool().await;
@@ -239,7 +341,7 @@ async fn admin_can_create_update_and_delete_users() {
     .await;
     assert_eq!(delete_status, StatusCode::OK);
     assert_eq!(deleted["deleted"], true);
-    let exists: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM users WHERE id = ?")
+    let exists: i64 = sqlx::query_scalar(db::sql("SELECT COUNT(*) FROM users WHERE id = ?"))
         .bind(user_id)
         .fetch_one(&pool)
         .await

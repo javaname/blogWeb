@@ -411,3 +411,13 @@
 - 用户要求将当前项目 SQLite 数据同步到 PostgreSQL `blogweb`。
 - 已恢复并保护既有计划文件，改为追加本次迁移阶段，不覆盖历史记录。
 - 下一步：先提交计划记录，再编写 PostgreSQL 配置/连接/迁移/同步的失败测试。
+- 已完成配置层 RED：`tests/config_compat.rs` 期望 `database.url`，编译失败原因为 `DatabaseConfig` 尚无 `url` 字段。
+- 已将配置结构改为 `database.url`，默认值为 `postgres://localhost:5432/blogweb`。
+- 已将 `sqlx` feature 扩展为 `postgres` + `sqlite`，其中 sqlite 仅用于后续导入源读取。
+- 已将迁移 SQL 改为 PostgreSQL 方言，并把 `src/db.rs` 切到 `PgPool`，新增静态 SQL 占位符转换 helper。
+- 已新增 `src/sqlite_sync.rs` 和 `db sync-sqlite --source data/blog.db --config config.yaml`，完成从 SQLite 到本地 PostgreSQL `blogweb` 的一次性全量同步。
+- 已处理本机 PostgreSQL 认证：保留 `blogweb` 本地开发库的 trust 规则，移除临时 `postgres` 管理 trust 规则；当前 `psql -h localhost -p 5432 -d blogweb` 可使用本机用户连接。
+- 已实际同步 `data/blog.db` 到 `blogweb`，核对核心行数：users=7、categories=6、articles=7、likes=1、slug_history=1、bookmarks=1、author_follows=1。
+- 已修复 PostgreSQL 运行时测试问题：`table_exists`/`column_exists` 改为 `SELECT EXISTS`，测试临时 schema 名称加入进程/计数/时间后缀，测试 seed 后修复 PostgreSQL 序列，后台写接口残留 `?` 占位符改为 `db::sql(...)`。
+- 验证通过：`cargo fmt --check`、`cargo check`、`cargo test --no-run`、`cargo test --test db_migration --test sqlite_sync`、`cargo test --test admin_auth --test admin_read --test admin_users --test admin_write`、`cargo test`。
+- 已创建本地提交 `Migrate backend to local PostgreSQL`；远程推送失败，普通沙箱报 `Recv failure: Connection was reset`，提升网络权限后报 `Could not connect to server`，待网络恢复后执行 `git push`。

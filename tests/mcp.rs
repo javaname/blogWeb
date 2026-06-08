@@ -19,20 +19,19 @@ fn blogweb() -> &'static str {
     env!("CARGO_BIN_EXE_blogweb")
 }
 
-fn write_config(path: &std::path::Path, db_path: &std::path::Path) {
-    let db_path = db_path.display().to_string().replace('\\', "/");
+fn write_config(path: &std::path::Path, database_url: &str) {
     fs::write(
         path,
         format!(
             r#"
 database:
-  path: "{}"
+  url: "{}"
 session:
   secret: "{}"
 admin:
   init_password: "custom-admin-password"
 "#,
-            db_path, SESSION_SECRET
+            database_url, SESSION_SECRET
         ),
     )
     .unwrap();
@@ -40,10 +39,13 @@ admin:
 
 #[tokio::test]
 async fn mcp_issue_token_cli_stores_hmac_hash_and_revoke_disables_client() {
+    let Some(database_url) = test_database_url() else {
+        eprintln!("skipping CLI MCP test; BLOGWEB_TEST_DATABASE_URL is not set");
+        return;
+    };
     let dir = tempfile::tempdir().unwrap();
     let config = dir.path().join("config.yaml");
-    let db_path = dir.path().join("blog.db");
-    write_config(&config, &db_path);
+    write_config(&config, &database_url);
 
     let migrate = Command::new(blogweb())
         .args(["db", "migrate", "--apply", "-config"])
@@ -83,13 +85,11 @@ async fn mcp_issue_token_cli_stores_hmac_hash_and_revoke_disables_client() {
         .expect("token line should be printed");
     assert!(token.len() >= 24, "token too short: {token}");
 
-    let pool = db::connect_existing(db_path.to_str().unwrap())
-        .await
-        .unwrap();
-    let row = sqlx::query(
+    let pool = db::connect_existing(&database_url).await.unwrap();
+    let row = sqlx::query(db::sql(
         "SELECT token_hash, scopes, transport, is_enabled
          FROM mcp_clients WHERE name = ?",
-    )
+    ))
     .bind("golden-reader")
     .fetch_one(&pool)
     .await
@@ -116,11 +116,12 @@ async fn mcp_issue_token_cli_stores_hmac_hash_and_revoke_disables_client() {
         String::from_utf8_lossy(&revoked.stderr)
     );
 
-    let enabled: i64 = sqlx::query_scalar("SELECT is_enabled FROM mcp_clients WHERE name = ?")
-        .bind("golden-reader")
-        .fetch_one(&pool)
-        .await
-        .unwrap();
+    let enabled: i64 =
+        sqlx::query_scalar(db::sql("SELECT is_enabled FROM mcp_clients WHERE name = ?"))
+            .bind("golden-reader")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
     assert_eq!(enabled, 0);
 }
 
@@ -153,11 +154,11 @@ async fn mcp_http_missing_token_matches_go_golden() {
 async fn mcp_http_initialize_with_bearer_token_matches_go_golden() {
     let pool = migrated_pool().await;
     let token = "reader-token-for-rust-mcp";
-    sqlx::query(
+    sqlx::query(db::sql(
         "INSERT INTO mcp_clients
          (name, token_hash, scopes, transport, is_enabled, created_at, updated_at)
          VALUES (?, ?, ?, 'http', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
-    )
+    ))
     .bind("golden-reader")
     .bind(hmac_sha256_hex(&Config::default().session.secret, token))
     .bind(r#"["blog.read","blog.category.read"]"#)
@@ -186,12 +187,13 @@ async fn mcp_http_initialize_with_bearer_token_matches_go_golden() {
         serde_json::from_str(include_str!("../tests/golden/mcp/http_initialize.json")).unwrap();
     assert_eq!(actual, golden["body"]);
 
-    let last_used: Option<String> =
-        sqlx::query_scalar("SELECT last_used_at FROM mcp_clients WHERE name = ?")
-            .bind("golden-reader")
-            .fetch_one(&pool)
-            .await
-            .unwrap();
+    let last_used: Option<String> = sqlx::query_scalar(db::sql(
+        "SELECT last_used_at FROM mcp_clients WHERE name = ?",
+    ))
+    .bind("golden-reader")
+    .fetch_one(&pool)
+    .await
+    .unwrap();
     assert!(last_used.is_some());
 }
 
@@ -416,7 +418,7 @@ async fn mcp_http_write_tools_create_update_publish_article_with_admin_author() 
     let article_id = created.1["result"]["id"].as_i64().unwrap();
     assert_eq!(created.1["result"]["slug"], "draft-title");
 
-    let author_id: i64 = sqlx::query_scalar("SELECT author_id FROM articles WHERE id = ?")
+    let author_id: i64 = sqlx::query_scalar(db::sql("SELECT author_id FROM articles WHERE id = ?"))
         .bind(article_id)
         .fetch_one(&pool)
         .await
@@ -454,12 +456,13 @@ async fn mcp_http_write_tools_create_update_publish_article_with_admin_author() 
     assert_eq!(public.0, StatusCode::OK);
     assert_eq!(public.1["result"]["title"], "Published Title");
 
-    let old_slug: Option<i64> =
-        sqlx::query_scalar("SELECT article_id FROM slug_history WHERE old_slug = ?")
-            .bind("draft-title")
-            .fetch_optional(&pool)
-            .await
-            .unwrap();
+    let old_slug: Option<i64> = sqlx::query_scalar(db::sql(
+        "SELECT article_id FROM slug_history WHERE old_slug = ?",
+    ))
+    .bind("draft-title")
+    .fetch_optional(&pool)
+    .await
+    .unwrap();
     assert_eq!(old_slug, Some(article_id));
 }
 
@@ -775,10 +778,13 @@ async fn mcp_http_rate_limit_is_shared_across_router_instances_via_redis() {
 
 #[test]
 fn serve_mcp_http_fails_when_database_is_not_migrated_without_creating_db() {
+    let Some(database_url) = test_database_url() else {
+        eprintln!("skipping CLI MCP test; BLOGWEB_TEST_DATABASE_URL is not set");
+        return;
+    };
     let dir = tempfile::tempdir().unwrap();
     let config = dir.path().join("config.yaml");
-    let db_path = dir.path().join("blog.db");
-    write_config(&config, &db_path);
+    write_config(&config, &database_url);
 
     let output = Command::new(blogweb())
         .args(["serve-mcp", "-config"])
@@ -790,18 +796,17 @@ fn serve_mcp_http_fails_when_database_is_not_migrated_without_creating_db() {
     assert!(!output.status.success());
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(stderr.contains("schema_migrations"), "stderr: {stderr}");
-    assert!(
-        !db_path.exists(),
-        "serve-mcp must not create or migrate the target database"
-    );
 }
 
 #[test]
 fn serve_mcp_stdio_processes_jsonrpc_until_eof_and_hides_write_tools_by_default() {
+    let Some(database_url) = test_database_url() else {
+        eprintln!("skipping CLI MCP test; BLOGWEB_TEST_DATABASE_URL is not set");
+        return;
+    };
     let dir = tempfile::tempdir().unwrap();
     let config = dir.path().join("config.yaml");
-    let db_path = dir.path().join("blog.db");
-    write_config(&config, &db_path);
+    write_config(&config, &database_url);
 
     let migrate = Command::new(blogweb())
         .args(["db", "migrate", "--apply", "-config"])
@@ -853,13 +858,13 @@ fn serve_mcp_stdio_processes_jsonrpc_until_eof_and_hides_write_tools_by_default(
     assert_eq!(lines[2]["error"]["data"]["code"], "forbidden_scope");
 }
 
-async fn migrated_pool() -> sqlx::Pool<sqlx::Sqlite> {
+async fn migrated_pool() -> db::DbPool {
     let pool = db::connect_memory().await.unwrap();
     db::apply_migrations(&pool).await.unwrap();
     pool
 }
 
-async fn seeded_content_pool() -> sqlx::Pool<sqlx::Sqlite> {
+async fn seeded_content_pool() -> db::DbPool {
     let pool = migrated_pool().await;
     sqlx::query(
         "INSERT INTO users (id, username, password, role, created_at)
@@ -891,10 +896,13 @@ async fn seeded_content_pool() -> sqlx::Pool<sqlx::Sqlite> {
     .execute(&pool)
     .await
     .unwrap();
+    reset_sequence(&pool, "users").await;
+    reset_sequence(&pool, "categories").await;
+    reset_sequence(&pool, "articles").await;
     pool
 }
 
-async fn seeded_writer_pool() -> sqlx::Pool<sqlx::Sqlite> {
+async fn seeded_writer_pool() -> db::DbPool {
     let pool = migrated_pool().await;
     sqlx::query(
         "INSERT INTO users (id, username, password, role, created_at)
@@ -912,20 +920,17 @@ async fn seeded_writer_pool() -> sqlx::Pool<sqlx::Sqlite> {
     .execute(&pool)
     .await
     .unwrap();
+    reset_sequence(&pool, "users").await;
+    reset_sequence(&pool, "categories").await;
     pool
 }
 
-async fn insert_mcp_client(
-    pool: &sqlx::Pool<sqlx::Sqlite>,
-    name: &str,
-    token: &str,
-    scopes: &[&str],
-) {
-    sqlx::query(
+async fn insert_mcp_client(pool: &db::DbPool, name: &str, token: &str, scopes: &[&str]) {
+    sqlx::query(db::sql(
         "INSERT INTO mcp_clients
          (name, token_hash, scopes, transport, is_enabled, created_at, updated_at)
          VALUES (?, ?, ?, 'http', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
-    )
+    ))
     .bind(name)
     .bind(hmac_sha256_hex(&Config::default().session.secret, token))
     .bind(serde_json::to_string(scopes).unwrap())
@@ -935,7 +940,7 @@ async fn insert_mcp_client(
 }
 
 async fn perform_mcp_json(
-    pool: sqlx::Pool<sqlx::Sqlite>,
+    pool: db::DbPool,
     body: impl Into<String>,
     token: &str,
 ) -> (StatusCode, Value) {
@@ -943,7 +948,7 @@ async fn perform_mcp_json(
 }
 
 async fn perform_mcp_json_with_config(
-    pool: sqlx::Pool<sqlx::Sqlite>,
+    pool: db::DbPool,
     config: Config,
     body: impl Into<String>,
     token: &str,
@@ -957,6 +962,17 @@ async fn perform_mcp_json_with_config(
         .await
         .unwrap();
     (status, serde_json::from_slice(&body).unwrap())
+}
+
+async fn reset_sequence(pool: &db::DbPool, table: &str) {
+    let statement = format!(
+        "SELECT setval(pg_get_serial_sequence('{table}', 'id'), COALESCE((SELECT max(id) FROM {table}), 1), true)"
+    );
+    sqlx::query(&statement).execute(pool).await.unwrap();
+}
+
+fn test_database_url() -> Option<String> {
+    std::env::var("BLOGWEB_TEST_DATABASE_URL").ok()
 }
 
 fn mcp_request(body: impl Into<String>, token: Option<&str>) -> Request<Body> {
