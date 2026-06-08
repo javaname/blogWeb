@@ -346,11 +346,11 @@ Stitch 项目：
   - [complete] 实现从 SQLite 源读取全量表数据写入 PostgreSQL。
   - [complete] 同步后修复 PostgreSQL 自增序列。
   - [complete] 实际执行同步到本机 `blogweb`，核心数据已核对：users=7、categories=6、articles=7、likes=1、slug_history=1、bookmarks=1、author_follows=1。
-- [in_progress] 切片 5：验证、提交和推送
+- [complete] 切片 5：验证、提交和推送
   - [complete] `cargo fmt --check`
   - [complete] `cargo check`
   - [complete] `cargo test --no-run`
   - [complete] PostgreSQL 定向测试：`db_migration`、`sqlite_sync`、后台认证/读/写/用户测试。
   - [complete] `cargo test`
   - [complete] 阶段本地提交
-  - [pending] 推送到远程：GitHub 443 连接失败，待网络恢复后执行 `git push`
+  - [complete] 推送到远程：`03f144e` 已推送到 `main`

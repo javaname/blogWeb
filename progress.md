@@ -420,4 +420,4 @@
 - 已实际同步 `data/blog.db` 到 `blogweb`，核对核心行数：users=7、categories=6、articles=7、likes=1、slug_history=1、bookmarks=1、author_follows=1。
 - 已修复 PostgreSQL 运行时测试问题：`table_exists`/`column_exists` 改为 `SELECT EXISTS`，测试临时 schema 名称加入进程/计数/时间后缀，测试 seed 后修复 PostgreSQL 序列，后台写接口残留 `?` 占位符改为 `db::sql(...)`。
 - 验证通过：`cargo fmt --check`、`cargo check`、`cargo test --no-run`、`cargo test --test db_migration --test sqlite_sync`、`cargo test --test admin_auth --test admin_read --test admin_users --test admin_write`、`cargo test`。
-- 已创建本地提交 `Migrate backend to local PostgreSQL`；远程推送失败，普通沙箱报 `Recv failure: Connection was reset`，提升网络权限后报 `Could not connect to server`，待网络恢复后执行 `git push`。
+- 已创建并推送本地提交 `03f144e Migrate backend to local PostgreSQL` 到远程 `main`。推送前曾出现两次 GitHub 连接失败：普通沙箱报 `Recv failure: Connection was reset`，首次提升网络权限后报 `Could not connect to server`；重试后推送成功。
