@@ -3,27 +3,32 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>博客系统安全注意事项修改意见</title>
+  <title>博客系统安全注意事项</title>
   <style>
     :root {
       color-scheme: light;
-      --bg: #f7f8fa;
+      --bg: #f6f7f9;
       --panel: #ffffff;
       --text: #1f2933;
       --muted: #667085;
-      --line: #d8dee8;
+      --line: #d9e0ea;
       --primary: #1769aa;
       --primary-soft: #e8f2fb;
-      --warn: #9a4f00;
-      --warn-soft: #fff3df;
       --danger: #a4262c;
       --danger-soft: #fde8ea;
+      --warn: #9a4f00;
+      --warn-soft: #fff3df;
       --ok: #237a3b;
       --ok-soft: #e9f7ee;
+      --code: #eef1f5;
     }
 
     * {
       box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
     }
 
     body {
@@ -31,36 +36,54 @@
       background: var(--bg);
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
-      line-height: 1.65;
+      line-height: 1.7;
+    }
+
+    a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
     }
 
     main {
-      width: min(1120px, calc(100% - 40px));
+      width: min(1160px, calc(100% - 40px));
       margin: 0 auto;
       padding: 40px 0 56px;
     }
 
-    header {
-      padding: 28px 32px;
+    header,
+    section {
       background: var(--panel);
       border: 1px solid var(--line);
       border-radius: 8px;
+    }
+
+    header {
+      padding: 30px 34px;
+    }
+
+    section {
+      margin-top: 18px;
+      padding: 26px 30px;
     }
 
     h1,
     h2,
     h3 {
       margin: 0;
-      line-height: 1.3;
-    }
-
-    h1 {
-      font-size: 30px;
+      line-height: 1.32;
       letter-spacing: 0;
     }
 
+    h1 {
+      font-size: 32px;
+    }
+
     h2 {
-      margin-top: 34px;
+      margin-bottom: 12px;
       padding-bottom: 10px;
       border-bottom: 1px solid var(--line);
       font-size: 22px;
@@ -82,13 +105,13 @@
     }
 
     li + li {
-      margin-top: 6px;
+      margin-top: 7px;
     }
 
     code {
       padding: 1px 5px;
       border-radius: 4px;
-      background: #eef1f5;
+      background: var(--code);
       color: #344054;
       font-family: Consolas, "Courier New", monospace;
       font-size: 0.95em;
@@ -121,6 +144,12 @@
       border-bottom: 0;
     }
 
+    .lead {
+      max-width: 900px;
+      color: #344054;
+      font-size: 16px;
+    }
+
     .meta {
       display: flex;
       flex-wrap: wrap;
@@ -137,14 +166,30 @@
       padding: 3px 10px;
       border-radius: 999px;
       background: #eef1f5;
+      white-space: nowrap;
     }
 
-    .section {
-      margin-top: 18px;
-      padding: 24px 28px;
-      background: var(--panel);
+    .toc {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+      padding-left: 0;
+      list-style: none;
+    }
+
+    .toc li {
+      margin: 0;
+    }
+
+    .toc a {
+      display: block;
+      min-height: 42px;
+      padding: 9px 12px;
       border: 1px solid var(--line);
       border-radius: 8px;
+      background: #fbfcfe;
+      color: var(--text);
     }
 
     .summary {
@@ -158,7 +203,7 @@
       padding: 16px;
       border: 1px solid var(--line);
       border-radius: 8px;
-      background: var(--panel);
+      background: #fbfcfe;
     }
 
     .summary-card strong {
@@ -169,7 +214,7 @@
 
     .tag {
       display: inline-block;
-      min-width: 64px;
+      min-width: 58px;
       padding: 2px 8px;
       border-radius: 999px;
       font-size: 13px;
@@ -178,17 +223,17 @@
       white-space: nowrap;
     }
 
-    .tag-high {
+    .tag-p0 {
       background: var(--danger-soft);
       color: var(--danger);
     }
 
-    .tag-medium {
+    .tag-p1 {
       background: var(--warn-soft);
       color: var(--warn);
     }
 
-    .tag-low {
+    .tag-p2 {
       background: var(--ok-soft);
       color: var(--ok);
     }
@@ -201,31 +246,38 @@
       border-radius: 6px;
     }
 
-    .rewrite {
-      margin-top: 12px;
-      padding: 18px 20px;
-      background: #fbfcfe;
-      border: 1px solid var(--line);
-      border-radius: 8px;
+    .checklist {
+      columns: 2;
+      column-gap: 34px;
     }
 
-    @media (max-width: 760px) {
+    .checklist li {
+      break-inside: avoid;
+      margin-bottom: 7px;
+    }
+
+    @media (max-width: 820px) {
       main {
-        width: min(100% - 24px, 1120px);
+        width: min(100% - 24px, 1160px);
         padding-top: 24px;
       }
 
       header,
-      .section {
+      section {
         padding: 20px;
       }
 
       h1 {
-        font-size: 24px;
+        font-size: 25px;
       }
 
-      .summary {
+      .summary,
+      .toc {
         grid-template-columns: 1fr;
+      }
+
+      .checklist {
+        columns: 1;
       }
 
       table {
@@ -239,214 +291,303 @@
 <body>
   <main>
     <header>
-      <h1>博客系统安全注意事项修改意见</h1>
-      <p>本文基于《博客系统安全注意事项》进行审阅，目标是让文档从“安全知识清单”调整为“可执行、可验收、可维护”的项目安全规范。</p>
+      <h1>博客系统安全注意事项</h1>
+      <p class="lead">本文适用于博客系统的前台页面、管理后台、开放接口、图片上传、评论互动和生产部署环境。目标是形成一份可执行的安全基线，帮助开发、测试和运维在上线前完成统一检查。</p>
       <div class="meta">
-        <span class="pill">来源文件：docs/notice.txt</span>
-        <span class="pill">输出日期：2026-06-08</span>
-        <span class="pill">审阅范围：Web 安全、幂等、上传、反爬、运维安全</span>
+        <span class="pill">版本：最终版</span>
+        <span class="pill">日期：2026-06-08</span>
+        <span class="pill">范围：Web 安全、上传、幂等、反爬、运维</span>
       </div>
+      <ul class="toc">
+        <li><a href="#priority">优先级说明</a></li>
+        <li><a href="#web-security">通用 Web 安全</a></li>
+        <li><a href="#idempotency">重复提交与幂等</a></li>
+        <li><a href="#upload">图片上传安全</a></li>
+        <li><a href="#crawler">反爬虫与流量防护</a></li>
+        <li><a href="#ops">运维与持续安全</a></li>
+      </ul>
     </header>
 
-    <section class="summary">
-      <div class="summary-card">
-        <strong>总体评价</strong>
-        <p>覆盖面较完整，适合作为安全知识材料；但条目较散，缺少优先级、责任边界、落地方式和验收标准。</p>
+    <section id="priority">
+      <h2>一、优先级说明</h2>
+      <div class="summary">
+        <div class="summary-card">
+          <strong><span class="tag tag-p0">P0</span> 必须完成</strong>
+          <p>上线前必须具备的基础防护，包括认证、授权、输入输出安全、上传限制、HTTPS、日志和备份。</p>
+        </div>
+        <div class="summary-card">
+          <strong><span class="tag tag-p1">P1</span> 建议完成</strong>
+          <p>用于提升安全强度和运维效率的措施，包括 MFA、自动化扫描、细粒度限流、异常告警和恢复演练。</p>
+        </div>
+        <div class="summary-card">
+          <strong><span class="tag tag-p2">P2</span> 按需启用</strong>
+          <p>根据业务规模、内容价值和攻击风险启用，包括高级反爬、行为分析、独立安全审计和专用风控策略。</p>
+        </div>
       </div>
-      <div class="summary-card">
-        <strong>主要风险</strong>
-        <p>部分建议过于绝对或不可落地，例如前端签名密钥、隐藏后台路径、按文件内容查脚本代码等，需要改成更准确的安全表述。</p>
-      </div>
-      <div class="summary-card">
-        <strong>建议方向</strong>
-        <p>按“必须做、建议做、可选增强”重组文档，并为每类安全措施补充配置示例、适用场景和检查方法。</p>
-      </div>
-    </section>
-
-    <section class="section">
-      <h2>一、结构修改建议</h2>
-      <ol>
-        <li><strong>增加文档目标与适用范围。</strong>开头应说明本文适用于博客前台、管理后台、开放 API、上传服务和部署环境，并区分开发环境与生产环境要求。</li>
-        <li><strong>按优先级重新编排。</strong>建议将所有条目分为 P0 必须、P1 建议、P2 增强三类，避免读者无法判断先做什么。</li>
-        <li><strong>补充责任归属。</strong>每项措施标明由前端、后端、数据库、运维或安全网关负责，减少执行时的职责空白。</li>
-        <li><strong>增加验收标准。</strong>例如“登录接口每账号每 15 分钟最多失败 5 次”“上传图片最大 10MB 且最大边长 8000px”“所有写接口必须有幂等策略”。</li>
-        <li><strong>增加安全基线表。</strong>把 HTTPS、HSTS、安全响应头、Cookie 属性、密码哈希、上传限制、日志脱敏等基础项做成统一检查表。</li>
-      </ol>
-    </section>
-
-    <section class="section">
-      <h2>二、重点问题与修改意见</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>级别</th>
-            <th>原文问题</th>
-            <th>修改意见</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><span class="tag tag-high">高</span></td>
-            <td>“前端把参数 + 时间戳 + 密钥生成签名”容易误导。前端无法安全保存密钥，密钥会被逆向或抓包获取。</td>
-            <td>改为“服务端签发短期令牌、一次性挑战或基于登录态的请求校验”。开放 API 场景才使用服务端分配的密钥和签名，并配合时间窗、nonce、限流和权限控制。</td>
-          </tr>
-          <tr>
-            <td><span class="tag tag-high">高</span></td>
-            <td>图片上传部分提到检查文件中是否包含 PHP、JS 代码，但这不是可靠的上传安全策略。</td>
-            <td>强调“真实类型识别、解码重绘、扩展名白名单、非执行目录、对象存储隔离、尺寸限制、病毒扫描”。不要把字符串扫描作为主要安全措施。</td>
-          </tr>
-          <tr>
-            <td><span class="tag tag-medium">中</span></td>
-            <td>“博客后台管理路径不能使用默认路径”容易被理解为核心安全措施。</td>
-            <td>改为“后台路径可减少自动化扫描噪声，但不能替代强认证、MFA、RBAC、限流、审计日志和 IP 访问策略”。</td>
-          </tr>
-          <tr>
-            <td><span class="tag tag-medium">中</span></td>
-            <td>CSRF 防护同时要求 Token、Referer/Origin、SameSite，但未区分适用场景。</td>
-            <td>建议写成分层策略：同站 Cookie 场景必须使用 CSRF Token 或 SameSite；高风险操作额外校验 Origin；第三方登录或跨站回调需谨慎使用 SameSite=Strict。</td>
-          </tr>
-          <tr>
-            <td><span class="tag tag-medium">中</span></td>
-            <td>反爬虫内容较多，但未区分“保护系统稳定性”和“阻止内容采集”两个目标。</td>
-            <td>拆成两节：一节是限流、缓存、熔断和告警，保障服务可用性；另一节是爬虫识别、验证码、robots、法律声明，控制采集风险。</td>
-          </tr>
-          <tr>
-            <td><span class="tag tag-low">低</span></td>
-            <td>举例工具中包含 <code>imghdr</code>，该工具在现代 Python 版本中已不适合作为长期方案。</td>
-            <td>改为使用维护中的文件类型识别库、图像处理库或业务语言生态内的成熟组件，并避免绑定到过时工具。</td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
-
-    <section class="section">
-      <h2>三、各章节具体补充建议</h2>
-
-      <h3>1. 防网络攻击</h3>
-      <ul>
-        <li>SQL 注入部分应补充“动态排序字段、分页字段、表名、列名不能直接从用户输入拼接”，这些位置参数化支持有限，需要白名单映射。</li>
-        <li>XSS 部分建议明确富文本策略：前端预览和后端保存都要使用同一套白名单规则，最终渲染前仍需净化。</li>
-        <li>Cookie 建议写完整：<code>HttpOnly</code>、<code>Secure</code>、<code>SameSite</code>、合理有效期、登录后轮换 Session ID。</li>
-        <li>密码安全建议增加“不要自定义加密算法”“忘记密码链接必须短期有效且一次性使用”。</li>
-        <li>安全响应头建议给出默认基线，便于直接配置到 Nginx、应用网关或后端框架。</li>
-      </ul>
-
-      <h3>2. 防重复提交</h3>
-      <ul>
-        <li>前端置灰只能改善体验，不能作为安全措施，应明确最终以服务端幂等为准。</li>
-        <li>建议区分普通表单、文章发布、评论提交、支付或积分变更等不同风险级别。</li>
-        <li>请求 ID 去重应说明有效期、存储位置、冲突返回码和客户端重试规则。</li>
-      </ul>
-
-      <h3>3. 图片上传安全</h3>
-      <ul>
-        <li>建议补充“上传、处理、访问”三阶段流程：接收后先放临时区，校验和重绘成功后再转入正式存储。</li>
-        <li>文件名应完全由服务端生成，并保留原始文件名时只作为展示字段存储，展示前仍需转义。</li>
-        <li>图片尺寸、像素总量、压缩比和处理超时时间都应限制，避免图片解析导致内存或 CPU 被耗尽。</li>
-        <li>静态资源建议使用独立域名，且不共享主站 Cookie，降低 XSS 和 Cookie 泄露影响。</li>
-      </ul>
-
-      <h3>4. 反爬虫策略</h3>
-      <ul>
-        <li>把限流作为基础能力，明确按 IP、账号、接口、User-Agent、Cookie 或设备指纹组合限流。</li>
-        <li>JS 挑战和验证码要设置触发阈值，避免正常用户频繁遇到挑战。</li>
-        <li>robots.txt 只能约束守规矩的爬虫，不能作为安全控制，应在文档中明确这一点。</li>
-        <li>搜索引擎白名单应通过官方方式验证，不建议只依赖 User-Agent。</li>
-      </ul>
-
-      <h3>5. 其他安全措施</h3>
-      <ul>
-        <li>建议增加“密钥管理”章节：数据库密码、JWT 密钥、对象存储密钥不得写入代码仓库，必须通过环境变量或密钥管理服务注入。</li>
-        <li>建议增加“备份恢复验收”：不仅要备份，还要定期恢复演练，并记录恢复时间目标和恢复点目标。</li>
-        <li>日志章节应补充“日志访问权限、留存周期、脱敏规则、审计追踪不可篡改”。</li>
-        <li>依赖安全建议加入 CI 检查，至少在合并和发布前执行依赖漏洞扫描。</li>
-      </ul>
-    </section>
-
-    <section class="section">
-      <h2>四、建议新增的安全基线表</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>分类</th>
-            <th>最低要求</th>
-            <th>验收方式</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>传输安全</td>
-            <td>生产环境全站 HTTPS，启用 HSTS，只允许 TLS 1.2 及以上。</td>
-            <td>使用浏览器安全面板、SSL 检测工具或网关配置检查。</td>
-          </tr>
-          <tr>
-            <td>认证与会话</td>
-            <td>密码使用 Argon2id 或 bcrypt；登录后轮换 Session ID；Cookie 设置 <code>HttpOnly</code>、<code>Secure</code>、<code>SameSite</code>。</td>
-            <td>检查配置、登录流程和响应头。</td>
-          </tr>
-          <tr>
-            <td>输入输出</td>
-            <td>输入做长度和格式校验；输出按上下文转义；富文本使用白名单净化。</td>
-            <td>通过单元测试、接口测试和 XSS 用例验证。</td>
-          </tr>
-          <tr>
-            <td>上传</td>
-            <td>限制类型、大小、尺寸和像素总量；服务端重命名；非执行目录存储；访问域名与主站隔离。</td>
-            <td>上传伪造扩展名、超大图、异常图片样本进行测试。</td>
-          </tr>
-          <tr>
-            <td>幂等</td>
-            <td>所有关键写接口具备请求 ID、唯一约束或一次性 Token 之一。</td>
-            <td>重复提交同一请求，验证只产生一次业务结果。</td>
-          </tr>
-          <tr>
-            <td>日志与备份</td>
-            <td>关键操作可审计；敏感字段脱敏；数据库和上传文件定期备份并可恢复。</td>
-            <td>抽查日志字段、备份文件和恢复演练记录。</td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
-
-    <section class="section">
-      <h2>五、参考改写稿</h2>
       <div class="note">
-        以下是建议替换原文开头和章节组织方式的示例，后续条目可按同样格式扩展。
-      </div>
-
-      <div class="rewrite">
-        <h3>博客系统安全基线与实施建议</h3>
-        <p>本文适用于博客系统的前台页面、管理后台、开放接口、图片上传服务和生产部署环境。文档目标是定义最低安全基线，帮助开发、测试和运维团队在上线前完成统一检查。</p>
-        <p>安全措施按优先级分为三类：P0 为上线前必须完成的基础防护，P1 为强烈建议完成的增强措施，P2 为根据业务风险选择启用的补充能力。</p>
-
-        <h3>P0：上线前必须完成</h3>
-        <ol>
-          <li>所有数据库访问必须使用参数化查询或 ORM 安全接口。动态字段、排序字段、表名和列名必须通过白名单映射，不允许直接拼接用户输入。</li>
-          <li>所有用户输入必须进行长度、格式和业务规则校验；所有页面输出必须按 HTML、属性、URL、JavaScript 等上下文进行转义。</li>
-          <li>登录、发布、删除、修改资料等写操作必须具备 CSRF 防护和服务端幂等控制，前端防重复点击只能作为体验优化。</li>
-          <li>图片上传必须在服务端完成真实类型识别、大小限制、尺寸限制、服务端重命名和非执行目录存储。建议对图片重新编码并剥离 EXIF 元数据。</li>
-          <li>生产环境必须启用 HTTPS、HSTS、安全响应头和安全 Cookie 属性，密码必须使用 Argon2id 或 bcrypt 等慢哈希算法存储。</li>
-        </ol>
-
-        <h3>P1：建议增强</h3>
-        <ol>
-          <li>管理后台启用 MFA、RBAC、登录失败限流、关键操作审计和异常告警。</li>
-          <li>对登录、评论、搜索、列表分页和开放 API 设置分级限流，异常流量触发验证码、临时封禁或人工审查。</li>
-          <li>在 CI 或发布流程中加入依赖漏洞扫描、基础安全测试和配置检查。</li>
-        </ol>
-
-        <h3>P2：按风险启用</h3>
-        <ol>
-          <li>对高价值内容启用更严格的反爬策略，包括行为分析、蜜罐链接、搜索引擎真实性验证和法律声明。</li>
-          <li>对私密图片或会员内容启用鉴权访问，避免静态直链绕过权限控制。</li>
-          <li>对重要数据制定恢复时间目标和恢复点目标，并定期进行恢复演练。</li>
-        </ol>
+        本文中的前端控制只用于提升交互体验，不能替代服务端校验。所有安全判断、权限控制、幂等控制和数据校验必须在服务端完成。
       </div>
     </section>
 
-    <section class="section">
-      <h2>六、结论</h2>
-      <p>原文可以保留大部分安全主题，但建议从“罗列措施”升级为“安全基线文档”。最优先的修改是补齐优先级、验收标准和责任归属，同时修正前端签名密钥、隐藏后台路径、图片内容扫描等容易误用的表述。</p>
+    <section id="web-security">
+      <h2>二、通用 Web 安全</h2>
+
+      <h3>1. 防 SQL 注入</h3>
+      <ul>
+        <li><span class="tag tag-p0">P0</span> 所有数据库访问必须使用参数化查询、预编译语句或 ORM 的安全接口，禁止直接拼接用户输入。</li>
+        <li><span class="tag tag-p0">P0</span> 动态排序字段、分页字段、表名和列名不能直接来自请求参数，必须通过白名单映射。</li>
+        <li><span class="tag tag-p0">P0</span> 数据库账号使用最小权限原则，应用账号不得使用 root、管理员或具备高危 DDL 权限的账号。</li>
+        <li><span class="tag tag-p1">P1</span> 复杂查询、原生 SQL、报表查询和后台批处理 SQL 必须经过代码审查。</li>
+        <li><span class="tag tag-p1">P1</span> 可在网关或云安全产品中启用 WAF 规则，作为外围防护和告警来源。</li>
+      </ul>
+
+      <h3>2. 防跨站脚本 XSS</h3>
+      <ul>
+        <li><span class="tag tag-p0">P0</span> 所有用户输入在输出到页面时必须按上下文转义，包括 HTML 文本、HTML 属性、URL、CSS 和 JavaScript 字符串。</li>
+        <li><span class="tag tag-p0">P0</span> 文章、评论、个人简介等富文本内容必须使用白名单过滤，禁止危险标签、事件属性、内联脚本和危险 URL 协议。</li>
+        <li><span class="tag tag-p0">P0</span> 前端预览和后端最终渲染应使用一致的净化规则，不能只在前端过滤后直接信任入库内容。</li>
+        <li><span class="tag tag-p1">P1</span> 启用内容安全策略 CSP，限制脚本、样式、图片、字体和连接来源，降低 XSS 成功后的影响范围。</li>
+        <li><span class="tag tag-p1">P1</span> Cookie 设置 <code>HttpOnly</code>、<code>Secure</code>、<code>SameSite</code>，避免脚本读取 Cookie 和跨站携带 Cookie。</li>
+      </ul>
+
+      <h3>3. 防跨站请求伪造 CSRF</h3>
+      <ul>
+        <li><span class="tag tag-p0">P0</span> 发表文章、删除文章、修改资料、修改密码、评论管理等写操作必须具备 CSRF 防护。</li>
+        <li><span class="tag tag-p0">P0</span> 使用 Cookie 维护登录态时，应采用 CSRF Token 或 SameSite Cookie 策略。</li>
+        <li><span class="tag tag-p1">P1</span> 高风险操作额外校验 <code>Origin</code> 或 <code>Referer</code>，来源不合法时拒绝请求。</li>
+        <li><span class="tag tag-p1">P1</span> 修改密码、绑定邮箱、删除账号、转移权限等敏感操作要求重新验证身份。</li>
+        <li><span class="tag tag-p2">P2</span> 涉及第三方登录、跨站回调、嵌入式页面时，应单独评估 SameSite 策略，避免误伤正常流程。</li>
+      </ul>
+
+      <h3>4. 认证、密码与会话安全</h3>
+      <ul>
+        <li><span class="tag tag-p0">P0</span> 密码必须使用 Argon2id、bcrypt 或同等级慢哈希算法加盐存储，禁止明文、MD5、SHA1 或自定义加密算法。</li>
+        <li><span class="tag tag-p0">P0</span> 登录成功后必须轮换会话 ID，防止会话固定攻击。</li>
+        <li><span class="tag tag-p0">P0</span> 登录接口按账号和 IP 维度限流，连续失败后启用验证码、短时间锁定或风险验证。</li>
+        <li><span class="tag tag-p0">P0</span> 忘记密码链接必须短期有效、一次性使用，并在重置成功后使旧会话和旧令牌失效。</li>
+        <li><span class="tag tag-p1">P1</span> 管理后台建议启用多因素认证 MFA，尤其是管理员、编辑和运维账号。</li>
+        <li><span class="tag tag-p1">P1</span> 设置合理的会话有效期和空闲超时时间，支持用户主动注销并销毁服务端会话。</li>
+        <li><span class="tag tag-p2">P2</span> 对异常登录位置、异常设备、异常时间段登录进行风险提示或二次验证。</li>
+      </ul>
+
+      <h3>5. 授权与后台访问控制</h3>
+      <ul>
+        <li><span class="tag tag-p0">P0</span> 所有管理接口必须在服务端执行权限校验，不能只依赖前端路由隐藏或按钮隐藏。</li>
+        <li><span class="tag tag-p0">P0</span> 实施基于角色的访问控制 RBAC，作者只能管理自己的文章和评论，管理员按职责分配权限。</li>
+        <li><span class="tag tag-p0">P0</span> 资源访问必须校验归属关系，例如文章作者、评论归属、图片归属和租户归属。</li>
+        <li><span class="tag tag-p1">P1</span> 后台路径可以自定义以减少自动扫描噪声，但不能替代强认证、MFA、限流、审计和访问控制。</li>
+        <li><span class="tag tag-p1">P1</span> 高权限后台可限制访问来源 IP、独立管理域名或 VPN 访问。</li>
+      </ul>
+
+      <h3>6. 安全响应头与点击劫持防护</h3>
+      <ul>
+        <li><span class="tag tag-p0">P0</span> 全站强制 HTTPS，生产环境启用 HSTS：<code>Strict-Transport-Security</code>。</li>
+        <li><span class="tag tag-p0">P0</span> 设置 <code>X-Content-Type-Options: nosniff</code>，防止 MIME 类型嗅探。</li>
+        <li><span class="tag tag-p0">P0</span> 使用 <code>Content-Security-Policy: frame-ancestors 'self'</code> 或 <code>X-Frame-Options</code> 防止点击劫持。</li>
+        <li><span class="tag tag-p1">P1</span> 设置 <code>Referrer-Policy</code> 控制来源信息泄露。</li>
+        <li><span class="tag tag-p1">P1</span> 设置 <code>Permissions-Policy</code> 限制摄像头、麦克风、定位等浏览器能力。</li>
+        <li><span class="tag tag-p1">P1</span> 为静态资源配置正确的 <code>Content-Type</code>，避免浏览器误解析。</li>
+      </ul>
+
+      <h3>7. 输入验证与内容安全</h3>
+      <ul>
+        <li><span class="tag tag-p0">P0</span> 文章标题、正文、标签、评论、搜索关键词、昵称、个人简介等输入必须设置长度限制。</li>
+        <li><span class="tag tag-p0">P0</span> 对邮箱、URL、手机号、日期、分页参数等字段进行格式校验和范围校验。</li>
+        <li><span class="tag tag-p0">P0</span> Markdown 或 HTML 渲染必须使用安全渲染库，禁止危险标签、危险属性和不可信脚本执行。</li>
+        <li><span class="tag tag-p1">P1</span> 对评论中的外链设置 <code>rel="nofollow ugc"</code>，降低垃圾 SEO 诱因。</li>
+        <li><span class="tag tag-p1">P1</span> 对高风险内容启用审核机制，例如新用户评论、含多个链接的评论、敏感词命中的内容。</li>
+      </ul>
+    </section>
+
+    <section id="idempotency">
+      <h2>三、防页面重复提交与幂等控制</h2>
+
+      <h3>1. 前端交互控制</h3>
+      <ul>
+        <li><span class="tag tag-p1">P1</span> 表单提交后按钮立即置灰或进入加载状态，避免用户重复点击。</li>
+        <li><span class="tag tag-p1">P1</span> 搜索、自动保存、滚动加载等高频操作使用防抖或节流。</li>
+        <li><span class="tag tag-p1">P1</span> 前端在请求失败、超时或刷新后应给出明确状态，避免用户误以为未提交而连续操作。</li>
+        <li><span class="tag tag-p2">P2</span> PWA 或离线场景应维护请求队列和本地状态，恢复网络后按顺序提交并处理冲突。</li>
+      </ul>
+
+      <h3>2. 服务端幂等保证</h3>
+      <ul>
+        <li><span class="tag tag-p0">P0</span> 创建文章、发表评论、删除内容、修改配置等关键写接口必须在服务端具备幂等策略。</li>
+        <li><span class="tag tag-p0">P0</span> 表单提交可使用一次性 Token，服务端校验后立即作废，重复提交返回友好提示。</li>
+        <li><span class="tag tag-p0">P0</span> 可使用 <code>X-Request-Id</code> 或业务请求 ID 做去重，服务端保存短期去重记录。</li>
+        <li><span class="tag tag-p0">P0</span> 数据库层面为关键业务唯一性设置唯一约束，例如用户邮箱、文章别名、第三方登录绑定关系。</li>
+        <li><span class="tag tag-p1">P1</span> 幂等记录应设置合理过期时间，并明确重复请求的响应码和响应内容。</li>
+        <li><span class="tag tag-p1">P1</span> 捕获唯一约束冲突后返回业务可理解的错误信息，避免暴露数据库异常细节。</li>
+      </ul>
+
+      <h3>3. PRG 模式与刷新保护</h3>
+      <ul>
+        <li><span class="tag tag-p1">P1</span> 传统表单提交成功后采用 Post Redirect Get 模式，避免用户刷新页面导致重复提交。</li>
+        <li><span class="tag tag-p1">P1</span> 提交成功页面只展示结果，不重复执行写操作。</li>
+        <li><span class="tag tag-p1">P1</span> 浏览器回退、刷新和重复打开成功页时，系统应保持状态一致。</li>
+      </ul>
+    </section>
+
+    <section id="upload">
+      <h2>四、图片上传限制与安全</h2>
+
+      <h3>1. 文件类型校验</h3>
+      <ul>
+        <li><span class="tag tag-p0">P0</span> 上传类型必须采用白名单，只允许业务需要的图片格式，例如 JPEG、PNG、GIF、WebP。</li>
+        <li><span class="tag tag-p0">P0</span> 不能只信任文件扩展名和客户端提供的 MIME 类型，服务端必须识别真实文件类型。</li>
+        <li><span class="tag tag-p0">P0</span> SVG 默认不建议开放上传；如确需支持，必须进行严格净化并禁止脚本、外链和事件属性。</li>
+        <li><span class="tag tag-p1">P1</span> 使用维护中的文件类型识别库和图像处理库，不依赖过时或不可维护的检测方式。</li>
+      </ul>
+
+      <h3>2. 文件大小、尺寸与资源消耗限制</h3>
+      <ul>
+        <li><span class="tag tag-p0">P0</span> 应用层和 Web 服务器同时设置上传大小上限，例如 5MB 或 10MB，具体值按业务需要确定。</li>
+        <li><span class="tag tag-p0">P0</span> 限制图片宽度、高度、像素总量和处理超时时间，防止超大图或图片炸弹耗尽内存和 CPU。</li>
+        <li><span class="tag tag-p0">P0</span> 前端和后端都应校验大小与格式，前端用于提示，后端用于安全拦截。</li>
+        <li><span class="tag tag-p1">P1</span> 图片处理过程应设置队列、并发上限和失败重试策略，避免上传高峰拖垮主业务。</li>
+      </ul>
+
+      <h3>3. 文件名、路径与存储隔离</h3>
+      <ul>
+        <li><span class="tag tag-p0">P0</span> 文件名必须由服务端生成，可使用 UUID、日期分片和随机串，禁止使用用户传入的原始文件名作为存储路径。</li>
+        <li><span class="tag tag-p0">P0</span> 禁止将用户输入拼接为文件路径，防止路径遍历和覆盖系统文件。</li>
+        <li><span class="tag tag-p0">P0</span> 上传目录必须不可执行，权限按最小化原则配置，严禁使用 777 权限。</li>
+        <li><span class="tag tag-p0">P0</span> 建议将上传文件存储到对象存储或独立静态资源目录，与应用代码目录分离。</li>
+        <li><span class="tag tag-p1">P1</span> 静态资源域名不共享主站 Cookie，降低 XSS、Cookie 泄露和权限绕过影响。</li>
+      </ul>
+
+      <h3>4. 图片内容处理</h3>
+      <ul>
+        <li><span class="tag tag-p0">P0</span> 上传后的图片应重新解码和重新编码，剥离异常结构和多余元数据。</li>
+        <li><span class="tag tag-p0">P0</span> 剥离 EXIF 元数据，避免泄露拍摄位置、设备型号、时间等隐私信息。</li>
+        <li><span class="tag tag-p1">P1</span> 可集成病毒扫描或恶意文件扫描，对异常文件进入隔离流程。</li>
+        <li><span class="tag tag-p1">P1</span> 上传文件先进入临时区，完成校验、重绘、扫描后再进入正式存储。</li>
+      </ul>
+
+      <h3>5. 访问控制</h3>
+      <ul>
+        <li><span class="tag tag-p0">P0</span> 公开图片可以通过静态资源域名访问，但必须保证该域名不执行动态脚本。</li>
+        <li><span class="tag tag-p0">P0</span> 私密图片、草稿图片、会员内容图片必须经过后端鉴权，不能直接暴露永久公开链接。</li>
+        <li><span class="tag tag-p1">P1</span> 权限图片可使用短期签名 URL，并控制缓存策略，避免权限变更后继续可访问。</li>
+        <li><span class="tag tag-p1">P1</span> 删除文章或用户时，应明确图片保留、删除、归档和引用清理策略。</li>
+      </ul>
+    </section>
+
+    <section id="crawler">
+      <h2>五、网站反爬虫与流量防护</h2>
+
+      <h3>1. 基础限流</h3>
+      <ul>
+        <li><span class="tag tag-p0">P0</span> 登录、评论、搜索、上传、开放 API 和分页列表必须设置接口级限流。</li>
+        <li><span class="tag tag-p0">P0</span> 限流维度应至少包括 IP、账号、接口和时间窗口，必要时结合 Cookie、设备指纹或 API Token。</li>
+        <li><span class="tag tag-p1">P1</span> 使用令牌桶、漏桶或滑动窗口算法，并在响应中返回清晰的限流提示。</li>
+        <li><span class="tag tag-p1">P1</span> 对高频 404、批量翻页、批量搜索、异常 User-Agent 进行监控和告警。</li>
+      </ul>
+
+      <h3>2. 爬虫识别与挑战</h3>
+      <ul>
+        <li><span class="tag tag-p1">P1</span> User-Agent 检查只能作为初级过滤，不能作为可信身份依据。</li>
+        <li><span class="tag tag-p1">P1</span> 对疑似自动化访问启用验证码、JS 挑战、临时限速或短期封禁。</li>
+        <li><span class="tag tag-p1">P1</span> 验证码和挑战应基于风险触发，避免正常用户频繁遇到额外步骤。</li>
+        <li><span class="tag tag-p2">P2</span> 可设置蜜罐链接或不可见表单字段，识别非正常浏览行为。</li>
+      </ul>
+
+      <h3>3. 动态令牌与接口保护</h3>
+      <ul>
+        <li><span class="tag tag-p1">P1</span> 页面可以使用服务端签发的短期令牌、一次性挑战或登录态校验，提高批量采集成本。</li>
+        <li><span class="tag tag-p1">P1</span> 前端不能保存真正的签名密钥。开放 API 的签名密钥必须由服务端分配、服务端校验，并配合时间窗、nonce、权限和限流。</li>
+        <li><span class="tag tag-p2">P2</span> 对高价值接口可启用参数签名、请求重放检测、设备绑定和行为评分。</li>
+      </ul>
+
+      <h3>4. Robots 协议与搜索引擎管理</h3>
+      <ul>
+        <li><span class="tag tag-p1">P1</span> 配置 <code>robots.txt</code> 标明允许和禁止抓取的路径，但不能把它当作安全边界。</li>
+        <li><span class="tag tag-p1">P1</span> 使用 <code>meta</code> 标签或 <code>X-Robots-Tag</code> 控制页面是否允许索引、缓存和跟踪链接。</li>
+        <li><span class="tag tag-p1">P1</span> 验证搜索引擎爬虫时，应使用官方建议方式，例如 DNS 反查和正向确认，不能只看 User-Agent。</li>
+        <li><span class="tag tag-p2">P2</span> 对不希望收录的后台、草稿、搜索结果页和用户隐私页明确禁止索引。</li>
+      </ul>
+
+      <h3>5. 法律声明与用户体验</h3>
+      <ul>
+        <li><span class="tag tag-p1">P1</span> 网站条款中应明确未经授权的数据采集、批量抓取和商业化使用限制。</li>
+        <li><span class="tag tag-p1">P1</span> 反爬策略应灰度发布，避免误伤正常用户、订阅用户和合法搜索引擎。</li>
+        <li><span class="tag tag-p2">P2</span> 对误封用户提供申诉或解除限制渠道。</li>
+      </ul>
+    </section>
+
+    <section id="ops">
+      <h2>六、运维与持续安全</h2>
+
+      <h3>1. HTTPS 与传输安全</h3>
+      <ul>
+        <li><span class="tag tag-p0">P0</span> 生产环境全站 HTTPS，HTTP 请求必须重定向到 HTTPS。</li>
+        <li><span class="tag tag-p0">P0</span> 禁用老旧 TLS 版本和弱加密套件，只允许 TLS 1.2 及以上。</li>
+        <li><span class="tag tag-p1">P1</span> 证书应自动续签，并在到期前配置告警。</li>
+        <li><span class="tag tag-p1">P1</span> 反向代理、CDN、应用服务之间的内部通信也应评估是否需要加密。</li>
+      </ul>
+
+      <h3>2. 密钥与配置管理</h3>
+      <ul>
+        <li><span class="tag tag-p0">P0</span> 数据库密码、JWT 密钥、对象存储密钥、第三方平台密钥不得写入代码仓库。</li>
+        <li><span class="tag tag-p0">P0</span> 生产密钥通过环境变量、密钥管理服务或部署平台安全变量注入。</li>
+        <li><span class="tag tag-p0">P0</span> 开发、测试、生产环境使用不同密钥和不同数据库，禁止混用。</li>
+        <li><span class="tag tag-p1">P1</span> 建立密钥轮换流程，人员离职、泄露风险或供应商变更后及时轮换。</li>
+      </ul>
+
+      <h3>3. 依赖安全与升级</h3>
+      <ul>
+        <li><span class="tag tag-p0">P0</span> 定期检查框架、运行时、系统软件、数据库、Web 服务器和第三方库的安全公告。</li>
+        <li><span class="tag tag-p1">P1</span> 在 CI 或发布流程中加入依赖漏洞扫描，例如 npm audit、Snyk、Dependabot 或同类工具。</li>
+        <li><span class="tag tag-p1">P1</span> 对高危漏洞建立应急升级流程，明确负责人、影响范围、回滚方案和验证步骤。</li>
+        <li><span class="tag tag-p2">P2</span> 对关键依赖做锁版本管理，避免未经验证的自动升级进入生产环境。</li>
+      </ul>
+
+      <h3>4. 日志、监控与告警</h3>
+      <ul>
+        <li><span class="tag tag-p0">P0</span> 记录关键操作日志，包括登录、登出、发布、修改、删除、权限变更、密码重置和上传。</li>
+        <li><span class="tag tag-p0">P0</span> 日志中包含用户标识、IP、时间、User-Agent、请求 ID 和操作结果。</li>
+        <li><span class="tag tag-p0">P0</span> 日志不得记录密码、完整 Token、身份证号、银行卡号等敏感数据。</li>
+        <li><span class="tag tag-p1">P1</span> 对大量登录失败、高频请求、大量 404、上传失败激增、错误率升高设置告警。</li>
+        <li><span class="tag tag-p1">P1</span> 关键审计日志应限制访问权限，并设置合理留存周期。</li>
+      </ul>
+
+      <h3>5. 备份与灾难恢复</h3>
+      <ul>
+        <li><span class="tag tag-p0">P0</span> 数据库、上传文件、配置文件和必要日志必须定期自动备份。</li>
+        <li><span class="tag tag-p0">P0</span> 备份文件应异地存放、加密保存并限制访问权限。</li>
+        <li><span class="tag tag-p1">P1</span> 制定恢复流程，明确恢复时间目标 RTO 和恢复点目标 RPO。</li>
+        <li><span class="tag tag-p1">P1</span> 定期进行恢复演练，确认备份文件可用，而不是只确认备份任务执行成功。</li>
+      </ul>
+
+      <h3>6. 评论与垃圾内容防治</h3>
+      <ul>
+        <li><span class="tag tag-p0">P0</span> 评论接口必须限流，避免垃圾评论和批量提交拖垮服务。</li>
+        <li><span class="tag tag-p1">P1</span> 新用户、匿名用户或高风险评论可启用验证码、审核队列或反垃圾服务。</li>
+        <li><span class="tag tag-p1">P1</span> 评论中的链接应设置 <code>rel="nofollow ugc"</code>，必要时进入人工审核。</li>
+        <li><span class="tag tag-p2">P2</span> 根据内容规模接入垃圾内容识别、敏感词识别和用户信誉评分。</li>
+      </ul>
+    </section>
+
+    <section id="baseline">
+      <h2>七、上线前安全检查清单</h2>
+      <ul class="checklist">
+        <li>数据库查询未拼接用户输入，动态字段使用白名单。</li>
+        <li>所有写接口具备认证、授权和服务端校验。</li>
+        <li>关键写接口具备幂等控制或唯一约束。</li>
+        <li>富文本渲染已做白名单净化和输出转义。</li>
+        <li>登录接口已限流，密码使用慢哈希算法存储。</li>
+        <li>Cookie 已设置 <code>HttpOnly</code>、<code>Secure</code>、<code>SameSite</code>。</li>
+        <li>CSRF 防护覆盖文章、评论、资料修改和后台操作。</li>
+        <li>上传文件限制类型、大小、尺寸和像素总量。</li>
+        <li>上传文件由服务端重命名，存储目录不可执行。</li>
+        <li>私密图片和草稿图片不能通过永久公开链接访问。</li>
+        <li>生产环境启用 HTTPS、HSTS 和安全响应头。</li>
+        <li>后台接口具备 RBAC、审计日志和异常告警。</li>
+        <li>依赖漏洞扫描已纳入发布流程。</li>
+        <li>日志已脱敏，不记录密码和完整 Token。</li>
+        <li>数据库和上传文件已自动备份并完成恢复验证。</li>
+        <li>robots、限流、验证码和反爬策略不会误伤正常用户。</li>
+      </ul>
     </section>
   </main>
 </body>
