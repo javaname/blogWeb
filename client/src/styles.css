@@ -444,6 +444,15 @@ button {
   background: var(--color-surface-hover);
 }
 
+.admin-icon-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.46;
+}
+
+.admin-icon-button:disabled:hover {
+  background: transparent;
+}
+
 .admin-icon-button:active,
 .admin-avatar-button:active {
   transform: scale(0.94);
@@ -1693,6 +1702,7 @@ button {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
 }
 
 .admin-user-cell > span {
@@ -1705,6 +1715,31 @@ button {
   background: var(--color-primary-soft);
   color: var(--color-primary-soft-text);
   font-weight: 700;
+}
+
+.admin-user-cell__body {
+  min-width: 0;
+}
+
+.admin-user-cell__display {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-user-cell__account,
+.admin-user-cell__created {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-user-cell__account {
+  color: var(--color-text-muted);
+}
+
+.admin-user-cell__created {
+  color: var(--color-text-subtle);
 }
 
 .admin-user-grid select {
@@ -1729,6 +1764,29 @@ button {
   font-size: 11px;
   line-height: 14px;
   font-weight: 700;
+}
+
+.admin-user-articles {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.admin-user-articles strong {
+  color: var(--color-text);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.admin-user-articles span {
+  color: var(--color-text-subtle);
+  font-size: 11px;
+  line-height: 14px;
+}
+
+.admin-user-articles.is-linked strong {
+  color: var(--color-primary);
 }
 
 .admin-user-permissions {
@@ -2084,6 +2142,11 @@ button {
 .admin-row-actions .admin-icon-button:hover,
 .admin-inline-actions .admin-icon-button:hover {
   transform: translateY(-1px) scale(1.04);
+}
+
+.admin-row-actions .admin-icon-button:disabled:hover,
+.admin-inline-actions .admin-icon-button:disabled:hover {
+  transform: none;
 }
 
 .article-edit {

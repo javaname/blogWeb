@@ -141,6 +141,21 @@ for (const snippet of ['data-user-create-form', 'data-user-role-select', 'data-u
 if (!usersPage.includes('showAdminToast')) {
   fail('client/src/pages/Users.jsx: success popup toast is not wired');
 }
+for (const snippet of [
+  'userDisplayName',
+  'formatDateTime',
+  'users.accountLine',
+  'users.createdAt',
+  'users.articleCount',
+  'users.noArticles',
+  'users.deleteBlockedByArticles',
+  'admin-user-articles',
+  'disabled={deleteBlocked}',
+]) {
+  if (!usersPage.includes(snippet)) {
+    fail(`client/src/pages/Users.jsx: member detail display snippet ${snippet} is missing`);
+  }
+}
 
 const toastProviderPath = path.join(projectRoot, 'client/src/components/ToastProvider.jsx');
 if (!fs.existsSync(toastProviderPath)) {
@@ -246,6 +261,9 @@ requireStylePattern(/\.admin-toast-viewport[\s\S]*?position:\s*fixed/, 'global t
 requireStylePattern(/\.admin-toast[\s\S]*?animation:\s*admin-toast-in/, 'global toast animation is missing');
 requireStylePattern(/\.admin-toast\.is-error[\s\S]*?color:\s*var\(--color-danger-text\)/, 'error toast style is missing');
 requireStylePattern(/\.admin-toast\.is-success[\s\S]*?color:\s*var\(--color-success-text\)/, 'success toast style is missing');
+requireStylePattern(/\.admin-user-cell__account[\s\S]*?color:\s*var\(--color-text-muted\)/, 'member account metadata style is missing');
+requireStylePattern(/\.admin-user-articles[\s\S]*?flex-direction:\s*column/, 'member article association style is missing');
+requireStylePattern(/\.admin-icon-button:disabled[\s\S]*?cursor:\s*not-allowed/, 'disabled icon button style is missing');
 
 if (hasFailure) {
   process.exit(1);

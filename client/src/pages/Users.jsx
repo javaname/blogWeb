@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import AdminIcon from '../components/AdminIcon';
 import { useI18n } from '../contexts/I18nContext';
+import { userDisplayName } from '../i18n/displayNames';
 import { createUser, deleteUser, fetchUsers, updateUserRole } from '../utils/adminApi';
 import { showAdminToast } from '../utils/api';
+import { formatDateTime } from '../utils/format';
 
 const initialForm = {
   username: '',
@@ -11,16 +13,36 @@ const initialForm = {
   role: 'writer',
 };
 
-function userInitials(user) {
-  return (user.username || user.email || '?').slice(0, 2).toUpperCase();
+function articleCount(user) {
+  return Number(user.article_count || 0);
+}
+
+function userHasArticles(user) {
+  return articleCount(user) > 0;
+}
+
+function userInitials(t, user) {
+  return (userDisplayName(t, user) || user.username || user.email || '?').slice(0, 2).toUpperCase();
 }
 
 function roleLabel(t, role) {
   return t(`users.roles.${role}`) || role;
 }
 
+function accountLine(t, user) {
+  return t('users.accountLine', {
+    username: user.username || '-',
+    email: user.email || t('users.noEmail'),
+  });
+}
+
+function articleCountLabel(t, user) {
+  const count = articleCount(user);
+  return count > 0 ? t('users.articleCount', { count }) : t('users.noArticles');
+}
+
 export default function Users() {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [users, setUsers] = useState([]);
@@ -139,47 +161,60 @@ export default function Users() {
               <span>{t('users.columns.articles')}</span>
               <span className="align-right">{t('common.actions')}</span>
             </div>
-            {users.map((user) => (
-              <div key={user.id} className="admin-list-table__row admin-user-grid">
-                <div className="admin-user-cell">
-                  <span>{userInitials(user)}</span>
-                  <div>
-                    <strong>{user.username}</strong>
-                    <p>{user.email || t('users.noEmail')}</p>
+            {users.map((user) => {
+              const deleteBlocked = userHasArticles(user);
+              const displayName = userDisplayName(t, user);
+              const deleteLabel = deleteBlocked ? t('users.deleteBlockedByArticles') : t('common.delete');
+              return (
+                <div key={user.id} className="admin-list-table__row admin-user-grid">
+                  <div className="admin-user-cell">
+                    <span className="admin-user-cell__avatar">{userInitials(t, user)}</span>
+                    <div className="admin-user-cell__body">
+                      <strong className="admin-user-cell__display">{displayName}</strong>
+                      <p className="admin-user-cell__account">{accountLine(t, user)}</p>
+                      <p className="admin-user-cell__created">
+                        {t('users.createdAt', { date: formatDateTime(user.created_at, locale) })}
+                      </p>
+                    </div>
+                  </div>
+                  <select
+                    aria-label={t('users.changeRole')}
+                    data-user-role-select
+                    value={user.role}
+                    onChange={(event) => handleRoleChange(user.id, event.target.value)}
+                  >
+                    {roles.map((role) => (
+                      <option key={role.key} value={role.key}>
+                        {roleLabel(t, role.key)}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="admin-permission-pills">
+                    {(user.permissions || []).map((permission) => (
+                      <span key={permission}>{t(`users.permissionLabels.${permission}`)}</span>
+                    ))}
+                    {(user.permissions || []).length === 0 ? <span>{t('users.noPermissions')}</span> : null}
+                  </div>
+                  <div className={`admin-user-articles ${deleteBlocked ? 'is-linked' : 'is-clear'}`}>
+                    <strong>{articleCountLabel(t, user)}</strong>
+                    <span>{deleteBlocked ? t('users.articleDeleteBlocked') : t('users.articleDeleteAvailable')}</span>
+                  </div>
+                  <div className="admin-row-actions">
+                    <button
+                      type="button"
+                      className="admin-icon-button is-danger"
+                      data-user-delete
+                      disabled={deleteBlocked}
+                      onClick={() => handleDelete(user.id)}
+                      aria-label={deleteLabel}
+                      title={deleteLabel}
+                    >
+                      <AdminIcon name="delete" />
+                    </button>
                   </div>
                 </div>
-                <select
-                  aria-label={t('users.changeRole')}
-                  data-user-role-select
-                  value={user.role}
-                  onChange={(event) => handleRoleChange(user.id, event.target.value)}
-                >
-                  {roles.map((role) => (
-                    <option key={role.key} value={role.key}>
-                      {roleLabel(t, role.key)}
-                    </option>
-                  ))}
-                </select>
-                <div className="admin-permission-pills">
-                  {(user.permissions || []).map((permission) => (
-                    <span key={permission}>{t(`users.permissionLabels.${permission}`)}</span>
-                  ))}
-                  {(user.permissions || []).length === 0 ? <span>{t('users.noPermissions')}</span> : null}
-                </div>
-                <span>{user.article_count || 0}</span>
-                <div className="admin-row-actions">
-                  <button
-                    type="button"
-                    className="admin-icon-button is-danger"
-                    data-user-delete
-                    onClick={() => handleDelete(user.id)}
-                    aria-label={t('common.delete')}
-                  >
-                    <AdminIcon name="delete" />
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
             {loading ? <div className="admin-list-table__empty">{t('users.loading')}</div> : null}
             {!loading && users.length === 0 ? <div className="admin-list-table__empty">{t('users.empty')}</div> : null}
           </div>
