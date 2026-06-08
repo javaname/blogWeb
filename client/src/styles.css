@@ -1612,7 +1612,7 @@ button {
 }
 
 .admin-user-grid {
-  grid-template-columns: minmax(0, 1.6fr) 120px 120px 80px;
+  grid-template-columns: minmax(180px, 1.4fr) 118px minmax(150px, 1fr) 72px 72px;
 }
 
 .admin-user-cell {
@@ -1631,6 +1631,36 @@ button {
   background: var(--color-primary-soft);
   color: var(--color-primary-soft-text);
   font-weight: 700;
+}
+
+.admin-user-grid select {
+  min-width: 0;
+  width: 100%;
+}
+
+.admin-permission-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.admin-permission-pills span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--color-primary-soft);
+  color: var(--color-primary-soft-text);
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 700;
+}
+
+.admin-user-permissions {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-border);
 }
 
 .admin-permission-list {

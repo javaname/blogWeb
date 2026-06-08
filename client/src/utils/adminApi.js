@@ -50,6 +50,30 @@ export function updateSettings(payload) {
   });
 }
 
+export function fetchUsers() {
+  return apiRequest('/admin/users');
+}
+
+export function createUser(payload) {
+  return apiRequest('/admin/users', {
+    method: 'POST',
+    body: payload,
+  });
+}
+
+export function updateUserRole(id, payload) {
+  return apiRequest(`/admin/users/${id}/role`, {
+    method: 'PUT',
+    body: payload,
+  });
+}
+
+export function deleteUser(id) {
+  return apiRequest(`/admin/users/${id}`, {
+    method: 'DELETE',
+  });
+}
+
 export function fetchArticles(params) {
   const search = new URLSearchParams();
   Object.entries(params || {}).forEach(([key, value]) => {

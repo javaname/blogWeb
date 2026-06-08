@@ -91,6 +91,7 @@ if (!mainEntry.includes('ThemeProvider')) {
 const appShell = fs.readFileSync(path.join(projectRoot, 'client/src/components/AppShell.jsx'), 'utf8');
 const loginPage = fs.readFileSync(path.join(projectRoot, 'client/src/pages/Login.jsx'), 'utf8');
 const appRoutes = fs.readFileSync(path.join(projectRoot, 'client/src/App.jsx'), 'utf8');
+const usersPage = fs.readFileSync(path.join(projectRoot, 'client/src/pages/Users.jsx'), 'utf8');
 if (!appShell.includes('ThemeSwitcher')) {
   fail('client/src/components/AppShell.jsx: theme switcher is missing from admin shell');
 }
@@ -122,6 +123,16 @@ for (const [route, page, navKey] of [
   const pageSource = fs.readFileSync(pagePath, 'utf8');
   if (!pageSource.includes(`data-page="${route}"`)) {
     fail(`client/src/pages/${page}.jsx: data-page="${route}" hook is missing`);
+  }
+}
+for (const snippet of ['fetchUsers', 'createUser', 'updateUserRole', 'deleteUser']) {
+  if (!usersPage.includes(snippet)) {
+    fail(`client/src/pages/Users.jsx: ${snippet} is not wired`);
+  }
+}
+for (const snippet of ['data-user-create-form', 'data-user-role-select', 'data-user-delete']) {
+  if (!usersPage.includes(snippet)) {
+    fail(`client/src/pages/Users.jsx: ${snippet} hook is missing`);
   }
 }
 

@@ -1,16 +1,89 @@
+import { useEffect, useMemo, useState } from 'react';
 import AdminIcon from '../components/AdminIcon';
 import { useI18n } from '../contexts/I18nContext';
+import { createUser, deleteUser, fetchUsers, updateUserRole } from '../utils/adminApi';
 
-const users = [
-  { key: 'owner', role: 'admin', status: 'active', articles: 42 },
-  { key: 'editor', role: 'editor', status: 'active', articles: 18 },
-  { key: 'writer', role: 'writer', status: 'invited', articles: 7 },
-];
+const initialForm = {
+  username: '',
+  email: '',
+  password: '',
+  role: 'writer',
+};
 
-const permissions = ['publish', 'moderate', 'settings', 'mcp'];
+function userInitials(user) {
+  return (user.username || user.email || '?').slice(0, 2).toUpperCase();
+}
+
+function roleLabel(t, role) {
+  return t(`users.roles.${role}`) || role;
+}
 
 export default function Users() {
   const { t } = useI18n();
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [roles, setRoles] = useState([]);
+  const [permissions, setPermissions] = useState([]);
+  const [form, setForm] = useState(initialForm);
+  const [message, setMessage] = useState('');
+
+  async function loadUsers() {
+    setLoading(true);
+    try {
+      const payload = await fetchUsers();
+      setUsers(payload?.list || []);
+      setRoles(payload?.roles || []);
+      setPermissions(payload?.permissions || []);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadUsers().catch(() => {
+      setUsers([]);
+      setRoles([]);
+      setPermissions([]);
+    });
+  }, []);
+
+  const stats = useMemo(() => {
+    const adminCount = users.filter((user) => user.role === 'admin').length;
+    const editorCount = users.filter((user) => user.role === 'editor').length;
+    return {
+      total: users.length,
+      admins: adminCount,
+      editors: editorCount,
+      writers: users.filter((user) => user.role === 'writer').length,
+    };
+  }, [users]);
+
+  async function handleCreate(event) {
+    event.preventDefault();
+    setSaving(true);
+    setMessage('');
+    try {
+      await createUser(form);
+      setForm(initialForm);
+      setMessage(t('users.created'));
+      await loadUsers();
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleRoleChange(id, role) {
+    await updateUserRole(id, { role });
+    setMessage(t('users.roleUpdated'));
+    await loadUsers();
+  }
+
+  async function handleDelete(id) {
+    await deleteUser(id);
+    setMessage(t('users.deleted'));
+    await loadUsers();
+  }
 
   return (
     <div className="admin-page" data-page="users">
@@ -19,14 +92,17 @@ export default function Users() {
           <h2>{t('users.pageTitle')}</h2>
           <p>{t('users.pageDesc')}</p>
         </div>
-        <button type="button" className="admin-primary-button">
-          <AdminIcon name="person_add" />
-          <span>{t('users.inviteUser')}</span>
-        </button>
       </section>
 
+      {message ? <div className="admin-inline-banner is-success">{message}</div> : null}
+
       <section className="admin-stats-grid">
-        {['total', 'admins', 'editors', 'pending'].map((item) => (
+        {[
+          ['total', stats.total],
+          ['admins', stats.admins],
+          ['editors', stats.editors],
+          ['writers', stats.writers],
+        ].map(([item, value]) => (
           <article key={item} className="admin-stat-card">
             <div className="admin-stat-card__top">
               <div className="admin-stat-card__icon tone-neutral">
@@ -34,7 +110,7 @@ export default function Users() {
               </div>
             </div>
             <p>{t(`users.stats.${item}`)}</p>
-            <h3>{t(`users.statValues.${item}`)}</h3>
+            <h3>{value}</h3>
           </article>
         ))}
       </section>
@@ -47,49 +123,137 @@ export default function Users() {
               <p>{t('users.listDesc')}</p>
             </div>
           </div>
+
           <div className="admin-list-table admin-list-table--users">
             <div className="admin-list-table__head admin-user-grid">
               <span>{t('users.columns.name')}</span>
               <span>{t('users.columns.role')}</span>
-              <span>{t('users.columns.status')}</span>
+              <span>{t('users.columns.permissions')}</span>
               <span>{t('users.columns.articles')}</span>
+              <span className="align-right">{t('common.actions')}</span>
             </div>
-            {users.map((item) => (
-              <div key={item.key} className="admin-list-table__row admin-user-grid">
+            {users.map((user) => (
+              <div key={user.id} className="admin-list-table__row admin-user-grid">
                 <div className="admin-user-cell">
-                  <span>{t(`users.initials.${item.key}`)}</span>
+                  <span>{userInitials(user)}</span>
                   <div>
-                    <strong>{t(`users.names.${item.key}`)}</strong>
-                    <p>{t(`users.emails.${item.key}`)}</p>
+                    <strong>{user.username}</strong>
+                    <p>{user.email || t('users.noEmail')}</p>
                   </div>
                 </div>
-                <span className="admin-category-pill">{t(`users.roles.${item.role}`)}</span>
-                <span className={`admin-status-pill is-${item.status === 'active' ? 'approved' : 'pending'}`}>
-                  {t(`users.statuses.${item.status}`)}
-                </span>
-                <span>{item.articles}</span>
+                <select
+                  aria-label={t('users.changeRole')}
+                  data-user-role-select
+                  value={user.role}
+                  onChange={(event) => handleRoleChange(user.id, event.target.value)}
+                >
+                  {roles.map((role) => (
+                    <option key={role.key} value={role.key}>
+                      {roleLabel(t, role.key)}
+                    </option>
+                  ))}
+                </select>
+                <div className="admin-permission-pills">
+                  {(user.permissions || []).map((permission) => (
+                    <span key={permission}>{t(`users.permissionLabels.${permission}`)}</span>
+                  ))}
+                  {(user.permissions || []).length === 0 ? <span>{t('users.noPermissions')}</span> : null}
+                </div>
+                <span>{user.article_count || 0}</span>
+                <div className="admin-row-actions">
+                  <button
+                    type="button"
+                    className="admin-icon-button is-danger"
+                    data-user-delete
+                    onClick={() => handleDelete(user.id)}
+                    aria-label={t('common.delete')}
+                  >
+                    <AdminIcon name="delete" />
+                  </button>
+                </div>
               </div>
             ))}
+            {loading ? <div className="admin-list-table__empty">{t('users.loading')}</div> : null}
+            {!loading && users.length === 0 ? <div className="admin-list-table__empty">{t('users.empty')}</div> : null}
           </div>
         </article>
 
         <aside className="admin-panel">
           <div className="admin-panel__head admin-panel__head--stacked">
             <div>
-              <h3>{t('users.permissionsTitle')}</h3>
-              <p>{t('users.permissionsDesc')}</p>
+              <h3>{t('users.createTitle')}</h3>
+              <p>{t('users.createDesc')}</p>
             </div>
           </div>
-          <div className="admin-permission-list">
-            {permissions.map((item) => (
-              <div key={item} className="admin-permission-list__row">
-                <AdminIcon name="visibility" />
-                <div>
-                  <strong>{t(`users.permissions.${item}.label`)}</strong>
-                  <p>{t(`users.permissions.${item}.desc`)}</p>
-                </div>
+          <form className="admin-form" data-user-create-form onSubmit={handleCreate}>
+            <label>
+              <span>{t('users.form.username')}</span>
+              <input
+                value={form.username}
+                onChange={(event) => setForm((prev) => ({ ...prev, username: event.target.value }))}
+                placeholder={t('users.form.usernamePlaceholder')}
+                required
+              />
+            </label>
+            <label>
+              <span>{t('users.form.email')}</span>
+              <input
+                type="email"
+                value={form.email}
+                onChange={(event) => setForm((prev) => ({ ...prev, email: event.target.value }))}
+                placeholder={t('users.form.emailPlaceholder')}
+                required
+              />
+            </label>
+            <label>
+              <span>{t('users.form.password')}</span>
+              <input
+                type="password"
+                value={form.password}
+                onChange={(event) => setForm((prev) => ({ ...prev, password: event.target.value }))}
+                placeholder={t('users.form.passwordPlaceholder')}
+                minLength={8}
+                required
+              />
+            </label>
+            <label>
+              <span>{t('users.form.role')}</span>
+              <select value={form.role} onChange={(event) => setForm((prev) => ({ ...prev, role: event.target.value }))}>
+                {roles.map((role) => (
+                  <option key={role.key} value={role.key}>
+                    {roleLabel(t, role.key)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="admin-form__actions">
+              <button type="submit" className="admin-primary-button" disabled={saving}>
+                {saving ? t('common.saving') : t('users.createUser')}
+              </button>
+              <button type="button" className="admin-secondary-button" onClick={() => setForm(initialForm)}>
+                {t('common.reset')}
+              </button>
+            </div>
+          </form>
+
+          <div className="admin-user-permissions">
+            <div className="admin-panel__head admin-panel__head--stacked">
+              <div>
+                <h3>{t('users.permissionsTitle')}</h3>
+                <p>{t('users.permissionsDesc')}</p>
               </div>
-            ))}
+            </div>
+            <div className="admin-permission-list">
+              {permissions.map((item) => (
+                <div key={item.key} className="admin-permission-list__row">
+                  <AdminIcon name="visibility" />
+                  <div>
+                    <strong>{item.label || t(`users.permissionLabels.${item.key}`)}</strong>
+                    <p>{item.description || t(`users.permissions.${item.key}.desc`)}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </aside>
       </section>
