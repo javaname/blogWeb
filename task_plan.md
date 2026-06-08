@@ -248,4 +248,105 @@ Stitch 项目：
   - [pending] `npm --prefix client run check:i18n`
   - [pending] `npm --prefix client run check:ui`
   - [pending] `npm --prefix client run build`
+- [pending] 阶段提交并推送到远程
+
+# 新增阶段：notice.html 安全基线整改与接口收口
+
+目标：对照 `notice.html` 的 P0/P1/P2 安全基线，先处理上线前必须完成的安全缺口，再补齐仍停留在原型数据的后台页面接口。
+
+当前校准：
+- 后台用户与权限基础接口已存在：`/api/admin/users`、`/api/admin/users/:id/role`、`/api/admin/users/:id`，React `/users` 已接入真实 API。
+- 后台媒体库和数据分析仍未接入真实后端：`/media`、`/analytics` 仍使用静态数组，缺 `/api/admin/media` 和 `/api/admin/analytics`。
+- 旧计划中的“用户基础接口全缺失”已滞后；后续只保留用户权限边界增强。
+
+## P0 必须优先完成
+
+1. [pending] 后台 RBAC 与资源归属收口
+   - [pending] 为后台读/写接口建立统一权限 helper，区分 `admin`、`editor`、`writer`、`user`。
+   - [pending] 文章创建/更新/删除按角色和作者归属校验；作者只能管理自己的文章，设置、分类、用户、上传策略等高危能力仅允许 admin 或明确授权角色。
+   - [pending] 评论审核/删除、分类管理、设置更新、上传接口补服务端权限测试。
+   - [pending] 用户角色调整增加“不能降级或删除最后一个管理员”测试与实现。
+2. [pending] 登录与注册限流落地
+   - [pending] 将 `RateLimitConfig` 的 `login_ip_*`、`login_user_*`、`registration_ip_*`、`registration_email_*` 接入 `login`、`request_registration_code` 和 `register_with_email`。
+   - [pending] 按账号/IP/邮箱维度补 Redis 限流测试，错误响应统一为可理解业务错误。
+3. [pending] Cookie 与生产响应头加固
+   - [pending] `admin_session` 与 `anonymous_id` 增加 `SameSite` 策略，生产 HTTPS 模式增加 `Secure`。
+   - [pending] 增加 HSTS、`Permissions-Policy`，并为敏感后台/API 响应补正确 `Cache-Control`。
+   - [pending] 收紧 CSP，消除对 `unsafe-eval` 和 Tailwind CDN 的生产依赖；如需保留 inline style/script，先改为 nonce/hash 策略。
+4. [pending] 上传安全补强
+   - [pending] 让 `upload.reencode` 真正执行图片重解码/重编码，剥离 EXIF 元数据。
+   - [pending] 增加图片宽高、像素总量和处理超时限制。
+   - [pending] 建立媒体资源元数据表，记录 MIME、大小、alt/title、引用关系和上传者。
+5. [pending] 关键操作审计与备份自动化
+   - [pending] 后台登录、登出、发布、修改、删除、权限变更、设置更新、上传写入统一审计日志，敏感字段脱敏。
+   - [pending] 在 `docs/backup-restore.md` 之外增加可执行备份/恢复演练脚本或任务说明，覆盖 SQLite、Redis、上传目录和配置。
+
+## P1 建议完成
+
+1. [pending] 后台媒体库真实 API 与 React 接入
+   - [pending] `GET /api/admin/media`、`POST /api/admin/media`、`PUT /api/admin/media/:id`、`DELETE /api/admin/media/:id`。
+   - [pending] 媒体统计返回文件数、存储占用、引用数、待补 alt 数量；前端 `/media` 移除静态数组。
+2. [pending] 后台数据分析真实 API 与 React 接入
+   - [pending] `GET /api/admin/analytics` 聚合文章、评论、点赞、收藏、关注、订阅等现有数据。
+   - [pending] 对当前没有事件表支撑的访问量、来源、阅读时长返回明确的数据来源标识，避免伪造真实指标。
+3. [pending] 内容安全与反垃圾增强
+   - [pending] Markdown 外链自动加 `rel="nofollow ugc"`。
+   - [pending] 评论链接、多链接内容、新用户评论进入审核/限流增强策略。
+4. [pending] 幂等与重复提交保护
+   - [pending] 后台关键写接口支持 `X-Request-Id` 或一次性提交 token。
+   - [pending] 明确重复请求的响应码和响应体，补数据库唯一约束冲突的业务化错误。
+5. [pending] 依赖与供应链扫描
+   - [pending] 在 CI 中加入 `cargo audit` 或同类 Rust 依赖扫描。
+   - [pending] 在前端加入 `npm audit`/Dependabot/Snyk 或同类扫描流程。
+
+## P2 按需启用
+
+1. [pending] 高级反爬策略：蜜罐链接、行为评分、设备指纹或风险挑战。
+2. [pending] 搜索引擎和隐私页面索引策略：`robots.txt`、`X-Robots-Tag`、后台/草稿/私密资源禁止索引。
+3. [pending] 发布包完整性：构建产物校验摘要、SBOM 和发布回滚记录。
+
+验证矩阵：
+- [pending] `cargo fmt --check`
+- [pending] `cargo test --offline`
+- [pending] 新增定向安全测试：RBAC、登录限流、Cookie/响应头、上传重编码与尺寸限制、审计日志
+- [pending] `npm --prefix client run check:i18n`
+- [pending] `npm --prefix client run check:ui`
+- [pending] `npm --prefix client run build`
+- [pending] 阶段提交并推送到远程
+
+# 新增阶段：本地 PostgreSQL 迁移与数据同步
+
+目标：将当前 Rust 后端从 SQLite-only 切换为本地 PostgreSQL-only，默认连接本机 `localhost:5432/blogweb`，并把当前项目 SQLite 数据库 `data/blog.db` 同步到 PostgreSQL 的 `blogweb` 库。
+
+决策：
+- 采用 PostgreSQL-only，不保留 SQLite 运行时兼容。
+- 配置从 `database.path` 调整为 PostgreSQL 连接串，默认库为 `blogweb`。
+- SQLite 只作为一次性数据同步源读取。
+- 数据同步应先建表/迁移，再按外键顺序导入数据，并修复 PostgreSQL 序列。
+
+当前状态：
+- [complete] 用户确认采用推荐方案：PostgreSQL-only。
+- [complete] 用户确认本地连接使用 `localhost:5432/blogweb`。
+- [complete] 用户要求当前项目数据库数据同步到 `blogweb`。
+- [in_progress] 追加任务计划、发现和进度记录。
+- [pending] 切片 1：配置与数据库连接测试
+  - [pending] 配置读取 `database.url`。
+  - [pending] 默认连接串指向本地 `blogweb`。
+  - [pending] `db check/migrate` 使用 PostgreSQL 连接，不检查 SQLite 文件路径。
+- [pending] 切片 2：PostgreSQL 迁移 SQL
+  - [pending] 将建表 SQL 改为 PostgreSQL 方言。
+  - [pending] `schema_migrations`、核心表、关键列检查使用 PostgreSQL 系统视图。
+  - [pending] 迁移 dry-run 使用临时 PostgreSQL schema 或隔离测试库。
+- [pending] 切片 3：业务 SQL 方言调整
+  - [pending] `?` 占位符改为 PostgreSQL `$1/$2`。
+  - [pending] `INSERT OR IGNORE` 改为 `ON CONFLICT DO NOTHING`。
+  - [pending] 行类型和 `QueryBuilder` 泛型切换到 PostgreSQL。
+- [pending] 切片 4：SQLite 到 PostgreSQL 数据同步
+  - [pending] 新增 CLI 同步命令或迁移子命令参数。
+  - [pending] 从 `data/blog.db` 读取全量表数据写入 PostgreSQL。
+  - [pending] 同步后修复 PostgreSQL 自增序列。
+- [pending] 切片 5：验证、提交和推送
+  - [pending] `cargo fmt --check`
+  - [pending] PostgreSQL 定向测试
+  - [pending] `cargo test`
   - [pending] 阶段提交并推送到远程

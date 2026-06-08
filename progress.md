@@ -394,3 +394,20 @@
 - 已在 `findings.md` 记录接口缺口、可复用现有表和需要谨慎新增数据模型的点。
 - 遇到的问题：`planning-with-files-zh` 的 session catchup 脚本在 `.claude` 路径不存在，错误为 `can't open file ... session-catchup.py`；按历史记录继续使用现有计划文件恢复上下文。
 - 当前状态：排产草案已写入计划文件，等待用户确认优先级和范围后进入 TDD 实现。
+
+## 2026-06-08 notice.html 安全基线差距审计
+
+- 已按用户要求读取 `notice.html`，确认其为博客系统上线前安全基线清单，包含 P0/P1/P2 优先级。
+- 已恢复 `task_plan.md`、`findings.md`、`progress.md`，并运行 `planning-with-files-zh` 的 `session-catchup.py`；本次脚本无输出。
+- 已使用 CodeGraph 和定向 `rg`/源码读取核对当前 Rust 后端、React 后台和公开 SSR。
+- 已校准旧计划：后台用户与权限基础 API 已经落地并接入 React；媒体库和数据分析仍是静态原型且缺真实后端 API。
+- 已识别主要 P0 差距：后台 RBAC 覆盖不完整、登录/注册限流配置未接入认证接口、Cookie 缺 `Secure/SameSite`、缺 HSTS/严格响应头、上传未真实重编码/剥离 EXIF/限制尺寸像素、关键操作审计和自动备份缺失。
+- 已在 `findings.md` 写入证据记录，并在 `task_plan.md` 追加“notice.html 安全基线整改与接口收口”阶段。
+
+## 2026-06-08 本地 PostgreSQL 迁移
+
+- 用户确认按推荐方案执行 PostgreSQL-only。
+- 用户确认连接目标为本机 `localhost:5432/blogweb`。
+- 用户要求将当前项目 SQLite 数据同步到 PostgreSQL `blogweb`。
+- 已恢复并保护既有计划文件，改为追加本次迁移阶段，不覆盖历史记录。
+- 下一步：先提交计划记录，再编写 PostgreSQL 配置/连接/迁移/同步的失败测试。

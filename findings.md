@@ -152,3 +152,31 @@
 - 公开 `/search`、`/archive`、`/tags/:slug` 已有 SSR 路由；其中 `/tags/:slug` 当前是基于 slug 派生关键词筛选文章，尚未建立正式 tags/article_tags 数据模型。
 - 本次只做排产计划，不进入实现；后续实现仍应按 TDD 先新增 Rust 后端测试，再接前端页面真实 API。
 - `planning-with-files-zh` 的 session catchup 脚本在 `.claude` 路径不存在，和历史记录一致；不要重复同一路径失败，直接按已读计划文件恢复上下文。
+
+## 2026-06-08 notice.html 安全基线差距审计
+
+- `notice.html` 是博客系统安全注意事项，覆盖 Web 安全、幂等、上传、反爬、运维、供应链和上线前检查清单；优先级定义为 P0 必须上线前完成、P1 建议完成、P2 按业务风险启用。
+- 当前全局响应头已有 CSP、`X-Content-Type-Options: nosniff`、`Referrer-Policy`、`X-Frame-Options: DENY`，入口在 `src/app.rs::apply_response_contract`。缺口是未设置 HSTS、`Permissions-Policy`，CSP 仍包含 `unsafe-inline`、`unsafe-eval` 和 Tailwind CDN，且 Cookie 未设置 `Secure`/`SameSite`。
+- 后台登录使用 bcrypt 校验和 Redis session，CSRF token 通过 `/api/admin/csrf-token` 获取；但 `admin_session` 和 `anonymous_id` Cookie 仅设置 `HttpOnly`，未设置 `Secure`/`SameSite`。
+- `RateLimitConfig` 已定义登录与注册限流字段，但 `rg` 只在 `src/config.rs` 中命中这些字段，`src/admin_auth.rs::login`、`request_registration_code` 和 `register_with_email` 未使用登录/注册限流。这与 `notice.html` P0 “登录接口按账号和 IP 维度限流”不匹配。
+- 后台用户管理接口已经落地：`src/app.rs` 挂载 `/api/admin/users`，`client/src/pages/Users.jsx` 调用 `fetchUsers/createUser/updateUserRole/deleteUser`，`src/admin_users.rs` 对这些接口要求 `role == admin`。旧计划中“用户基础接口全缺失”已滞后。
+- 后台文章、分类、评论、设置、上传写接口统一使用 `src/admin_write.rs::require_csrf`，该函数只校验登录态和 CSRF，不校验角色；后台读接口如 `dashboard` 也只检查 `session_user`。这不满足 `notice.html` P0 的服务端 RBAC、作者归属和高危后台权限隔离。
+- `/media` 和 `/analytics` 仍是静态原型：`client/src/pages/Media.jsx` 有页面内 `mediaItems/stats` 常量，`client/src/pages/Analytics.jsx` 有 `metrics/topContent/sources` 常量；后端没有 `/api/admin/media` 或 `/api/admin/analytics` 路由。
+- 上传接口 `src/admin_write.rs::upload` 已校验 CSRF、大小、图片魔数和 MIME 白名单，并生成服务端文件名；但配置 `upload.reencode=true` 目前只对外展示，未实际重编码/剥离 EXIF/检查尺寸像素，也没有独立媒体元数据表和引用关系，无法支撑删除保护、alt 补全和存储统计。
+- 富文本 Markdown 使用 `src/renderer.rs::render_safe_html` 和 `ammonia` 清理 HTML，XSS 基线较好；但 `link_rel(None)` 表示用户内容外链没有自动加 `rel="nofollow ugc"`。
+- 幂等方面，点赞、收藏、关注、订阅和 slug 等有数据库唯一约束；但关键后台写接口没有一次性表单 token、`X-Request-Id` 去重或重复请求响应契约。
+- SSRF 风险当前集中在文章封面 URL：后台和 MCP 拒绝 `http://`，允许 `https://` 和站内 `/uploads/` 路径；项目没有远程图片抓取/Webhook/RSS 导入实现，因此 SSRF 暂无直接服务端出站请求面，但允许外部 HTTPS 封面仍应明确展示与 CSP/隐私策略边界。
+- 备份已有文档 `docs/backup-restore.md`，覆盖 SQLite、Redis、上传目录和 `config.yaml` 的手工备份恢复；未发现自动备份任务、恢复演练脚本或 CI 验证。
+- 未发现 `.github` 工作流、Dependabot、`cargo audit`、`npm audit`、Snyk、SBOM 或同类依赖/供应链扫描配置；当前验证矩阵主要是 Rust/前端功能检查。
+- MCP 具备 Origin 白名单、scope 鉴权、限流和 `mcp_audit_logs` 审计；普通 Web/admin 操作没有同等级操作审计日志，后台发布、修改、删除、权限变更、上传等关键操作未统一写审计日志。
+
+## 2026-06-08 本地 PostgreSQL 迁移
+
+- 当前 `Cargo.toml` 只启用了 `sqlx` 的 `sqlite` feature。
+- 当前配置文件使用 `database.path: "data/blog.db"`，配置结构 `DatabaseConfig` 只有 `path` 字段。
+- `src/db.rs` 深度绑定 SQLite：`Pool<Sqlite>`、`SqliteConnection`、`SqlitePoolOptions`、`sqlite_master`、`PRAGMA table_info`、`BEGIN IMMEDIATE`。
+- 业务代码大量使用 SQLite 风格 `?` 占位符；少量 SQL 使用 `INSERT OR IGNORE`。
+- `src/app.rs`、`src/http_public.rs`、`src/mcp.rs` 等路由状态使用 `Pool<Sqlite>`。
+- 多个测试使用 `db::connect_memory()` 或 `SqlitePoolOptions` 创建内存 SQLite。
+- PostgreSQL 迁移风险点：占位符重编号、QueryBuilder 泛型、PgRow 行类型、布尔/时间字段读取、迁移事务语义、序列重置。
+- 当前工作区存在与本任务无关的前端改动：`client/scripts/check-ui-completeness.mjs` 和 `client/src/components/ToastProvider.jsx`，本任务不应提交或覆盖这些文件。
