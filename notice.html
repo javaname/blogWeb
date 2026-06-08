@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>博客系统安全注意事项修改意见</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f8fa;
+      --panel: #ffffff;
+      --text: #1f2933;
+      --muted: #667085;
+      --line: #d8dee8;
+      --primary: #1769aa;
+      --primary-soft: #e8f2fb;
+      --warn: #9a4f00;
+      --warn-soft: #fff3df;
+      --danger: #a4262c;
+      --danger-soft: #fde8ea;
+      --ok: #237a3b;
+      --ok-soft: #e9f7ee;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+      line-height: 1.65;
+    }
+
+    main {
+      width: min(1120px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 40px 0 56px;
+    }
+
+    header {
+      padding: 28px 32px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      line-height: 1.3;
+    }
+
+    h1 {
+      font-size: 30px;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin-top: 34px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--line);
+      font-size: 22px;
+    }
+
+    h3 {
+      margin-top: 22px;
+      font-size: 18px;
+    }
+
+    p {
+      margin: 10px 0 0;
+    }
+
+    ul,
+    ol {
+      margin: 10px 0 0;
+      padding-left: 24px;
+    }
+
+    li + li {
+      margin-top: 6px;
+    }
+
+    code {
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: #eef1f5;
+      color: #344054;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.95em;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 14px;
+      border-collapse: collapse;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th,
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #eef2f6;
+      font-weight: 700;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: #eef1f5;
+    }
+
+    .section {
+      margin-top: 18px;
+      padding: 24px 28px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .summary-card {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    .summary-card strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 16px;
+    }
+
+    .tag {
+      display: inline-block;
+      min-width: 64px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .tag-high {
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+
+    .tag-medium {
+      background: var(--warn-soft);
+      color: var(--warn);
+    }
+
+    .tag-low {
+      background: var(--ok-soft);
+      color: var(--ok);
+    }
+
+    .note {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-left: 4px solid var(--primary);
+      background: var(--primary-soft);
+      border-radius: 6px;
+    }
+
+    .rewrite {
+      margin-top: 12px;
+      padding: 18px 20px;
+      background: #fbfcfe;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    @media (max-width: 760px) {
+      main {
+        width: min(100% - 24px, 1120px);
+        padding-top: 24px;
+      }
+
+      header,
+      .section {
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .summary {
+        grid-template-columns: 1fr;
+      }
+
+      table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>博客系统安全注意事项修改意见</h1>
+      <p>本文基于《博客系统安全注意事项》进行审阅，目标是让文档从“安全知识清单”调整为“可执行、可验收、可维护”的项目安全规范。</p>
+      <div class="meta">
+        <span class="pill">来源文件：docs/notice.txt</span>
+        <span class="pill">输出日期：2026-06-08</span>
+        <span class="pill">审阅范围：Web 安全、幂等、上传、反爬、运维安全</span>
+      </div>
+    </header>
+
+    <section class="summary">
+      <div class="summary-card">
+        <strong>总体评价</strong>
+        <p>覆盖面较完整，适合作为安全知识材料；但条目较散，缺少优先级、责任边界、落地方式和验收标准。</p>
+      </div>
+      <div class="summary-card">
+        <strong>主要风险</strong>
+        <p>部分建议过于绝对或不可落地，例如前端签名密钥、隐藏后台路径、按文件内容查脚本代码等，需要改成更准确的安全表述。</p>
+      </div>
+      <div class="summary-card">
+        <strong>建议方向</strong>
+        <p>按“必须做、建议做、可选增强”重组文档，并为每类安全措施补充配置示例、适用场景和检查方法。</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>一、结构修改建议</h2>
+      <ol>
+        <li><strong>增加文档目标与适用范围。</strong>开头应说明本文适用于博客前台、管理后台、开放 API、上传服务和部署环境，并区分开发环境与生产环境要求。</li>
+        <li><strong>按优先级重新编排。</strong>建议将所有条目分为 P0 必须、P1 建议、P2 增强三类，避免读者无法判断先做什么。</li>
+        <li><strong>补充责任归属。</strong>每项措施标明由前端、后端、数据库、运维或安全网关负责，减少执行时的职责空白。</li>
+        <li><strong>增加验收标准。</strong>例如“登录接口每账号每 15 分钟最多失败 5 次”“上传图片最大 10MB 且最大边长 8000px”“所有写接口必须有幂等策略”。</li>
+        <li><strong>增加安全基线表。</strong>把 HTTPS、HSTS、安全响应头、Cookie 属性、密码哈希、上传限制、日志脱敏等基础项做成统一检查表。</li>
+      </ol>
+    </section>
+
+    <section class="section">
+      <h2>二、重点问题与修改意见</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>级别</th>
+            <th>原文问题</th>
+            <th>修改意见</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tag tag-high">高</span></td>
+            <td>“前端把参数 + 时间戳 + 密钥生成签名”容易误导。前端无法安全保存密钥，密钥会被逆向或抓包获取。</td>
+            <td>改为“服务端签发短期令牌、一次性挑战或基于登录态的请求校验”。开放 API 场景才使用服务端分配的密钥和签名，并配合时间窗、nonce、限流和权限控制。</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-high">高</span></td>
+            <td>图片上传部分提到检查文件中是否包含 PHP、JS 代码，但这不是可靠的上传安全策略。</td>
+            <td>强调“真实类型识别、解码重绘、扩展名白名单、非执行目录、对象存储隔离、尺寸限制、病毒扫描”。不要把字符串扫描作为主要安全措施。</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-medium">中</span></td>
+            <td>“博客后台管理路径不能使用默认路径”容易被理解为核心安全措施。</td>
+            <td>改为“后台路径可减少自动化扫描噪声，但不能替代强认证、MFA、RBAC、限流、审计日志和 IP 访问策略”。</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-medium">中</span></td>
+            <td>CSRF 防护同时要求 Token、Referer/Origin、SameSite，但未区分适用场景。</td>
+            <td>建议写成分层策略：同站 Cookie 场景必须使用 CSRF Token 或 SameSite；高风险操作额外校验 Origin；第三方登录或跨站回调需谨慎使用 SameSite=Strict。</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-medium">中</span></td>
+            <td>反爬虫内容较多，但未区分“保护系统稳定性”和“阻止内容采集”两个目标。</td>
+            <td>拆成两节：一节是限流、缓存、熔断和告警，保障服务可用性；另一节是爬虫识别、验证码、robots、法律声明，控制采集风险。</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-low">低</span></td>
+            <td>举例工具中包含 <code>imghdr</code>，该工具在现代 Python 版本中已不适合作为长期方案。</td>
+            <td>改为使用维护中的文件类型识别库、图像处理库或业务语言生态内的成熟组件，并避免绑定到过时工具。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>三、各章节具体补充建议</h2>
+
+      <h3>1. 防网络攻击</h3>
+      <ul>
+        <li>SQL 注入部分应补充“动态排序字段、分页字段、表名、列名不能直接从用户输入拼接”，这些位置参数化支持有限，需要白名单映射。</li>
+        <li>XSS 部分建议明确富文本策略：前端预览和后端保存都要使用同一套白名单规则，最终渲染前仍需净化。</li>
+        <li>Cookie 建议写完整：<code>HttpOnly</code>、<code>Secure</code>、<code>SameSite</code>、合理有效期、登录后轮换 Session ID。</li>
+        <li>密码安全建议增加“不要自定义加密算法”“忘记密码链接必须短期有效且一次性使用”。</li>
+        <li>安全响应头建议给出默认基线，便于直接配置到 Nginx、应用网关或后端框架。</li>
+      </ul>
+
+      <h3>2. 防重复提交</h3>
+      <ul>
+        <li>前端置灰只能改善体验，不能作为安全措施，应明确最终以服务端幂等为准。</li>
+        <li>建议区分普通表单、文章发布、评论提交、支付或积分变更等不同风险级别。</li>
+        <li>请求 ID 去重应说明有效期、存储位置、冲突返回码和客户端重试规则。</li>
+      </ul>
+
+      <h3>3. 图片上传安全</h3>
+      <ul>
+        <li>建议补充“上传、处理、访问”三阶段流程：接收后先放临时区，校验和重绘成功后再转入正式存储。</li>
+        <li>文件名应完全由服务端生成，并保留原始文件名时只作为展示字段存储，展示前仍需转义。</li>
+        <li>图片尺寸、像素总量、压缩比和处理超时时间都应限制，避免图片解析导致内存或 CPU 被耗尽。</li>
+        <li>静态资源建议使用独立域名，且不共享主站 Cookie，降低 XSS 和 Cookie 泄露影响。</li>
+      </ul>
+
+      <h3>4. 反爬虫策略</h3>
+      <ul>
+        <li>把限流作为基础能力，明确按 IP、账号、接口、User-Agent、Cookie 或设备指纹组合限流。</li>
+        <li>JS 挑战和验证码要设置触发阈值，避免正常用户频繁遇到挑战。</li>
+        <li>robots.txt 只能约束守规矩的爬虫，不能作为安全控制，应在文档中明确这一点。</li>
+        <li>搜索引擎白名单应通过官方方式验证，不建议只依赖 User-Agent。</li>
+      </ul>
+
+      <h3>5. 其他安全措施</h3>
+      <ul>
+        <li>建议增加“密钥管理”章节：数据库密码、JWT 密钥、对象存储密钥不得写入代码仓库，必须通过环境变量或密钥管理服务注入。</li>
+        <li>建议增加“备份恢复验收”：不仅要备份，还要定期恢复演练，并记录恢复时间目标和恢复点目标。</li>
+        <li>日志章节应补充“日志访问权限、留存周期、脱敏规则、审计追踪不可篡改”。</li>
+        <li>依赖安全建议加入 CI 检查，至少在合并和发布前执行依赖漏洞扫描。</li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>四、建议新增的安全基线表</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>分类</th>
+            <th>最低要求</th>
+            <th>验收方式</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>传输安全</td>
+            <td>生产环境全站 HTTPS，启用 HSTS，只允许 TLS 1.2 及以上。</td>
+            <td>使用浏览器安全面板、SSL 检测工具或网关配置检查。</td>
+          </tr>
+          <tr>
+            <td>认证与会话</td>
+            <td>密码使用 Argon2id 或 bcrypt；登录后轮换 Session ID；Cookie 设置 <code>HttpOnly</code>、<code>Secure</code>、<code>SameSite</code>。</td>
+            <td>检查配置、登录流程和响应头。</td>
+          </tr>
+          <tr>
+            <td>输入输出</td>
+            <td>输入做长度和格式校验；输出按上下文转义；富文本使用白名单净化。</td>
+            <td>通过单元测试、接口测试和 XSS 用例验证。</td>
+          </tr>
+          <tr>
+            <td>上传</td>
+            <td>限制类型、大小、尺寸和像素总量；服务端重命名；非执行目录存储；访问域名与主站隔离。</td>
+            <td>上传伪造扩展名、超大图、异常图片样本进行测试。</td>
+          </tr>
+          <tr>
+            <td>幂等</td>
+            <td>所有关键写接口具备请求 ID、唯一约束或一次性 Token 之一。</td>
+            <td>重复提交同一请求，验证只产生一次业务结果。</td>
+          </tr>
+          <tr>
+            <td>日志与备份</td>
+            <td>关键操作可审计；敏感字段脱敏；数据库和上传文件定期备份并可恢复。</td>
+            <td>抽查日志字段、备份文件和恢复演练记录。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>五、参考改写稿</h2>
+      <div class="note">
+        以下是建议替换原文开头和章节组织方式的示例，后续条目可按同样格式扩展。
+      </div>
+
+      <div class="rewrite">
+        <h3>博客系统安全基线与实施建议</h3>
+        <p>本文适用于博客系统的前台页面、管理后台、开放接口、图片上传服务和生产部署环境。文档目标是定义最低安全基线，帮助开发、测试和运维团队在上线前完成统一检查。</p>
+        <p>安全措施按优先级分为三类：P0 为上线前必须完成的基础防护，P1 为强烈建议完成的增强措施，P2 为根据业务风险选择启用的补充能力。</p>
+
+        <h3>P0：上线前必须完成</h3>
+        <ol>
+          <li>所有数据库访问必须使用参数化查询或 ORM 安全接口。动态字段、排序字段、表名和列名必须通过白名单映射，不允许直接拼接用户输入。</li>
+          <li>所有用户输入必须进行长度、格式和业务规则校验；所有页面输出必须按 HTML、属性、URL、JavaScript 等上下文进行转义。</li>
+          <li>登录、发布、删除、修改资料等写操作必须具备 CSRF 防护和服务端幂等控制，前端防重复点击只能作为体验优化。</li>
+          <li>图片上传必须在服务端完成真实类型识别、大小限制、尺寸限制、服务端重命名和非执行目录存储。建议对图片重新编码并剥离 EXIF 元数据。</li>
+          <li>生产环境必须启用 HTTPS、HSTS、安全响应头和安全 Cookie 属性，密码必须使用 Argon2id 或 bcrypt 等慢哈希算法存储。</li>
+        </ol>
+
+        <h3>P1：建议增强</h3>
+        <ol>
+          <li>管理后台启用 MFA、RBAC、登录失败限流、关键操作审计和异常告警。</li>
+          <li>对登录、评论、搜索、列表分页和开放 API 设置分级限流，异常流量触发验证码、临时封禁或人工审查。</li>
+          <li>在 CI 或发布流程中加入依赖漏洞扫描、基础安全测试和配置检查。</li>
+        </ol>
+
+        <h3>P2：按风险启用</h3>
+        <ol>
+          <li>对高价值内容启用更严格的反爬策略，包括行为分析、蜜罐链接、搜索引擎真实性验证和法律声明。</li>
+          <li>对私密图片或会员内容启用鉴权访问，避免静态直链绕过权限控制。</li>
+          <li>对重要数据制定恢复时间目标和恢复点目标，并定期进行恢复演练。</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>六、结论</h2>
+      <p>原文可以保留大部分安全主题，但建议从“罗列措施”升级为“安全基线文档”。最优先的修改是补齐优先级、验收标准和责任归属，同时修正前端签名密钥、隐藏后台路径、图片内容扫描等容易误用的表述。</p>
+    </section>
+  </main>
+</body>
+</html>
