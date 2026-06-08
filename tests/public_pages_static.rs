@@ -91,6 +91,8 @@ async fn home_page_renders_public_articles_as_html() {
         body.contains("<link rel=\"stylesheet\" href=\"/assets/site.css\">"),
         "{body}"
     );
+    assert!(body.contains("href=\"/admin/\""), "{body}");
+    assert!(body.contains("data-nav-key=\"latest\" class=\"font-interface-md text-interface-md text-primary font-bold border-b-2 border-primary pb-1\""), "{body}");
     assert!(body.contains("action=\"/search\""), "{body}");
     assert!(body.contains("data-newsletter-form"), "{body}");
     assert!(body.contains("id=\"categories\""), "{body}");
@@ -222,6 +224,8 @@ async fn categories_index_renders_topic_browse_from_snapshot() {
     assert!(body.contains("3 篇文章"), "{body}");
     assert!(body.contains("href=\"/categories/technology\""), "{body}");
     assert!(body.contains("href=\"/categories/design\""), "{body}");
+    assert!(body.contains("data-nav-key=\"categories\" class=\"font-interface-md text-interface-md text-primary font-bold border-b-2 border-primary pb-1\""), "{body}");
+    assert!(body.contains("data-nav-key=\"latest\" class=\"font-interface-md text-interface-md text-on-surface-variant hover:text-primary transition-colors duration-200\""), "{body}");
     assert!(body.contains("Technology"), "{body}");
     assert!(body.contains("Design"), "{body}");
     assert!(body.contains("2 篇文章"), "{body}");
@@ -249,6 +253,8 @@ async fn about_page_renders_editorial_identity_from_snapshot() {
     assert!(body.contains("清晰表达"), "{body}");
     assert!(body.contains("data-newsletter-form"), "{body}");
     assert!(body.contains("href=\"/categories\""), "{body}");
+    assert!(body.contains("data-nav-key=\"about\" class=\"font-interface-md text-interface-md text-primary font-bold border-b-2 border-primary pb-1\""), "{body}");
+    assert!(body.contains("data-nav-key=\"latest\" class=\"font-interface-md text-interface-md text-on-surface-variant hover:text-primary transition-colors duration-200\""), "{body}");
 }
 
 #[tokio::test]
@@ -393,12 +399,91 @@ async fn static_assets_and_uploads_are_served_and_reject_path_traversal() {
     let dir = tempfile::tempdir().unwrap();
     let assets = dir.path().join("assets");
     let uploads = dir.path().join("uploads");
+    let admin = dir.path().join("admin");
+    let admin_assets = admin.join("assets");
     fs::create_dir_all(&assets).unwrap();
     fs::create_dir_all(&uploads).unwrap();
+    fs::create_dir_all(&admin_assets).unwrap();
     fs::write(assets.join("site.js"), "console.log('asset');").unwrap();
     fs::write(uploads.join("cover.txt"), "upload file").unwrap();
+    fs::write(admin.join("index.html"), "<div id=\"root\">admin app</div>").unwrap();
+    fs::write(admin_assets.join("app.js"), "console.log('admin');").unwrap();
 
     let router = app::router_with_pool_and_paths(seeded_pool().await, assets, uploads);
+
+    let admin_redirect = router
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri("/admin")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert!(admin_redirect.status().is_redirection());
+    assert_eq!(
+        admin_redirect
+            .headers()
+            .get("location")
+            .unwrap()
+            .to_str()
+            .unwrap(),
+        "/admin/"
+    );
+
+    let admin_index = router
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri("/admin/")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(admin_index.status(), StatusCode::OK);
+    assert_eq!(
+        admin_index.headers().get("content-type").unwrap(),
+        "text/html; charset=utf-8"
+    );
+    assert_eq!(
+        body_text(admin_index).await,
+        "<div id=\"root\">admin app</div>"
+    );
+
+    let admin_client_route = router
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri("/admin/login")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(admin_client_route.status(), StatusCode::OK);
+    assert_eq!(
+        body_text(admin_client_route).await,
+        "<div id=\"root\">admin app</div>"
+    );
+
+    let admin_asset = router
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri("/admin/assets/app.js")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(admin_asset.status(), StatusCode::OK);
+    assert_eq!(
+        admin_asset.headers().get("content-type").unwrap(),
+        "application/javascript; charset=utf-8"
+    );
+    assert_eq!(body_text(admin_asset).await, "console.log('admin');");
 
     let asset = router
         .clone()

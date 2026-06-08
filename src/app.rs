@@ -4,7 +4,7 @@ use axum::{
         HeaderValue, Request,
     },
     middleware::{self, Next},
-    response::Response,
+    response::{Redirect, Response},
     routing::{delete, get, post, put},
     Json, Router,
 };
@@ -33,8 +33,8 @@ use crate::http_interactions::{
 };
 use crate::http_public::{
     about_page, archive_page, article_detail, article_page, author_page, categories_index_page,
-    category_page, home_page, list_articles, not_found_page, search_page, serve_asset,
-    serve_upload, tag_page, PublicState,
+    category_page, home_page, list_articles, not_found_page, search_page, serve_admin_app,
+    serve_admin_asset, serve_asset, serve_upload, tag_page, PublicState,
 };
 use crate::session::RedisSessionStore;
 
@@ -69,9 +69,15 @@ pub fn router_with_pool_and_config(
     upload_dir: impl Into<PathBuf>,
     config: Config,
 ) -> Router {
+    let assets_dir = assets_dir.into();
+    let admin_dir = assets_dir
+        .parent()
+        .map(|parent| parent.join("admin"))
+        .unwrap_or_else(|| PathBuf::from("public/admin"));
     let state = PublicState {
         db: pool,
-        assets_dir: assets_dir.into(),
+        assets_dir,
+        admin_dir,
         upload_dir: upload_dir.into(),
         session_store: RedisSessionStore::new(&config),
         config,
@@ -88,6 +94,10 @@ pub fn router_with_pool_and_config(
         .route("/articles/:slug", get(article_page))
         .route("/categories/:slug", get(category_page))
         .route("/assets/*path", get(serve_asset))
+        .route("/admin", get(admin_redirect))
+        .route("/admin/", get(serve_admin_app))
+        .route("/admin/assets/*path", get(serve_admin_asset))
+        .route("/admin/*path", get(serve_admin_app))
         .route("/uploads/*path", get(serve_upload))
         .route("/api/articles", get(list_articles))
         .route("/api/articles/:slug", get(article_detail))
@@ -135,6 +145,10 @@ pub fn router_with_pool_and_config(
 
 async fn healthz() -> Json<serde_json::Value> {
     Json(json!({ "status": "ok" }))
+}
+
+async fn admin_redirect() -> Redirect {
+    Redirect::temporary("/admin/")
 }
 
 async fn apply_response_contract(request: Request<axum::body::Body>, next: Next) -> Response {
