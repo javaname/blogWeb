@@ -97,8 +97,11 @@ if (!appShell.includes('ThemeSwitcher')) {
 if (!loginPage.includes('ThemeSwitcher')) {
   fail('client/src/pages/Login.jsx: theme switcher is missing from login page');
 }
-if (!appShell.includes('useAdminRouteMotion') || !appShell.includes('useAdminRouteMotion(pathname)')) {
+if (!appShell.includes('useAdminRouteMotion') || !appShell.includes('useAdminRouteMotion()')) {
   fail('client/src/components/AppShell.jsx: JS route motion hook is not wired');
+}
+if (appShell.includes('useAdminRouteMotion(pathname)')) {
+  fail('client/src/components/AppShell.jsx: route motion hook must not subscribe to pathname changes');
 }
 for (const [route, page, navKey] of [
   ['media', 'Media', 'shell.navMedia'],
@@ -141,6 +144,9 @@ if (!fs.existsSync(adminMotionPath)) {
     if (!adminMotion.includes(snippet)) {
       fail(`client/src/hooks/useAdminRouteMotion.js: ${snippet} is missing`);
     }
+  }
+  if (/\},\s*\[pathname\]\);/.test(adminMotion)) {
+    fail('client/src/hooks/useAdminRouteMotion.js: route motion must not replay on every pathname change');
   }
 }
 

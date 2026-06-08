@@ -32,7 +32,7 @@ export default function AppShell() {
   const { user, logout } = useAuth();
   const { t } = useI18n();
   const [openPanel, setOpenPanel] = useState('');
-  useAdminRouteMotion(pathname);
+  useAdminRouteMotion();
 
   const adminActivity = useMemo(
     () => [

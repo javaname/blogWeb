@@ -15,7 +15,7 @@ function prefersReducedMotion() {
   return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 }
 
-export default function useAdminRouteMotion(pathname) {
+export default function useAdminRouteMotion() {
   useEffect(() => {
     if (typeof window === 'undefined' || prefersReducedMotion()) {
       return undefined;
@@ -48,5 +48,5 @@ export default function useAdminRouteMotion(pathname) {
       window.cancelAnimationFrame(frameId);
       window.clearTimeout(cleanupId);
     };
-  }, [pathname]);
+  }, []);
 }
