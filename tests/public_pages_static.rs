@@ -87,6 +87,10 @@ async fn home_page_renders_public_articles_as_html() {
     assert!(body.contains("data-page=\"home\""), "{body}");
     assert!(body.contains("data-search-toggle"), "{body}");
     assert!(body.contains("data-search-form"), "{body}");
+    assert!(
+        body.contains("<link rel=\"stylesheet\" href=\"/assets/site.css\">"),
+        "{body}"
+    );
     assert!(body.contains("action=\"/search\""), "{body}");
     assert!(body.contains("data-newsletter-form"), "{body}");
     assert!(body.contains("id=\"categories\""), "{body}");
