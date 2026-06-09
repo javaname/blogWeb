@@ -12,7 +12,10 @@ use serde_json::json;
 use sha2::{Digest, Sha256};
 use sqlx::{Pool, Row};
 
-use crate::{db::Db as DbBackend, error::Result, http_public::PublicState, session::SessionUser};
+use crate::{
+    admin_permissions, db::Db as DbBackend, error::Result, http_public::PublicState,
+    session::SessionUser,
+};
 
 #[derive(Debug, Deserialize)]
 pub struct LoginRequest {
@@ -44,6 +47,8 @@ struct AdminUser {
     username: String,
     email: String,
     role: String,
+    permissions: Vec<String>,
+    menus: Vec<admin_permissions::MenuDefinition>,
 }
 
 pub async fn login(
@@ -79,6 +84,8 @@ pub async fn login(
         .session_store
         .create(user.id, user.username.clone(), user.role.clone())
         .await?;
+    let permissions = admin_permissions::role_permissions(&state, &user.role).await?;
+    let menus = admin_permissions::menus_for_role(&state, &user.role).await?;
 
     let mut response = Json(LoginResponse {
         user: AdminUser {
@@ -86,6 +93,8 @@ pub async fn login(
             username: user.username,
             email: user.email,
             role: user.role,
+            permissions,
+            menus,
         },
     })
     .into_response();
@@ -271,11 +280,19 @@ pub async fn current_user(State(state): State<PublicState>, headers: HeaderMap) 
     let Some(user) = session_user(&state, &headers).await else {
         return auth_required();
     };
+    let permissions = admin_permissions::role_permissions(&state, &user.role)
+        .await
+        .unwrap_or_default();
+    let menus = admin_permissions::menus_for_role(&state, &user.role)
+        .await
+        .unwrap_or_default();
     Json(json!({
         "user": {
             "id": user.id,
             "username": user.username,
             "role": user.role,
+            "permissions": permissions,
+            "menus": menus,
         }
     }))
     .into_response()

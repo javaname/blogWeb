@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminIcon from '../components/AdminIcon';
+import { useAuth } from '../contexts/AuthContext';
 import { useI18n } from '../contexts/I18nContext';
 import { userDisplayName } from '../i18n/displayNames';
-import { createUser, deleteUser, fetchUsers, updateUserRole } from '../utils/adminApi';
+import { createUser, deleteUser, fetchUsers, updateRolePermissions, updateUserRole } from '../utils/adminApi';
 import { showAdminToast } from '../utils/api';
 import { formatDateTime } from '../utils/format';
 
@@ -42,14 +43,23 @@ function articleCountLabel(t, user) {
   return count > 0 ? t('users.articleCount', { count }) : t('users.noArticles');
 }
 
+function normalizeRolePermissionForm(roles) {
+  return (roles || []).map((role) => ({
+    key: role.key,
+    permissions: [...(role.permissions || [])],
+  }));
+}
+
 export default function Users() {
   const navigate = useNavigate();
+  const { refreshCurrentUser } = useAuth();
   const { locale, t } = useI18n();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
   const [permissions, setPermissions] = useState([]);
+  const [rolePermissionForm, setRolePermissionForm] = useState([]);
   const [form, setForm] = useState(initialForm);
   const [message, setMessage] = useState('');
 
@@ -60,6 +70,7 @@ export default function Users() {
       setUsers(payload?.list || []);
       setRoles(payload?.roles || []);
       setPermissions(payload?.permissions || []);
+      setRolePermissionForm(normalizeRolePermissionForm(payload?.roles || []));
     } finally {
       setLoading(false);
     }
@@ -106,6 +117,7 @@ export default function Users() {
     setMessage(successMessage);
     showAdminToast('success', successMessage);
     await loadUsers();
+    await refreshCurrentUser();
   }
 
   async function handleDelete(id) {
@@ -114,6 +126,42 @@ export default function Users() {
     setMessage(successMessage);
     showAdminToast('success', successMessage);
     await loadUsers();
+  }
+
+  function handleRolePermissionToggle(roleKey, permissionKey) {
+    setRolePermissionForm((current) =>
+      current.map((role) => {
+        if (role.key !== roleKey) {
+          return role;
+        }
+        const exists = role.permissions.includes(permissionKey);
+        return {
+          ...role,
+          permissions: exists
+            ? role.permissions.filter((permission) => permission !== permissionKey)
+            : [...role.permissions, permissionKey],
+        };
+      }),
+    );
+  }
+
+  async function handleRolePermissionsSubmit(event) {
+    event.preventDefault();
+    setSaving(true);
+    setMessage('');
+    try {
+      const payload = await updateRolePermissions({ roles: rolePermissionForm });
+      setRoles(payload?.roles || []);
+      setPermissions(payload?.permissions || permissions);
+      setRolePermissionForm(normalizeRolePermissionForm(payload?.roles || []));
+      const successMessage = t('users.rolePermissionsSaved');
+      setMessage(successMessage);
+      showAdminToast('success', successMessage);
+      await loadUsers();
+      await refreshCurrentUser();
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -291,6 +339,50 @@ export default function Users() {
           </form>
 
           <div className="admin-user-permissions">
+            <form className="admin-role-permissions" data-role-permissions-form onSubmit={handleRolePermissionsSubmit}>
+              <div className="admin-panel__head admin-panel__head--stacked">
+                <div>
+                  <h3>{t('users.rolePermissionsTitle')}</h3>
+                  <p>{t('users.rolePermissionsDesc')}</p>
+                </div>
+              </div>
+              <div className="admin-role-permission-list">
+                {rolePermissionForm.map((role) => (
+                  <div key={role.key} className="admin-role-permission-row">
+                    <div className="admin-role-permission-row__head">
+                      <strong>{roleLabel(t, role.key)}</strong>
+                      <span>{t('users.rolePermissionCount', { count: role.permissions.length })}</span>
+                    </div>
+                    <div className="admin-role-permission-options">
+                      {permissions.map((permission) => (
+                        <label key={permission.key} className="admin-permission-check">
+                          <input
+                            type="checkbox"
+                            checked={role.permissions.includes(permission.key)}
+                            onChange={() => handleRolePermissionToggle(role.key, permission.key)}
+                          />
+                          <span>{permission.label || t(`users.permissionLabels.${permission.key}`)}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="admin-form__actions">
+                <button type="submit" className="admin-primary-button" disabled={saving || loading}>
+                  {saving ? t('common.saving') : t('users.saveRolePermissions')}
+                </button>
+                <button
+                  type="button"
+                  className="admin-secondary-button"
+                  onClick={() => setRolePermissionForm(normalizeRolePermissionForm(roles))}
+                  disabled={saving}
+                >
+                  {t('common.reset')}
+                </button>
+              </div>
+            </form>
+
             <div className="admin-panel__head admin-panel__head--stacked">
               <div>
                 <h3>{t('users.permissionsTitle')}</h3>

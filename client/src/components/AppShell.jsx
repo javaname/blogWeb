@@ -9,19 +9,22 @@ import ThemeSwitcher from './ThemeSwitcher';
 import useAdminRouteMotion from '../hooks/useAdminRouteMotion';
 
 const navItems = [
-  { key: '/dashboard', labelKey: 'shell.navDashboard', icon: 'dashboard' },
-  { key: '/posts', labelKey: 'shell.navPosts', icon: 'article' },
-  { key: '/categories', labelKey: 'shell.navCategories', icon: 'category' },
-  { key: '/comments', labelKey: 'shell.navComments', icon: 'comment' },
-  { key: '/media', labelKey: 'shell.navMedia', icon: 'image' },
-  { key: '/users', labelKey: 'shell.navUsers', icon: 'group' },
-  { key: '/analytics', labelKey: 'shell.navAnalytics', icon: 'trending_up' },
-  { key: '/settings', labelKey: 'shell.navSettings', icon: 'settings' },
+  { key: '/dashboard', labelKey: 'shell.navDashboard', icon: 'dashboard', permission: null },
+  { key: '/posts', labelKey: 'shell.navPosts', icon: 'article', permission: 'publish' },
+  { key: '/categories', labelKey: 'shell.navCategories', icon: 'category', permission: 'publish' },
+  { key: '/comments', labelKey: 'shell.navComments', icon: 'comment', permission: 'moderate' },
+  { key: '/media', labelKey: 'shell.navMedia', icon: 'image', permission: 'media' },
+  { key: '/users', labelKey: 'shell.navUsers', icon: 'group', permission: 'users' },
+  { key: '/analytics', labelKey: 'shell.navAnalytics', icon: 'trending_up', permission: 'analytics' },
+  { key: '/settings', labelKey: 'shell.navSettings', icon: 'settings', permission: 'settings' },
 ];
 
 function isActive(pathname, itemKey) {
   if (itemKey === '/posts') {
     return pathname === '/posts' || pathname.startsWith('/articles/');
+  }
+  if (itemKey === '/users') {
+    return pathname === '/users' || pathname.startsWith('/users/');
   }
   return pathname === itemKey;
 }
@@ -33,6 +36,22 @@ export default function AppShell() {
   const { t } = useI18n();
   const [openPanel, setOpenPanel] = useState('');
   useAdminRouteMotion();
+
+  const permissions = user?.permissions || [];
+  const menus = user?.menus || [];
+  const menuPaths = useMemo(() => new Set(menus.map((menu) => menu.path)), [menus]);
+  const canPublish = permissions.includes('publish') || menuPaths.has('/posts');
+  const visibleNavItems = useMemo(() => {
+    return navItems.filter((item) => {
+      if (!item.permission) {
+        return true;
+      }
+      if (menuPaths.size > 0) {
+        return menuPaths.has(item.key);
+      }
+      return permissions.includes(item.permission);
+    });
+  }, [menuPaths, permissions]);
 
   const adminActivity = useMemo(
     () => [
@@ -104,7 +123,7 @@ export default function AppShell() {
         </div>
 
         <nav className="admin-nav">
-          {navItems.map((item) => (
+          {visibleNavItems.map((item) => (
             <button
               key={item.key}
               type="button"
@@ -118,14 +137,16 @@ export default function AppShell() {
         </nav>
 
         <div className="admin-sidebar__footer">
-          <button
-            type="button"
-            className="admin-primary-button admin-primary-button--full"
-            onClick={() => navigate('/articles/new')}
-          >
-            <AdminIcon name="add" />
-            <span>{t('common.newPost')}</span>
-          </button>
+          {canPublish ? (
+            <button
+              type="button"
+              className="admin-primary-button admin-primary-button--full"
+              onClick={() => navigate('/articles/new')}
+            >
+              <AdminIcon name="add" />
+              <span>{t('common.newPost')}</span>
+            </button>
+          ) : null}
 
           <div className="admin-usercard">
             <img
@@ -142,6 +163,10 @@ export default function AppShell() {
 
       <div className="admin-main">
         <header className="admin-topbar">
+          <button type="button" className="admin-back-button" onClick={() => navigate(-1)} aria-label={t('common.back')}>
+            <AdminIcon name="chevron_left" />
+            <span>{t('common.back')}</span>
+          </button>
           <div className="admin-topbar__actions">
             <LanguageSwitcher compact />
             <ThemeSwitcher />

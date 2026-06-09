@@ -10,11 +10,12 @@ use sqlx::Row;
 use std::path::PathBuf;
 
 use crate::{
-    admin_auth::{auth_required, session_user},
+    admin_permissions::{
+        self, require_permission_csrf, PERMISSION_MODERATE, PERMISSION_PUBLISH, PERMISSION_SETTINGS,
+    },
     error::Result,
     http_public::PublicState,
     renderer,
-    session::SessionUser,
 };
 
 #[derive(Debug, Deserialize)]
@@ -51,8 +52,8 @@ pub async fn create_category(
     headers: HeaderMap,
     Json(request): Json<CreateCategoryRequest>,
 ) -> Result<Response> {
-    let Some(_) = require_csrf(&state, &headers).await else {
-        return Ok(csrf_error(&state, &headers).await);
+    if let Err(response) = require_permission_csrf(&state, &headers, PERMISSION_PUBLISH).await {
+        return Ok(response);
     };
 
     let name = request.name.trim();
@@ -113,8 +114,9 @@ pub async fn create_article(
     headers: HeaderMap,
     Json(request): Json<CreateArticleRequest>,
 ) -> Result<Response> {
-    let Some(user) = require_csrf(&state, &headers).await else {
-        return Ok(csrf_error(&state, &headers).await);
+    let user = match require_permission_csrf(&state, &headers, PERMISSION_PUBLISH).await {
+        Ok(user) => user,
+        Err(response) => return Ok(response),
     };
 
     let title = request.title.trim();
@@ -237,8 +239,8 @@ pub async fn update_comment_status(
     Path(id): Path<i64>,
     Json(request): Json<UpdateCommentStatusRequest>,
 ) -> Result<Response> {
-    let Some(_) = require_csrf(&state, &headers).await else {
-        return Ok(csrf_error(&state, &headers).await);
+    if let Err(response) = require_permission_csrf(&state, &headers, PERMISSION_MODERATE).await {
+        return Ok(response);
     };
     if !matches!(request.status.as_str(), "approved" | "pending" | "rejected") {
         return Ok(json_error(
@@ -280,8 +282,8 @@ pub async fn update_article(
     Path(id): Path<i64>,
     Json(raw): Json<Value>,
 ) -> Result<Response> {
-    let Some(_) = require_csrf(&state, &headers).await else {
-        return Ok(csrf_error(&state, &headers).await);
+    if let Err(response) = require_permission_csrf(&state, &headers, PERMISSION_PUBLISH).await {
+        return Ok(response);
     };
     let Some(object) = raw.as_object() else {
         return Ok(json_error(
@@ -467,8 +469,8 @@ pub async fn delete_article(
     headers: HeaderMap,
     Path(id): Path<i64>,
 ) -> Result<Response> {
-    let Some(_) = require_csrf(&state, &headers).await else {
-        return Ok(csrf_error(&state, &headers).await);
+    if let Err(response) = require_permission_csrf(&state, &headers, PERMISSION_PUBLISH).await {
+        return Ok(response);
     };
     let slug: Option<String> =
         sqlx::query_scalar(crate::db::sql("SELECT slug FROM articles WHERE id = ?"))
@@ -505,8 +507,8 @@ pub async fn update_category(
     Path(id): Path<i64>,
     Json(request): Json<Value>,
 ) -> Result<Response> {
-    let Some(_) = require_csrf(&state, &headers).await else {
-        return Ok(csrf_error(&state, &headers).await);
+    if let Err(response) = require_permission_csrf(&state, &headers, PERMISSION_PUBLISH).await {
+        return Ok(response);
     };
     let row = sqlx::query(crate::db::sql(
         "SELECT name, slug, sort_order FROM categories WHERE id = ?",
@@ -588,8 +590,8 @@ pub async fn delete_category(
     headers: HeaderMap,
     Path(id): Path<i64>,
 ) -> Result<Response> {
-    let Some(_) = require_csrf(&state, &headers).await else {
-        return Ok(csrf_error(&state, &headers).await);
+    if let Err(response) = require_permission_csrf(&state, &headers, PERMISSION_PUBLISH).await {
+        return Ok(response);
     };
     let exists: i64 = sqlx::query_scalar(crate::db::sql(
         "SELECT COUNT(*) FROM categories WHERE id = ?",
@@ -631,8 +633,8 @@ pub async fn sort_categories(
     headers: HeaderMap,
     Json(request): Json<SortCategoriesRequest>,
 ) -> Result<Response> {
-    let Some(_) = require_csrf(&state, &headers).await else {
-        return Ok(csrf_error(&state, &headers).await);
+    if let Err(response) = require_permission_csrf(&state, &headers, PERMISSION_PUBLISH).await {
+        return Ok(response);
     };
     if request.ids.is_empty() {
         return Ok(json_error(
@@ -658,8 +660,8 @@ pub async fn delete_comment(
     headers: HeaderMap,
     Path(id): Path<i64>,
 ) -> Result<Response> {
-    let Some(_) = require_csrf(&state, &headers).await else {
-        return Ok(csrf_error(&state, &headers).await);
+    if let Err(response) = require_permission_csrf(&state, &headers, PERMISSION_MODERATE).await {
+        return Ok(response);
     };
     let result = sqlx::query(crate::db::sql("DELETE FROM comments WHERE id = ?"))
         .bind(id)
@@ -676,8 +678,8 @@ pub async fn update_settings(
     headers: HeaderMap,
     Json(request): Json<Value>,
 ) -> Result<Response> {
-    let Some(_) = require_csrf(&state, &headers).await else {
-        return Ok(csrf_error(&state, &headers).await);
+    if let Err(response) = require_permission_csrf(&state, &headers, PERMISSION_SETTINGS).await {
+        return Ok(response);
     };
     let mut title = state.config.site.title.clone();
     let mut description = state.config.site.description.clone();
@@ -754,8 +756,8 @@ pub async fn upload(
     headers: HeaderMap,
     mut multipart: Multipart,
 ) -> Result<Response> {
-    let Some(_) = require_csrf(&state, &headers).await else {
-        return Ok(csrf_error(&state, &headers).await);
+    if let Err(response) = require_permission_csrf(&state, &headers, PERMISSION_PUBLISH).await {
+        return Ok(response);
     };
     while let Some(field) = multipart
         .next_field()
@@ -818,32 +820,8 @@ pub async fn upload(
     ))
 }
 
-async fn require_csrf(state: &PublicState, headers: &HeaderMap) -> Option<SessionUser> {
-    let user = session_user(state, headers).await?;
-    let token = headers.get("x-csrf-token")?.to_str().ok()?;
-    if token == user.csrf_token {
-        Some(user)
-    } else {
-        None
-    }
-}
-
-async fn csrf_error(state: &PublicState, headers: &HeaderMap) -> Response {
-    if session_user(state, headers).await.is_none() {
-        return auth_required();
-    }
-    json_error(StatusCode::FORBIDDEN, "csrf_invalid", "CSRF token 无效")
-}
-
 fn json_error(status: StatusCode, code: &str, message: &str) -> Response {
-    (
-        status,
-        Json(json!({
-            "code": code,
-            "message": message,
-        })),
-    )
-        .into_response()
+    admin_permissions::json_error(status, code, message)
 }
 
 async fn next_unique_slug(state: &PublicState, base: &str) -> Result<String> {

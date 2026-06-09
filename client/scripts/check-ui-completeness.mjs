@@ -96,8 +96,19 @@ const loginPage = fs.readFileSync(path.join(projectRoot, 'client/src/pages/Login
 const appRoutes = fs.readFileSync(path.join(projectRoot, 'client/src/App.jsx'), 'utf8');
 const usersPage = fs.readFileSync(path.join(projectRoot, 'client/src/pages/Users.jsx'), 'utf8');
 const adminApi = fs.readFileSync(path.join(projectRoot, 'client/src/utils/adminApi.js'), 'utf8');
+const authContext = fs.readFileSync(path.join(projectRoot, 'client/src/contexts/AuthContext.jsx'), 'utf8');
 if (!appShell.includes('ThemeSwitcher')) {
   fail('client/src/components/AppShell.jsx: theme switcher is missing from admin shell');
+}
+for (const snippet of ['admin-back-button', 'navigate(-1)', 'common.back']) {
+  if (!appShell.includes(snippet)) {
+    fail(`client/src/components/AppShell.jsx: global back button snippet ${snippet} is missing`);
+  }
+}
+for (const snippet of ['permissions', 'menus', 'filter', 'permission']) {
+  if (!appShell.includes(snippet)) {
+    fail(`client/src/components/AppShell.jsx: permission-aware navigation snippet ${snippet} is missing`);
+  }
 }
 if (!loginPage.includes('ThemeSwitcher')) {
   fail('client/src/pages/Login.jsx: theme switcher is missing from login page');
@@ -133,6 +144,24 @@ for (const snippet of ['fetchUsers', 'createUser', 'updateUserRole', 'deleteUser
   if (!usersPage.includes(snippet)) {
     fail(`client/src/pages/Users.jsx: ${snippet} is not wired`);
   }
+}
+for (const snippet of ['updateRolePermissions', 'data-role-permissions-form', 'users.rolePermissionsTitle']) {
+  if (!usersPage.includes(snippet)) {
+    fail(`client/src/pages/Users.jsx: role permission editor snippet ${snippet} is missing`);
+  }
+}
+for (const snippet of ['refreshCurrentUser', 'fetchCurrentUser']) {
+  if (!authContext.includes(snippet)) {
+    fail(`client/src/contexts/AuthContext.jsx: current user permission refresh snippet ${snippet} is missing`);
+  }
+}
+for (const snippet of ['useAuth', 'refreshCurrentUser']) {
+  if (!usersPage.includes(snippet)) {
+    fail(`client/src/pages/Users.jsx: role permission changes must refresh current user via ${snippet}`);
+  }
+}
+if (!adminApi.includes('updateRolePermissions')) {
+  fail('client/src/utils/adminApi.js: updateRolePermissions is not wired');
 }
 for (const snippet of ['data-user-create-form', 'data-user-role-select', 'data-user-delete']) {
   if (!usersPage.includes(snippet)) {

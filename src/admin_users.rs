@@ -9,11 +9,14 @@ use serde_json::json;
 use sqlx::Row;
 
 use crate::{
-    admin_auth::{auth_required, session_user},
+    admin_permissions::{
+        self, normalize_role, permission_definitions, replace_role_permissions, require_permission,
+        require_permission_csrf, role_definitions, role_permissions, UpdateRolePermissionsRequest,
+        PERMISSION_USERS,
+    },
     db::DbRow,
     error::{AppError, Result},
     http_public::PublicState,
-    session::SessionUser,
 };
 
 #[derive(Debug, Deserialize)]
@@ -44,7 +47,7 @@ struct ManagedUser {
     role: String,
     article_count: i64,
     created_at: String,
-    permissions: Vec<&'static str>,
+    permissions: Vec<String>,
 }
 
 #[derive(Debug, Serialize)]
@@ -65,23 +68,8 @@ struct RelatedUserArticle {
     category: Option<RelatedArticleCategory>,
 }
 
-#[derive(Debug, Serialize)]
-struct PermissionDefinition {
-    key: &'static str,
-    label: &'static str,
-    description: &'static str,
-}
-
-#[derive(Debug, Serialize)]
-struct RoleDefinition {
-    key: &'static str,
-    label: &'static str,
-    description: &'static str,
-    permissions: Vec<&'static str>,
-}
-
 pub async fn list_users(State(state): State<PublicState>, headers: HeaderMap) -> Result<Response> {
-    if let Err(response) = require_admin(&state, &headers).await {
+    if let Err(response) = require_permission(&state, &headers, PERMISSION_USERS).await {
         return Ok(response);
     }
 
@@ -100,14 +88,14 @@ pub async fn list_users(State(state): State<PublicState>, headers: HeaderMap) ->
     )
     .fetch_all(&state.db)
     .await?;
-    let list = rows
-        .into_iter()
-        .map(managed_user_from_row)
-        .collect::<Result<Vec<_>>>()?;
+    let mut list = Vec::with_capacity(rows.len());
+    for row in rows {
+        list.push(managed_user_from_row(&state, row).await?);
+    }
 
     Ok(Json(json!({
         "list": list,
-        "roles": role_definitions(),
+        "roles": role_definitions(&state).await?,
         "permissions": permission_definitions(),
     }))
     .into_response())
@@ -118,7 +106,7 @@ pub async fn get_user(
     headers: HeaderMap,
     Path(id): Path<i64>,
 ) -> Result<Response> {
-    if let Err(response) = require_admin(&state, &headers).await {
+    if let Err(response) = require_permission(&state, &headers, PERMISSION_USERS).await {
         return Ok(response);
     }
     let Some(user) = fetch_managed_user(&state, id).await? else {
@@ -129,7 +117,7 @@ pub async fn get_user(
     Ok(Json(json!({
         "user": user,
         "recent_articles": recent_articles,
-        "roles": role_definitions(),
+        "roles": role_definitions(&state).await?,
         "permissions": permission_definitions(),
     }))
     .into_response())
@@ -140,7 +128,7 @@ pub async fn create_user(
     headers: HeaderMap,
     Json(request): Json<CreateUserRequest>,
 ) -> Result<Response> {
-    if let Err(response) = require_admin_csrf(&state, &headers).await {
+    if let Err(response) = require_permission_csrf(&state, &headers, PERMISSION_USERS).await {
         return Ok(response);
     }
 
@@ -206,7 +194,7 @@ pub async fn update_user(
     Path(id): Path<i64>,
     Json(request): Json<UpdateUserRequest>,
 ) -> Result<Response> {
-    let admin = match require_admin_csrf(&state, &headers).await {
+    let admin = match require_permission_csrf(&state, &headers, PERMISSION_USERS).await {
         Ok(admin) => admin,
         Err(response) => return Ok(response),
     };
@@ -267,7 +255,7 @@ pub async fn update_user(
     Ok(Json(json!({
         "user": user,
         "recent_articles": recent_articles,
-        "roles": role_definitions(),
+        "roles": role_definitions(&state).await?,
         "permissions": permission_definitions(),
     }))
     .into_response())
@@ -279,7 +267,7 @@ pub async fn update_user_role(
     Path(id): Path<i64>,
     Json(request): Json<UpdateUserRoleRequest>,
 ) -> Result<Response> {
-    let admin = match require_admin_csrf(&state, &headers).await {
+    let admin = match require_permission_csrf(&state, &headers, PERMISSION_USERS).await {
         Ok(admin) => admin,
         Err(response) => return Ok(response),
     };
@@ -312,7 +300,7 @@ pub async fn delete_user(
     headers: HeaderMap,
     Path(id): Path<i64>,
 ) -> Result<Response> {
-    let admin = match require_admin_csrf(&state, &headers).await {
+    let admin = match require_permission_csrf(&state, &headers, PERMISSION_USERS).await {
         Ok(admin) => admin,
         Err(response) => return Ok(response),
     };
@@ -345,39 +333,22 @@ pub async fn delete_user(
     Ok(Json(json!({ "deleted": true })).into_response())
 }
 
-async fn require_admin(
-    state: &PublicState,
-    headers: &HeaderMap,
-) -> std::result::Result<SessionUser, Response> {
-    let Some(user) = session_user(state, headers).await else {
-        return Err(auth_required());
+pub async fn update_role_permissions(
+    State(state): State<PublicState>,
+    headers: HeaderMap,
+    Json(request): Json<UpdateRolePermissionsRequest>,
+) -> Result<Response> {
+    let admin = match require_permission_csrf(&state, &headers, PERMISSION_USERS).await {
+        Ok(admin) => admin,
+        Err(response) => return Ok(response),
     };
-    if user.role != "admin" {
-        return Err(json_error(
-            StatusCode::FORBIDDEN,
-            "forbidden",
-            "需要管理员权限",
-        ));
-    }
-    Ok(user)
-}
-
-async fn require_admin_csrf(
-    state: &PublicState,
-    headers: &HeaderMap,
-) -> std::result::Result<SessionUser, Response> {
-    let user = require_admin(state, headers).await?;
-    let token = headers
-        .get("x-csrf-token")
-        .and_then(|value| value.to_str().ok());
-    if token == Some(user.csrf_token.as_str()) {
-        Ok(user)
-    } else {
-        Err(json_error(
-            StatusCode::FORBIDDEN,
-            "csrf_invalid",
-            "CSRF token 无效",
-        ))
+    match replace_role_permissions(&state, request, &admin).await? {
+        Ok(roles) => Ok(Json(json!({
+            "roles": roles,
+            "permissions": permission_definitions(),
+        }))
+        .into_response()),
+        Err(response) => Ok(response),
     }
 }
 
@@ -398,7 +369,10 @@ async fn fetch_managed_user(state: &PublicState, id: i64) -> Result<Option<Manag
     .bind(id)
     .fetch_optional(&state.db)
     .await?;
-    row.map(managed_user_from_row).transpose()
+    match row {
+        Some(row) => Ok(Some(managed_user_from_row(state, row).await?)),
+        None => Ok(None),
+    }
 }
 
 async fn fetch_related_user_articles(
@@ -446,95 +420,18 @@ async fn fetch_related_user_articles(
         .collect()
 }
 
-fn managed_user_from_row(row: DbRow) -> Result<ManagedUser> {
+async fn managed_user_from_row(state: &PublicState, row: DbRow) -> Result<ManagedUser> {
     let role: String = row.try_get("role")?;
+    let permissions = role_permissions(state, &role).await?;
     Ok(ManagedUser {
         id: row.try_get("id")?,
         username: row.try_get("username")?,
         email: row.try_get("email")?,
         article_count: row.try_get("article_count")?,
         created_at: row.try_get("created_at")?,
-        permissions: role_permissions(&role).to_vec(),
+        permissions,
         role,
     })
-}
-
-fn normalize_role(role: &str) -> Result<&'static str> {
-    match role.trim() {
-        "admin" => Ok("admin"),
-        "editor" => Ok("editor"),
-        "writer" => Ok("writer"),
-        "user" => Ok("user"),
-        _ => Err(AppError::HttpStatus(400, "invalid_params".into())),
-    }
-}
-
-fn role_permissions(role: &str) -> &'static [&'static str] {
-    match role {
-        "admin" => &["publish", "moderate", "settings", "users", "mcp"],
-        "editor" => &["publish", "moderate"],
-        "writer" => &["publish"],
-        _ => &[],
-    }
-}
-
-fn permission_definitions() -> Vec<PermissionDefinition> {
-    vec![
-        PermissionDefinition {
-            key: "publish",
-            label: "内容发布",
-            description: "创建、编辑和发布文章",
-        },
-        PermissionDefinition {
-            key: "moderate",
-            label: "评论审核",
-            description: "处理评论状态和删除违规内容",
-        },
-        PermissionDefinition {
-            key: "settings",
-            label: "系统设置",
-            description: "更新站点配置和运行策略",
-        },
-        PermissionDefinition {
-            key: "users",
-            label: "用户管理",
-            description: "新增用户并调整成员角色",
-        },
-        PermissionDefinition {
-            key: "mcp",
-            label: "MCP 接入",
-            description: "管理外部客户端和发布能力",
-        },
-    ]
-}
-
-fn role_definitions() -> Vec<RoleDefinition> {
-    vec![
-        RoleDefinition {
-            key: "admin",
-            label: "管理员",
-            description: "拥有全部后台权限",
-            permissions: role_permissions("admin").to_vec(),
-        },
-        RoleDefinition {
-            key: "editor",
-            label: "编辑",
-            description: "管理内容发布和评论审核",
-            permissions: role_permissions("editor").to_vec(),
-        },
-        RoleDefinition {
-            key: "writer",
-            label: "作者",
-            description: "创建和维护自己的内容",
-            permissions: role_permissions("writer").to_vec(),
-        },
-        RoleDefinition {
-            key: "user",
-            label: "普通用户",
-            description: "仅保留前台读者身份",
-            permissions: role_permissions("user").to_vec(),
-        },
-    ]
 }
 
 fn valid_username(value: &str) -> bool {
@@ -557,12 +454,5 @@ fn valid_email(value: &str) -> bool {
 }
 
 fn json_error(status: StatusCode, code: &str, message: &str) -> Response {
-    (
-        status,
-        Json(json!({
-            "code": code,
-            "message": message,
-        })),
-    )
-        .into_response()
+    admin_permissions::json_error(status, code, message)
 }

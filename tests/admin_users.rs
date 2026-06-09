@@ -172,6 +172,154 @@ async fn admin_user_routes_require_admin_role() {
 }
 
 #[tokio::test]
+async fn current_user_includes_role_permissions_and_allowed_menus() {
+    let redis = support::FakeRedis::start();
+    let router = support::router_with_redis(seeded_pool().await, &redis);
+    let (editor_cookie, _) = admin_session(router.clone(), "editor").await;
+
+    let (status, payload) = get_json(router, "/api/admin/me", Some(&editor_cookie)).await;
+
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(payload["user"]["role"], "editor");
+    assert!(payload["user"]["permissions"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|value| value == "publish"));
+    assert!(payload["user"]["permissions"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|value| value == "moderate"));
+    assert!(payload["user"]["menus"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|value| value["path"] == "/posts"));
+    assert!(payload["user"]["menus"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|value| value["path"] == "/comments"));
+    assert!(!payload["user"]["menus"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|value| value["path"] == "/users"));
+}
+
+#[tokio::test]
+async fn admin_can_update_role_permissions_and_existing_users_recalculate() {
+    let redis = support::FakeRedis::start();
+    let router = support::router_with_redis(seeded_pool().await, &redis);
+    let (admin_cookie, admin_csrf) = admin_session(router.clone(), "admin").await;
+
+    let (status, payload) = json_request(
+        router.clone(),
+        Method::PUT,
+        "/api/admin/role-permissions",
+        &admin_cookie,
+        &admin_csrf,
+        r#"{"roles":[
+            {"key":"admin","permissions":["publish","moderate","settings","users","mcp","media","analytics"]},
+            {"key":"editor","permissions":["publish","moderate","users","analytics"]},
+            {"key":"writer","permissions":["publish"]},
+            {"key":"user","permissions":[]}
+        ]}"#,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::OK);
+    let editor_role = payload["roles"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|role| role["key"] == "editor")
+        .unwrap();
+    assert!(editor_role["permissions"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|value| value == "users"));
+    assert!(editor_role["permissions"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|value| value == "analytics"));
+
+    let (editor_cookie, _) = admin_session(router.clone(), "editor").await;
+    let (me_status, me) = get_json(router.clone(), "/api/admin/me", Some(&editor_cookie)).await;
+    assert_eq!(me_status, StatusCode::OK);
+    assert!(me["user"]["permissions"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|value| value == "users"));
+    assert!(me["user"]["menus"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|value| value["path"] == "/users"));
+    assert!(me["user"]["menus"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|value| value["path"] == "/analytics"));
+
+    let (users_status, users) = get_json(router, "/api/admin/users", Some(&editor_cookie)).await;
+    assert_eq!(users_status, StatusCode::OK);
+    assert!(users["list"][1]["permissions"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|value| value == "users"));
+}
+
+#[tokio::test]
+async fn admin_cannot_remove_users_permission_from_own_role() {
+    let redis = support::FakeRedis::start();
+    let router = support::router_with_redis(seeded_pool().await, &redis);
+    let (admin_cookie, admin_csrf) = admin_session(router.clone(), "admin").await;
+
+    let (status, payload) = json_request(
+        router,
+        Method::PUT,
+        "/api/admin/role-permissions",
+        &admin_cookie,
+        &admin_csrf,
+        r#"{"roles":[
+            {"key":"admin","permissions":["publish","moderate","settings","mcp"]},
+            {"key":"editor","permissions":["publish","moderate"]},
+            {"key":"writer","permissions":["publish"]},
+            {"key":"user","permissions":[]}
+        ]}"#,
+    )
+    .await;
+
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_eq!(payload["code"], "invalid_params");
+}
+
+#[tokio::test]
+async fn backend_admin_routes_enforce_role_permissions() {
+    let redis = support::FakeRedis::start();
+    let router = support::router_with_redis(seeded_pool().await, &redis);
+    let (editor_cookie, _) = admin_session(router.clone(), "editor").await;
+
+    let (settings_status, settings) =
+        get_json(router.clone(), "/api/admin/settings", Some(&editor_cookie)).await;
+    assert_eq!(settings_status, StatusCode::FORBIDDEN);
+    assert_eq!(settings["code"], "forbidden");
+
+    let (articles_status, _) =
+        get_json(router.clone(), "/api/admin/articles", Some(&editor_cookie)).await;
+    assert_eq!(articles_status, StatusCode::OK);
+
+    let (comments_status, _) = get_json(router, "/api/admin/comments", Some(&editor_cookie)).await;
+    assert_eq!(comments_status, StatusCode::OK);
+}
+
+#[tokio::test]
 async fn admin_can_list_users_with_permissions_and_article_counts() {
     let redis = support::FakeRedis::start();
     let router = support::router_with_redis(seeded_pool().await, &redis);

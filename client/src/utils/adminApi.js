@@ -35,6 +35,10 @@ export function fetchCsrfToken() {
   return apiRequest('/admin/csrf-token');
 }
 
+export function fetchCurrentUser() {
+  return apiRequest('/admin/me');
+}
+
 export function fetchDashboard() {
   return apiRequest('/admin/dashboard');
 }
@@ -67,6 +71,13 @@ export function createUser(payload) {
 
 export function updateUser(id, payload) {
   return apiRequest(`/admin/users/${id}`, {
+    method: 'PUT',
+    body: payload,
+  });
+}
+
+export function updateRolePermissions(payload) {
+  return apiRequest('/admin/role-permissions', {
     method: 'PUT',
     body: payload,
   });

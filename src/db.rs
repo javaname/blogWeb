@@ -45,6 +45,11 @@ const MIGRATIONS: &[Migration] = &[
         filename: "005_email_registration.sql",
         sql: include_str!("../migrations/005_email_registration.sql"),
     },
+    Migration {
+        version: "006",
+        filename: "006_role_permissions.sql",
+        sql: include_str!("../migrations/006_role_permissions.sql"),
+    },
 ];
 
 const REQUIRED_SCHEMA: &[(&str, &[&str])] = &[
@@ -120,6 +125,7 @@ const REQUIRED_SCHEMA: &[(&str, &[&str])] = &[
         "email_verification_codes",
         &["id", "email", "code_hash", "expires_at", "used_at"],
     ),
+    ("role_permissions", &["role", "permission", "created_at"]),
 ];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

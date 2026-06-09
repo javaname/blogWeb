@@ -21,8 +21,8 @@ use crate::admin_read::{
     list_categories, list_comments, settings,
 };
 use crate::admin_users::{
-    create_user, delete_user, get_user, list_users as list_admin_users, update_user,
-    update_user_role,
+    create_user, delete_user, get_user, list_users as list_admin_users, update_role_permissions,
+    update_user, update_user_role,
 };
 use crate::admin_write::{
     create_article, create_category, delete_article, delete_category, delete_comment,
@@ -119,6 +119,7 @@ pub fn router_with_pool_and_config(
         .route("/api/admin/me", get(current_user))
         .route("/api/admin/dashboard", get(dashboard))
         .route("/api/admin/settings", get(settings).put(update_settings))
+        .route("/api/admin/role-permissions", put(update_role_permissions))
         .route("/api/admin/users", get(list_admin_users).post(create_user))
         .route("/api/admin/users/:id/role", put(update_user_role))
         .route(

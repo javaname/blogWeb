@@ -10,6 +10,9 @@ use sqlx::{QueryBuilder, Row};
 
 use crate::{
     admin_auth::{auth_required, session_user},
+    admin_permissions::{
+        require_permission, PERMISSION_MODERATE, PERMISSION_PUBLISH, PERMISSION_SETTINGS,
+    },
     db::Db as DbBackend,
     error::Result,
     http_public::PublicState,
@@ -159,8 +162,8 @@ pub async fn dashboard(State(state): State<PublicState>, headers: HeaderMap) -> 
 }
 
 pub async fn settings(State(state): State<PublicState>, headers: HeaderMap) -> Response {
-    if session_user(&state, &headers).await.is_none() {
-        return auth_required();
+    if let Err(response) = require_permission(&state, &headers, PERMISSION_SETTINGS).await {
+        return response;
     }
     let cfg = &state.config;
     Json(json!({
@@ -199,8 +202,8 @@ pub async fn list_articles(
     headers: HeaderMap,
     Query(query): Query<ArticleListQuery>,
 ) -> Result<Response> {
-    if session_user(&state, &headers).await.is_none() {
-        return Ok(auth_required());
+    if let Err(response) = require_permission(&state, &headers, PERMISSION_PUBLISH).await {
+        return Ok(response);
     }
 
     let page = normalize_page(query.page);
@@ -290,8 +293,8 @@ pub async fn get_article(
     headers: HeaderMap,
     Path(id): Path<i64>,
 ) -> Result<Response> {
-    if session_user(&state, &headers).await.is_none() {
-        return Ok(auth_required());
+    if let Err(response) = require_permission(&state, &headers, PERMISSION_PUBLISH).await {
+        return Ok(response);
     }
 
     let row = sqlx::query(crate::db::sql(
@@ -332,8 +335,8 @@ pub async fn list_categories(
     State(state): State<PublicState>,
     headers: HeaderMap,
 ) -> Result<Response> {
-    if session_user(&state, &headers).await.is_none() {
-        return Ok(auth_required());
+    if let Err(response) = require_permission(&state, &headers, PERMISSION_PUBLISH).await {
+        return Ok(response);
     }
 
     let rows = sqlx::query(
@@ -372,8 +375,8 @@ pub async fn list_comments(
     headers: HeaderMap,
     Query(query): Query<CommentListQuery>,
 ) -> Result<Response> {
-    if session_user(&state, &headers).await.is_none() {
-        return Ok(auth_required());
+    if let Err(response) = require_permission(&state, &headers, PERMISSION_MODERATE).await {
+        return Ok(response);
     }
 
     let page = normalize_page(query.page);

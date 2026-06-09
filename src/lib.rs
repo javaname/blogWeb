@@ -1,4 +1,5 @@
 pub mod admin_auth;
+pub mod admin_permissions;
 pub mod admin_read;
 pub mod admin_users;
 pub mod admin_write;

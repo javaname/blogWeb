@@ -1,6 +1,6 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchCsrfToken, login as loginApi, logout as logoutApi } from '../utils/adminApi';
+import { fetchCsrfToken, fetchCurrentUser, login as loginApi, logout as logoutApi } from '../utils/adminApi';
 import { clearCsrfToken, configureApiHandlers, setCsrfToken } from '../utils/api';
 
 const USER_STORAGE_KEY = 'blog_admin_user';
@@ -28,6 +28,18 @@ export function AuthProvider({ children }) {
   const navigate = useNavigate();
   const [user, setUser] = useState(() => readStoredUser());
   const [ready, setReady] = useState(false);
+
+  const applyUser = useCallback((nextUser) => {
+    persistUser(nextUser);
+    setUser((current) => (JSON.stringify(current) === JSON.stringify(nextUser) ? current : nextUser));
+  }, []);
+
+  const refreshCurrentUser = useCallback(async () => {
+    const currentUser = await fetchCurrentUser();
+    const nextUser = currentUser?.user || null;
+    applyUser(nextUser);
+    return nextUser;
+  }, [applyUser]);
 
   useEffect(() => {
     const handleUnauthorized = () => {
@@ -58,14 +70,15 @@ export function AuthProvider({ children }) {
       }
 
       try {
-        const result = await fetchCsrfToken();
+        const [csrf, currentUser] = await Promise.all([fetchCsrfToken(), fetchCurrentUser()]);
         if (mounted) {
-          setCsrfToken(result?.csrf_token || '');
+          const nextUser = currentUser?.user || user;
+          setCsrfToken(csrf?.csrf_token || '');
+          applyUser(nextUser);
         }
       } catch {
         if (mounted) {
-          persistUser(null);
-          setUser(null);
+          applyUser(null);
           clearCsrfToken();
         }
       } finally {
@@ -80,16 +93,15 @@ export function AuthProvider({ children }) {
     return () => {
       mounted = false;
     };
-  }, [user]);
+  }, [applyUser, user]);
 
-  async function login(username, password) {
+  const login = useCallback(async (username, password) => {
     const result = await loginApi({ username, password });
     const nextUser = result?.user || null;
     try {
       const csrf = await fetchCsrfToken();
       setCsrfToken(csrf?.csrf_token || '');
-      persistUser(nextUser);
-      setUser(nextUser);
+      applyUser(nextUser);
       return nextUser;
     } catch (err) {
       try {
@@ -98,21 +110,19 @@ export function AuthProvider({ children }) {
         // Best effort cleanup for sessions that cannot access the admin area.
       }
       clearCsrfToken();
-      persistUser(null);
-      setUser(null);
+      applyUser(null);
       throw err;
     }
-  }
+  }, [applyUser]);
 
-  async function logout() {
+  const logout = useCallback(async () => {
     try {
       await logoutApi();
     } finally {
       clearCsrfToken();
-      persistUser(null);
-      setUser(null);
+      applyUser(null);
     }
-  }
+  }, [applyUser]);
 
   const value = useMemo(
     () => ({
@@ -121,8 +131,9 @@ export function AuthProvider({ children }) {
       isAuthenticated: Boolean(user),
       login,
       logout,
+      refreshCurrentUser,
     }),
-    [ready, user],
+    [login, logout, ready, refreshCurrentUser, user],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
