@@ -264,6 +264,11 @@ async fn admin_can_update_role_permissions_and_existing_users_recalculate() {
         .as_array()
         .unwrap()
         .iter()
+        .any(|value| value["path"] == "/roles"));
+    assert!(me["user"]["menus"]
+        .as_array()
+        .unwrap()
+        .iter()
         .any(|value| value["path"] == "/analytics"));
 
     let (users_status, users) = get_json(router, "/api/admin/users", Some(&editor_cookie)).await;

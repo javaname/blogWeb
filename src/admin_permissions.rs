@@ -246,6 +246,12 @@ pub fn menu_definitions() -> Vec<MenuDefinition> {
             permission: Some(PERMISSION_USERS),
         },
         MenuDefinition {
+            path: "/roles",
+            label_key: "shell.navRoles",
+            icon: "tune",
+            permission: Some(PERMISSION_USERS),
+        },
+        MenuDefinition {
             path: "/analytics",
             label_key: "shell.navAnalytics",
             icon: "trending_up",

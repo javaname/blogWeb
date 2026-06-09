@@ -15,6 +15,7 @@ const navItems = [
   { key: '/comments', labelKey: 'shell.navComments', icon: 'comment', permission: 'moderate' },
   { key: '/media', labelKey: 'shell.navMedia', icon: 'image', permission: 'media' },
   { key: '/users', labelKey: 'shell.navUsers', icon: 'group', permission: 'users' },
+  { key: '/roles', labelKey: 'shell.navRoles', icon: 'tune', permission: 'users' },
   { key: '/analytics', labelKey: 'shell.navAnalytics', icon: 'trending_up', permission: 'analytics' },
   { key: '/settings', labelKey: 'shell.navSettings', icon: 'settings', permission: 'settings' },
 ];
@@ -25,6 +26,9 @@ function isActive(pathname, itemKey) {
   }
   if (itemKey === '/users') {
     return pathname === '/users' || pathname.startsWith('/users/');
+  }
+  if (itemKey === '/roles') {
+    return pathname === '/roles';
   }
   return pathname === itemKey;
 }

@@ -9,6 +9,7 @@ import Login from './pages/Login';
 import Analytics from './pages/Analytics';
 import Media from './pages/Media';
 import Posts from './pages/Posts';
+import RolePermissions from './pages/RolePermissions';
 import Settings from './pages/Settings';
 import UserDetail from './pages/UserDetail';
 import Users from './pages/Users';
@@ -35,6 +36,7 @@ export default function App() {
         <Route path="media" element={<Media />} />
         <Route path="users" element={<Users />} />
         <Route path="users/:id" element={<UserDetail />} />
+        <Route path="roles" element={<RolePermissions />} />
         <Route path="analytics" element={<Analytics />} />
         <Route path="settings" element={<Settings />} />
       </Route>

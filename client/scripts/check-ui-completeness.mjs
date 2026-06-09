@@ -95,6 +95,10 @@ const appShell = fs.readFileSync(path.join(projectRoot, 'client/src/components/A
 const loginPage = fs.readFileSync(path.join(projectRoot, 'client/src/pages/Login.jsx'), 'utf8');
 const appRoutes = fs.readFileSync(path.join(projectRoot, 'client/src/App.jsx'), 'utf8');
 const usersPage = fs.readFileSync(path.join(projectRoot, 'client/src/pages/Users.jsx'), 'utf8');
+const rolePermissionsPagePath = path.join(projectRoot, 'client/src/pages/RolePermissions.jsx');
+const rolePermissionsPage = fs.existsSync(rolePermissionsPagePath)
+  ? fs.readFileSync(rolePermissionsPagePath, 'utf8')
+  : '';
 const adminApi = fs.readFileSync(path.join(projectRoot, 'client/src/utils/adminApi.js'), 'utf8');
 const authContext = fs.readFileSync(path.join(projectRoot, 'client/src/contexts/AuthContext.jsx'), 'utf8');
 if (!appShell.includes('ThemeSwitcher')) {
@@ -122,6 +126,7 @@ if (appShell.includes('useAdminRouteMotion(pathname)')) {
 for (const [route, page, navKey] of [
   ['media', 'Media', 'shell.navMedia'],
   ['users', 'Users', 'shell.navUsers'],
+  ['roles', 'RolePermissions', 'shell.navRoles'],
   ['analytics', 'Analytics', 'shell.navAnalytics'],
 ]) {
   if (!appRoutes.includes(`path="${route}"`) || !appRoutes.includes(`<${page} />`)) {
@@ -146,8 +151,13 @@ for (const snippet of ['fetchUsers', 'createUser', 'updateUserRole', 'deleteUser
   }
 }
 for (const snippet of ['updateRolePermissions', 'data-role-permissions-form', 'users.rolePermissionsTitle']) {
-  if (!usersPage.includes(snippet)) {
-    fail(`client/src/pages/Users.jsx: role permission editor snippet ${snippet} is missing`);
+  if (usersPage.includes(snippet)) {
+    fail(`client/src/pages/Users.jsx: role permission editor snippet ${snippet} must move to RolePermissions.jsx`);
+  }
+}
+for (const snippet of ['updateRolePermissions', 'data-role-permissions-form', 'users.rolePermissionsTitle', 'refreshCurrentUser']) {
+  if (!rolePermissionsPage.includes(snippet)) {
+    fail(`client/src/pages/RolePermissions.jsx: role permission editor snippet ${snippet} is missing`);
   }
 }
 for (const snippet of ['refreshCurrentUser', 'fetchCurrentUser']) {
