@@ -214,30 +214,36 @@ export default function UserDetail() {
                 <p>{t('users.relatedArticlesDesc')}</p>
               </div>
             </div>
-            <div className="admin-list-table admin-list-table--related-articles">
+            <div className="admin-related-article-list">
               {recentArticles.map((article) => (
-                <div key={article.id} className="admin-list-table__row admin-related-article-row">
-                  <div>
+                <article key={article.id} className="admin-related-article-card">
+                  <div className="admin-related-article-card__body">
                     <strong>{article.title}</strong>
                     <p>{article.slug}</p>
                   </div>
-                  <span className={`admin-status-pill ${article.status === 'published' ? 'is-published' : 'is-draft'}`}>
-                    {statusLabel(t, article.status)}
-                  </span>
-                  <span className="admin-category-pill">
-                    {categoryDisplayName(t, article.category) || t('common.uncategorized')}
-                  </span>
-                  <span>{formatDateTime(article.published_at || article.updated_at, locale)}</span>
-                  <button
-                    type="button"
-                    className="admin-icon-button"
-                    onClick={() => navigate(`/articles/${article.id}`)}
-                    aria-label={t('common.edit')}
-                    title={t('common.edit')}
-                  >
-                    <AdminIcon name="edit" />
-                  </button>
-                </div>
+                  <div className="admin-related-article-card__meta">
+                    <span className={`admin-status-pill ${article.status === 'published' ? 'is-published' : 'is-draft'}`}>
+                      {statusLabel(t, article.status)}
+                    </span>
+                    <span className="admin-category-pill">
+                      {categoryDisplayName(t, article.category) || t('common.uncategorized')}
+                    </span>
+                    <span className="admin-related-article-card__time">
+                      {formatDateTime(article.published_at || article.updated_at, locale)}
+                    </span>
+                  </div>
+                  <div className="admin-related-article-card__actions">
+                    <button
+                      type="button"
+                      className="admin-icon-button"
+                      onClick={() => navigate(`/articles/${article.id}`)}
+                      aria-label={t('common.edit')}
+                      title={t('common.edit')}
+                    >
+                      <AdminIcon name="edit" />
+                    </button>
+                  </div>
+                </article>
               ))}
               {!loading && recentArticles.length === 0 ? (
                 <div className="admin-list-table__empty">{t('users.noRelatedArticles')}</div>
