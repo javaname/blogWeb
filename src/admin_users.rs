@@ -39,6 +39,9 @@ pub struct UpdateUserRequest {
     role: String,
 }
 
+const LOGIN_NAME_ERROR: &str =
+    "登录名需为 3-64 位字母、数字、点、下划线或短横线，不能包含空格或中文";
+
 #[derive(Debug, Serialize)]
 struct ManagedUser {
     id: i64,
@@ -137,7 +140,7 @@ pub async fn create_user(
         return Ok(json_error(
             StatusCode::BAD_REQUEST,
             "invalid_params",
-            "用户名需为 3-64 位字母、数字、点、下划线或短横线",
+            LOGIN_NAME_ERROR,
         ));
     }
     let email = request.email.trim().to_lowercase();
@@ -203,7 +206,7 @@ pub async fn update_user(
         return Ok(json_error(
             StatusCode::BAD_REQUEST,
             "invalid_params",
-            "用户名需为 3-64 位字母、数字、点、下划线或短横线",
+            LOGIN_NAME_ERROR,
         ));
     }
     let email = request.email.trim().to_lowercase();

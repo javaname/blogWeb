@@ -397,8 +397,9 @@ const enUS = {
     roleUpdated: 'Role updated',
     deleted: 'User deleted',
     form: {
-      username: 'Username',
+      username: 'Login name',
       usernamePlaceholder: 'writer',
+      usernameHelp: 'Use the same value as the English name: 3-64 letters, numbers, dots, underscores, or hyphens only. No spaces or Chinese characters.',
       email: 'Email',
       emailPlaceholder: 'writer@example.com',
       password: 'Initial password',

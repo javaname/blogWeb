@@ -1015,6 +1015,12 @@ button {
   color: var(--color-text-muted);
 }
 
+.admin-form-help {
+  color: var(--color-text-subtle);
+  font-size: 12px;
+  line-height: 16px;
+}
+
 .admin-form input,
 .admin-form select,
 .admin-form textarea,

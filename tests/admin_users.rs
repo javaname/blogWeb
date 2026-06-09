@@ -429,6 +429,45 @@ async fn admin_update_user_rejects_duplicate_identity() {
 }
 
 #[tokio::test]
+async fn admin_rejects_invalid_login_names_without_spaces_or_non_ascii() {
+    let redis = support::FakeRedis::start();
+    let router = support::router_with_redis(seeded_pool().await, &redis);
+    let (cookie, csrf) = admin_session(router.clone(), "admin").await;
+
+    let (create_status, create_payload) = json_request(
+        router.clone(),
+        Method::POST,
+        "/api/admin/users",
+        &cookie,
+        &csrf,
+        r#"{"username":"bad user","email":"bad@example.com","password":"admin-password","role":"writer"}"#,
+    )
+    .await;
+    assert_eq!(create_status, StatusCode::BAD_REQUEST);
+    assert_eq!(create_payload["code"], "invalid_params");
+    assert_eq!(
+        create_payload["message"],
+        "登录名需为 3-64 位字母、数字、点、下划线或短横线，不能包含空格或中文"
+    );
+
+    let (update_status, update_payload) = json_request(
+        router,
+        Method::PUT,
+        "/api/admin/users/2",
+        &cookie,
+        &csrf,
+        r#"{"username":"中文名","email":"editor@example.com","role":"editor"}"#,
+    )
+    .await;
+    assert_eq!(update_status, StatusCode::BAD_REQUEST);
+    assert_eq!(update_payload["code"], "invalid_params");
+    assert_eq!(
+        update_payload["message"],
+        "登录名需为 3-64 位字母、数字、点、下划线或短横线，不能包含空格或中文"
+    );
+}
+
+#[tokio::test]
 async fn admin_cannot_remove_own_admin_role_from_detail_update() {
     let redis = support::FakeRedis::start();
     let router = support::router_with_redis(seeded_pool().await, &redis);

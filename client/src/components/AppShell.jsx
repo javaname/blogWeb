@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useI18n } from '../contexts/I18nContext';
-import { userDisplayName } from '../i18n/displayNames';
 import AdminIcon from './AdminIcon';
 import LanguageSwitcher from './LanguageSwitcher';
 import ThemeSwitcher from './ThemeSwitcher';
@@ -158,7 +157,7 @@ export default function AppShell() {
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuDE0ev-JB33hUlLQkaVuyMf7_37CN0aUjNFznTFc_8Fe1vq5YW2CgcRZ_olG3bWCTIHWgPJzGZ8wilwB1ZtkpzNOsP0H7feDbBPK5WykNPQfXNXt5VhkfGX67z4EGUhndyicLImn1Yk2TTkYIO-_DEJag3nMAUGnmGZQVnTOJ5MW73XPM5rJq7KnTlwVS4g1dDW7MbiCjEpdiiE1yGIgHRlesapsdQ1_f2jeTSY_d9c3dMvT2Ir2eHEyPvzPwNpF2gGoJVnbJBP0A0"
             />
             <div>
-              <p>{userDisplayName(t, user) || t('shell.fallbackUserName')}</p>
+              <p>{user?.username || t('shell.fallbackUserName')}</p>
               <span>{t('shell.superAdmin')}</span>
             </div>
           </div>

@@ -397,8 +397,9 @@ const zhCN = {
     roleUpdated: '角色已更新',
     deleted: '用户已删除',
     form: {
-      username: '用户名',
+      username: '登录名',
       usernamePlaceholder: 'writer',
+      usernameHelp: '登录名需与英文名一致，仅允许 3-64 位英文字母、数字、点、下划线或短横线，不能包含空格或中文。',
       email: '邮箱',
       emailPlaceholder: 'writer@example.com',
       password: '初始密码',

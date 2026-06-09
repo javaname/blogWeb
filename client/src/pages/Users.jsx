@@ -3,10 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import AdminIcon from '../components/AdminIcon';
 import { useAuth } from '../contexts/AuthContext';
 import { useI18n } from '../contexts/I18nContext';
-import { userDisplayName } from '../i18n/displayNames';
 import { createUser, deleteUser, fetchUsers, updateUserRole } from '../utils/adminApi';
 import { showAdminToast } from '../utils/api';
 import { formatDateTime } from '../utils/format';
+
+const USERNAME_PATTERN = '[A-Za-z0-9._-]{3,64}';
 
 const initialForm = {
   username: '',
@@ -23,8 +24,8 @@ function userHasArticles(user) {
   return articleCount(user) > 0;
 }
 
-function userInitials(t, user) {
-  return (userDisplayName(t, user) || user.username || user.email || '?').slice(0, 2).toUpperCase();
+function userInitials(user) {
+  return (user.username || user.email || '?').slice(0, 2).toUpperCase();
 }
 
 function roleLabel(t, role) {
@@ -168,12 +169,12 @@ export default function Users() {
             </div>
             {users.map((user) => {
               const deleteBlocked = userHasArticles(user);
-              const displayName = userDisplayName(t, user);
+              const displayName = user.username || user.email || '-';
               const deleteLabel = deleteBlocked ? t('users.deleteBlockedByArticles') : t('common.delete');
               return (
                 <div key={user.id} className="admin-list-table__row admin-user-grid">
                   <div className="admin-user-cell">
-                    <span className="admin-user-cell__avatar">{userInitials(t, user)}</span>
+                    <span className="admin-user-cell__avatar">{userInitials(user)}</span>
                     <div className="admin-user-cell__body">
                       <strong className="admin-user-cell__display">{displayName}</strong>
                       <p className="admin-user-cell__account">{accountLine(t, user)}</p>
@@ -249,8 +250,14 @@ export default function Users() {
                 value={form.username}
                 onChange={(event) => setForm((prev) => ({ ...prev, username: event.target.value }))}
                 placeholder={t('users.form.usernamePlaceholder')}
+                pattern={USERNAME_PATTERN}
+                autoCapitalize="none"
+                autoComplete="username"
+                spellCheck={false}
+                title={t('users.form.usernameHelp')}
                 required
               />
+              <small className="admin-form-help">{t('users.form.usernameHelp')}</small>
             </label>
             <label>
               <span>{t('users.form.email')}</span>

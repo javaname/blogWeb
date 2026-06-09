@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminIcon from '../components/AdminIcon';
 import { useI18n } from '../contexts/I18nContext';
-import { categoryDisplayName, userDisplayName } from '../i18n/displayNames';
+import { categoryDisplayName } from '../i18n/displayNames';
 import { deleteArticle, fetchArticles, fetchCategories } from '../utils/adminApi';
 import { formatDateTime } from '../utils/format';
 
@@ -139,7 +139,7 @@ export default function Posts() {
               <div>
                 <span className="admin-category-pill">{categoryDisplayName(t, item.category) || t('common.uncategorized')}</span>
               </div>
-              <span>{userDisplayName(t, item.author) || t('common.admin')}</span>
+              <span>{item.author?.username || t('common.admin')}</span>
               <span>{formatDateTime(item.published_at || item.updated_at, locale)}</span>
               <div className="admin-row-actions">
                 <button type="button" className="admin-icon-button" onClick={() => navigate(`/articles/${item.id}`)} aria-label={t('common.edit')}>

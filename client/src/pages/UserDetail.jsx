@@ -2,10 +2,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import AdminIcon from '../components/AdminIcon';
 import { useI18n } from '../contexts/I18nContext';
-import { categoryDisplayName, userDisplayName } from '../i18n/displayNames';
+import { categoryDisplayName } from '../i18n/displayNames';
 import { fetchUser, updateUser } from '../utils/adminApi';
 import { showAdminToast } from '../utils/api';
 import { formatDateTime } from '../utils/format';
+
+const USERNAME_PATTERN = '[A-Za-z0-9._-]{3,64}';
 
 const initialForm = {
   username: '',
@@ -13,8 +15,8 @@ const initialForm = {
   role: 'user',
 };
 
-function userInitials(t, user) {
-  return (userDisplayName(t, user) || user?.username || user?.email || '?').slice(0, 2).toUpperCase();
+function userInitials(user) {
+  return (user?.username || user?.email || '?').slice(0, 2).toUpperCase();
 }
 
 function roleLabel(t, role) {
@@ -119,9 +121,9 @@ export default function UserDetail() {
       <section className="admin-two-column admin-user-detail-layout">
         <article className="admin-panel admin-user-detail-profile">
           <div className="admin-user-detail-profile__head">
-            <span className="admin-user-detail-profile__avatar">{userInitials(t, user)}</span>
+            <span className="admin-user-detail-profile__avatar">{userInitials(user)}</span>
             <div>
-              <h3>{user ? userDisplayName(t, user) : t('common.loading')}</h3>
+              <h3>{user ? user.username : t('common.loading')}</h3>
               <p>{user?.email || t('users.noEmail')}</p>
             </div>
           </div>
@@ -148,8 +150,14 @@ export default function UserDetail() {
                 value={form.username}
                 onChange={(event) => setForm((prev) => ({ ...prev, username: event.target.value }))}
                 placeholder={t('users.form.usernamePlaceholder')}
+                pattern={USERNAME_PATTERN}
+                autoCapitalize="none"
+                autoComplete="username"
+                spellCheck={false}
+                title={t('users.form.usernameHelp')}
                 required
               />
+              <small className="admin-form-help">{t('users.form.usernameHelp')}</small>
             </label>
             <label>
               <span>{t('users.form.email')}</span>

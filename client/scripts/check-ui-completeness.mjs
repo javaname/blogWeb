@@ -94,7 +94,13 @@ if (!mainEntry.includes('ToastProvider')) {
 const appShell = fs.readFileSync(path.join(projectRoot, 'client/src/components/AppShell.jsx'), 'utf8');
 const loginPage = fs.readFileSync(path.join(projectRoot, 'client/src/pages/Login.jsx'), 'utf8');
 const appRoutes = fs.readFileSync(path.join(projectRoot, 'client/src/App.jsx'), 'utf8');
+const postsPage = fs.readFileSync(path.join(projectRoot, 'client/src/pages/Posts.jsx'), 'utf8');
 const usersPage = fs.readFileSync(path.join(projectRoot, 'client/src/pages/Users.jsx'), 'utf8');
+const adminUserSurfaces = [
+  ['client/src/components/AppShell.jsx', appShell],
+  ['client/src/pages/Posts.jsx', postsPage],
+  ['client/src/pages/Users.jsx', usersPage],
+];
 const rolePermissionsPagePath = path.join(projectRoot, 'client/src/pages/RolePermissions.jsx');
 const rolePermissionsPage = fs.existsSync(rolePermissionsPagePath)
   ? fs.readFileSync(rolePermissionsPagePath, 'utf8')
@@ -150,6 +156,11 @@ for (const snippet of ['fetchUsers', 'createUser', 'updateUserRole', 'deleteUser
     fail(`client/src/pages/Users.jsx: ${snippet} is not wired`);
   }
 }
+for (const snippet of ['USERNAME_PATTERN', 'users.form.usernameHelp', 'autoCapitalize="none"', 'spellCheck={false}']) {
+  if (!usersPage.includes(snippet)) {
+    fail(`client/src/pages/Users.jsx: login name rule snippet ${snippet} is missing`);
+  }
+}
 for (const snippet of ['updateRolePermissions', 'data-role-permissions-form', 'users.rolePermissionsTitle']) {
   if (usersPage.includes(snippet)) {
     fail(`client/src/pages/Users.jsx: role permission editor snippet ${snippet} must move to RolePermissions.jsx`);
@@ -197,6 +208,7 @@ if (!fs.existsSync(userDetailPath)) {
   fail('client/src/pages/UserDetail.jsx: page is missing');
 } else {
   const userDetailPage = fs.readFileSync(userDetailPath, 'utf8');
+  adminUserSurfaces.push(['client/src/pages/UserDetail.jsx', userDetailPage]);
   for (const snippet of [
     'data-page="user-detail"',
     'data-user-detail-form',
@@ -217,9 +229,18 @@ if (!fs.existsSync(userDetailPath)) {
       fail(`client/src/pages/UserDetail.jsx: detail page snippet ${snippet} is missing`);
     }
   }
+  for (const snippet of ['USERNAME_PATTERN', 'users.form.usernameHelp', 'autoCapitalize="none"', 'spellCheck={false}']) {
+    if (!userDetailPage.includes(snippet)) {
+      fail(`client/src/pages/UserDetail.jsx: login name rule snippet ${snippet} is missing`);
+    }
+  }
+}
+for (const [relativePath, source] of adminUserSurfaces) {
+  if (source.includes('userDisplayName')) {
+    fail(`${relativePath}: admin user surfaces must display raw login names, not localized userDisplayName mappings`);
+  }
 }
 for (const snippet of [
-  'userDisplayName',
   'formatDateTime',
   'users.accountLine',
   'users.createdAt',
