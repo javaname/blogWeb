@@ -62,4 +62,6 @@ async fn healthz_matches_go_golden_headers_and_cookie_contract() {
     assert!(anonymous.contains("Path=/"));
     assert!(anonymous.contains("Max-Age=31536000"));
     assert!(anonymous.contains("HttpOnly"));
+    assert!(anonymous.contains("Secure"));
+    assert!(anonymous.contains("SameSite=Strict"));
 }

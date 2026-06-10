@@ -10,6 +10,9 @@
     "Referrer-Policy": [
       "strict-origin-when-cross-origin"
     ],
+    "Strict-Transport-Security": [
+      "max-age=31536000; includeSubDomains"
+    ],
     "X-Content-Type-Options": [
       "nosniff"
     ],
@@ -23,7 +26,9 @@
       "value": "\u003cTOKEN\u003e",
       "path": "/",
       "max_age": 31536000,
-      "http_only": true
+      "http_only": true,
+      "secure": true,
+      "same_site": "Strict"
     }
   ],
   "body": {

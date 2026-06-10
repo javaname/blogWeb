@@ -75,7 +75,7 @@ async fn apply_migrations_creates_schema_and_records_hashes() {
             .fetch_all(&pool)
             .await
             .unwrap();
-    assert_eq!(versions, vec!["001", "002", "003", "004", "005"]);
+    assert_eq!(versions, vec!["001", "002", "003", "004", "005", "006"]);
     assert_eq!(
         db::check_migrations(&pool).await.unwrap(),
         MigrationCheckStatus::Ready
@@ -93,7 +93,7 @@ async fn apply_migrations_is_idempotent_when_hashes_match() {
         .fetch_one(&pool)
         .await
         .unwrap();
-    assert_eq!(count, 5);
+    assert_eq!(count, 6);
 }
 
 #[tokio::test]
@@ -169,7 +169,7 @@ async fn apply_migrations_registers_existing_schema_without_replaying_alter_colu
             .fetch_all(&pool)
             .await
             .unwrap();
-    assert_eq!(versions, vec!["001", "002", "003", "004", "005"]);
+    assert_eq!(versions, vec!["001", "002", "003", "004", "005", "006"]);
     assert_eq!(
         db::check_migrations(&pool).await.unwrap(),
         MigrationCheckStatus::Ready

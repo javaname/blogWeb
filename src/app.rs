@@ -206,12 +206,16 @@ async fn apply_response_contract(request: Request<axum::body::Body>, next: Next)
         "Referrer-Policy",
         HeaderValue::from_static("strict-origin-when-cross-origin"),
     );
+    response.headers_mut().insert(
+        "Strict-Transport-Security",
+        HeaderValue::from_static("max-age=31536000; includeSubDomains"),
+    );
     response
         .headers_mut()
         .insert("X-Frame-Options", HeaderValue::from_static("DENY"));
     if !has_cookie {
         let cookie = format!(
-            "anonymous_id={}; Path=/; Max-Age=31536000; HttpOnly",
+            "anonymous_id={}; Path=/; Max-Age=31536000; HttpOnly; Secure; SameSite=Strict",
             anonymous_id()
         );
         if let Ok(value) = HeaderValue::from_str(&cookie) {

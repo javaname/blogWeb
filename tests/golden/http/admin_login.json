@@ -10,6 +10,9 @@
     "Referrer-Policy": [
       "strict-origin-when-cross-origin"
     ],
+    "Strict-Transport-Security": [
+      "max-age=31536000; includeSubDomains"
+    ],
     "X-Content-Type-Options": [
       "nosniff"
     ],
@@ -23,20 +26,88 @@
       "value": "\u003cTOKEN\u003e",
       "path": "/",
       "max_age": 86400,
-      "http_only": true
+      "http_only": true,
+      "secure": true,
+      "same_site": "Strict"
     },
     {
       "name": "anonymous_id",
       "value": "\u003cTOKEN\u003e",
       "path": "/",
       "max_age": 31536000,
-      "http_only": true
+      "http_only": true,
+      "secure": true,
+      "same_site": "Strict"
     }
   ],
   "body": {
     "user": {
       "email": "",
       "id": 1,
+      "menus": [
+        {
+          "icon": "dashboard",
+          "label_key": "shell.navDashboard",
+          "path": "/dashboard"
+        },
+        {
+          "icon": "article",
+          "label_key": "shell.navPosts",
+          "path": "/posts",
+          "permission": "publish"
+        },
+        {
+          "icon": "category",
+          "label_key": "shell.navCategories",
+          "path": "/categories",
+          "permission": "publish"
+        },
+        {
+          "icon": "comment",
+          "label_key": "shell.navComments",
+          "path": "/comments",
+          "permission": "moderate"
+        },
+        {
+          "icon": "image",
+          "label_key": "shell.navMedia",
+          "path": "/media",
+          "permission": "media"
+        },
+        {
+          "icon": "group",
+          "label_key": "shell.navUsers",
+          "path": "/users",
+          "permission": "users"
+        },
+        {
+          "icon": "tune",
+          "label_key": "shell.navRoles",
+          "path": "/roles",
+          "permission": "users"
+        },
+        {
+          "icon": "trending_up",
+          "label_key": "shell.navAnalytics",
+          "path": "/analytics",
+          "permission": "analytics"
+        },
+        {
+          "icon": "settings",
+          "label_key": "shell.navSettings",
+          "path": "/settings",
+          "permission": "settings"
+        }
+      ],
+      "permissions": [
+        "publish",
+        "moderate",
+        "settings",
+        "users",
+        "mcp",
+        "media",
+        "analytics"
+      ],
       "role": "admin",
       "username": "admin"
     }

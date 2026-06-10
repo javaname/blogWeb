@@ -20,6 +20,44 @@ async fn seeded_pool() -> db::DbPool {
     pool
 }
 
+fn assert_admin_user_capabilities(user: &Value) {
+    let permissions = user["permissions"]
+        .as_array()
+        .expect("permissions should be present");
+    for permission in [
+        "publish",
+        "moderate",
+        "settings",
+        "users",
+        "mcp",
+        "media",
+        "analytics",
+    ] {
+        assert!(
+            permissions.iter().any(|value| value == permission),
+            "missing permission {permission}: {permissions:?}"
+        );
+    }
+
+    let menus = user["menus"].as_array().expect("menus should be present");
+    for path in [
+        "/dashboard",
+        "/posts",
+        "/categories",
+        "/comments",
+        "/media",
+        "/users",
+        "/roles",
+        "/analytics",
+        "/settings",
+    ] {
+        assert!(
+            menus.iter().any(|value| value["path"] == path),
+            "missing menu {path}: {menus:?}"
+        );
+    }
+}
+
 #[tokio::test]
 async fn admin_csrf_token_requires_login_like_go_golden() {
     let redis = support::FakeRedis::start();
@@ -113,16 +151,11 @@ async fn admin_login_session_allows_csrf_token_and_current_user() {
         .await
         .unwrap();
     let me_payload: Value = serde_json::from_slice(&me_body).unwrap();
-    assert_eq!(
-        me_payload,
-        serde_json::json!({
-            "user": {
-                "id": 1,
-                "role": "admin",
-                "username": "admin"
-            }
-        })
-    );
+    let user = &me_payload["user"];
+    assert_eq!(user["id"], 1);
+    assert_eq!(user["role"], "admin");
+    assert_eq!(user["username"], "admin");
+    assert_admin_user_capabilities(user);
 }
 
 #[tokio::test]
@@ -156,7 +189,9 @@ async fn admin_login_matches_go_golden_body_and_cookie_contract() {
             .any(|cookie| cookie.starts_with("admin_session=")
                 && cookie.contains("Path=/")
                 && cookie.contains("Max-Age=86400")
-                && cookie.contains("HttpOnly")),
+                && cookie.contains("HttpOnly")
+                && cookie.contains("Secure")
+                && cookie.contains("SameSite=Strict")),
         "cookies: {cookies:?}"
     );
 
@@ -164,17 +199,12 @@ async fn admin_login_matches_go_golden_body_and_cookie_contract() {
         .await
         .unwrap();
     let payload: Value = serde_json::from_slice(&body).unwrap();
-    assert_eq!(
-        payload,
-        serde_json::json!({
-            "user": {
-                "email": "",
-                "id": 1,
-                "role": "admin",
-                "username": "admin"
-            }
-        })
-    );
+    let user = &payload["user"];
+    assert_eq!(user["email"], "");
+    assert_eq!(user["id"], 1);
+    assert_eq!(user["role"], "admin");
+    assert_eq!(user["username"], "admin");
+    assert_admin_user_capabilities(user);
 }
 
 #[tokio::test]
@@ -277,6 +307,8 @@ async fn admin_logout_deletes_redis_session_and_expires_cookie() {
             cookie.starts_with("admin_session=")
                 && cookie.contains("Path=/")
                 && cookie.contains("HttpOnly")
+                && cookie.contains("Secure")
+                && cookie.contains("SameSite=Strict")
                 && (cookie.contains("Max-Age=-1") || cookie.contains("Max-Age=0"))
         }),
         "cookies: {cookies:?}"

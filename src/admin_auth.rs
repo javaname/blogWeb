@@ -99,7 +99,7 @@ pub async fn login(
     })
     .into_response();
     let cookie = format!(
-        "admin_session={session_id}; Path=/; Max-Age={}; HttpOnly",
+        "admin_session={session_id}; Path=/; Max-Age={}; HttpOnly; Secure; SameSite=Strict",
         state.config.session.max_age
     );
     response.headers_mut().append(
@@ -117,7 +117,9 @@ pub async fn logout(State(state): State<PublicState>, headers: HeaderMap) -> Res
     let mut response = Json(json!({ "message": "已退出登录" })).into_response();
     response.headers_mut().append(
         SET_COOKIE,
-        HeaderValue::from_static("admin_session=; Path=/; Max-Age=-1; HttpOnly"),
+        HeaderValue::from_static(
+            "admin_session=; Path=/; Max-Age=-1; HttpOnly; Secure; SameSite=Strict",
+        ),
     );
     Ok(response)
 }
