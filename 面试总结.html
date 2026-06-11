@@ -1,0 +1,618 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>前端转 AI / Agent 岗面试问题整理总结</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f8fb;
+      --surface: #ffffff;
+      --text: #172033;
+      --muted: #5e6b80;
+      --line: #dfe5ee;
+      --primary: #2563eb;
+      --primary-soft: #e8f0ff;
+      --accent: #0f766e;
+      --accent-soft: #ddf7f2;
+      --warn: #b45309;
+      --warn-soft: #fff4dc;
+      --danger: #b91c1c;
+      --danger-soft: #fee2e2;
+      --shadow: 0 18px 45px rgba(23, 32, 51, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+      line-height: 1.7;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 40px 0 56px;
+    }
+
+    .hero {
+      padding: 36px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--primary);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1.18;
+      letter-spacing: 0;
+    }
+
+    .intro {
+      max-width: 860px;
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: 17px;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: #1d4ed8;
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr);
+      gap: 24px;
+      margin-top: 24px;
+      align-items: start;
+    }
+
+    nav {
+      position: sticky;
+      top: 20px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+    }
+
+    nav h2 {
+      margin: 0 0 10px;
+      font-size: 16px;
+    }
+
+    nav a {
+      display: block;
+      padding: 8px 0;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+      border-top: 1px solid #edf1f6;
+    }
+
+    nav a:hover {
+      color: var(--primary);
+    }
+
+    main {
+      display: grid;
+      gap: 18px;
+    }
+
+    section {
+      padding: 28px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 24px;
+      line-height: 1.3;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 22px 0 8px;
+      font-size: 18px;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 8px 0;
+    }
+
+    ul,
+    ol {
+      margin: 10px 0 0;
+      padding-left: 22px;
+    }
+
+    li {
+      margin: 6px 0;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .stat {
+      min-height: 118px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcff;
+    }
+
+    .stat strong {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--primary);
+      font-size: 26px;
+      line-height: 1.2;
+    }
+
+    .topic {
+      margin-top: 16px;
+      padding: 18px;
+      border-left: 4px solid var(--primary);
+      border-radius: 8px;
+      background: #fbfcff;
+    }
+
+    .topic h3 {
+      margin-top: 0;
+    }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .tag {
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: #eef2f7;
+      color: #3b4758;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .matrix {
+      width: 100%;
+      margin-top: 14px;
+      border-collapse: collapse;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .matrix th,
+    .matrix td {
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      text-align: left;
+    }
+
+    .matrix th {
+      background: #eef4ff;
+      color: #1e3a8a;
+      font-weight: 800;
+    }
+
+    .matrix tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .callout {
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+    }
+
+    .callout.blue {
+      background: var(--primary-soft);
+      border-color: #bfd3ff;
+    }
+
+    .callout.green {
+      background: var(--accent-soft);
+      border-color: #9ee6d8;
+    }
+
+    .callout.yellow {
+      background: var(--warn-soft);
+      border-color: #f8d899;
+    }
+
+    .callout.red {
+      background: var(--danger-soft);
+      border-color: #fecaca;
+    }
+
+    .company-list {
+      columns: 2;
+      column-gap: 28px;
+      margin-top: 12px;
+    }
+
+    .company-list li {
+      break-inside: avoid;
+      margin-bottom: 8px;
+    }
+
+    .footer {
+      margin-top: 24px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    @media (max-width: 920px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      nav {
+        position: static;
+      }
+
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .company-list {
+        columns: 1;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .page {
+        width: min(100% - 24px, 1180px);
+        padding: 20px 0 36px;
+      }
+
+      .hero,
+      section {
+        padding: 20px;
+      }
+
+      .matrix {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <p class="eyebrow">面试复盘整理</p>
+      <h1>前端转 AI / Agent 岗面试问题总结</h1>
+      <p class="intro">
+        原始材料来自一次前端转 AI Agent、全栈与平台研发方向的求职面试记录。整体问题从“会不会用 AI 工具”升级到“能不能把 AI 系统落地、运营、降本并稳定交付”，同时仍然保留了大量前端、后端、数据库和项目管理基础追问。
+      </p>
+      <div class="meta">
+        <span class="pill">来源：面试.txt</span>
+        <span class="pill">覆盖公司：约 13 家</span>
+        <span class="pill">核心方向：AI Agent / RAG / 全栈工程</span>
+        <span class="pill">整理日期：2026-06-11</span>
+      </div>
+    </header>
+
+    <div class="layout">
+      <nav aria-label="页面目录">
+        <h2>目录</h2>
+        <a href="#overview">整体结论</a>
+        <a href="#themes">高频主题</a>
+        <a href="#company">公司问题分布</a>
+        <a href="#prepare">准备重点</a>
+        <a href="#answers">答题框架</a>
+        <a href="#review">复习路线</a>
+      </nav>
+
+      <main>
+        <section id="overview">
+          <h2>整体结论</h2>
+          <p>
+            这批面试题不是单纯的“前端八股”或“AI 概念题”，而是在考察候选人是否能作为一个能落地业务的 AI 全栈工程师：既要讲清楚 Agent、RAG、多智能体、向量检索、上下文治理，也要能解释数据库、缓存、队列、支付、高并发、K8S、SSE/WebSocket、前端兼容和团队协作。
+          </p>
+          <p>
+            面试官最关注的不是“用了什么工具”，而是三个结果：系统为什么这么设计、线上出了问题怎么排查、AI 引入后到底带来了多少成本与效率变化。
+          </p>
+          <div class="summary-grid">
+            <div class="stat">
+              <strong>1</strong>
+              <span>AI Agent / RAG 是主线，几乎每家公司都会追问系统架构、检索流程、模型选型和落地效果。</span>
+            </div>
+            <div class="stat">
+              <strong>2</strong>
+              <span>全栈工程能力是门槛，缓存一致性、队列可靠性、事务、高并发和容器部署都被频繁提到。</span>
+            </div>
+            <div class="stat">
+              <strong>3</strong>
+              <span>前端基础仍然重要，Vue/React、Canvas、动画、兼容、SSE/WebSocket 是典型追问区。</span>
+            </div>
+          </div>
+        </section>
+
+        <section id="themes">
+          <h2>高频主题归纳</h2>
+
+          <article class="topic">
+            <h3>一、AI Agent 与多智能体架构</h3>
+            <p>
+              高频问题包括：Agent 系统分层、LangChain / LangGraph 选型、多 Agent 的必要性、通用 Agent 与垂直业务 Agent 的区别、动态路由、工具调用失败处理、Claude Code 核心循环和上下文治理。
+            </p>
+            <ul>
+              <li>需要能解释 Agent 的基本闭环：输入理解、规划、工具调用、执行反馈、结果生成、状态记录。</li>
+              <li>多 Agent 不应只回答“职责拆分”，还要说明它解决复杂任务隔离、上下文隔离、专业能力分工、失败降级和并行执行问题。</li>
+              <li>LangGraph 的优势可以从状态机、节点编排、条件边、可观测性、失败恢复和复杂流程控制来说明。</li>
+            </ul>
+            <div class="tag-list">
+              <span class="tag">LangChain</span>
+              <span class="tag">LangGraph</span>
+              <span class="tag">Multi-Agent</span>
+              <span class="tag">Tool Calling</span>
+              <span class="tag">Claude Code</span>
+            </div>
+          </article>
+
+          <article class="topic">
+            <h3>二、RAG、知识库与检索质量</h3>
+            <p>
+              多家公司追问 RAG 流程、文档切分、向量化、向量库选型、混合检索、Re-rank、查询改写、领域词典、政策文件准确性、检索加速和人工审核。
+            </p>
+            <ul>
+              <li>标准流程：数据采集、清洗、切分、Embedding、入库、召回、重排、上下文组装、生成、引用溯源。</li>
+              <li>准确性要从召回质量、分块策略、元数据过滤、权限过滤、重排模型、答案引用和人工评测集说明。</li>
+              <li>检索加速可以讲索引优化、缓存、预计算、分层召回、TopK 控制、异步入库和冷热数据分离。</li>
+            </ul>
+            <div class="tag-list">
+              <span class="tag">Embedding</span>
+              <span class="tag">Vector DB</span>
+              <span class="tag">Hybrid Search</span>
+              <span class="tag">Re-rank</span>
+              <span class="tag">Query Rewrite</span>
+            </div>
+          </article>
+
+          <article class="topic">
+            <h3>三、AI 成本、效果与工程化治理</h3>
+            <p>
+              多个问题围绕 Token 使用量、AI 成本优化、效率提升百分比、国内外模型对比、不同工具和模型效果差异、AI 编码规范、AI 代码 Review、重复推理优化展开。
+            </p>
+            <ul>
+              <li>成本优化要说清楚数据：请求量、平均 Token、缓存命中率、模型分级路由、上下文压缩、批处理和降级策略。</li>
+              <li>效果评估要避免空泛，可以准备一套指标：交付周期缩短、缺陷率变化、人工审核时间、回答命中率和用户满意度。</li>
+              <li>AI 代码治理重点是规范提示词、限制修改范围、自动测试、Code Review、静态检查和关键路径人工确认。</li>
+            </ul>
+          </article>
+
+          <article class="topic">
+            <h3>四、前端基础与实时交互</h3>
+            <p>
+              前端方向集中在 Vue / React 差异、Vue2 / Vue3 响应式、Canvas 无限画布、CSS3 动画、浏览器兼容、HTTP 缓存、SSE 和 WebSocket。
+            </p>
+            <ul>
+              <li>Vue2 响应式要讲 Object.defineProperty、数组方法重写、对象新增属性限制；Vue3 要讲 Proxy、Reflect、WeakMap 依赖收集和编译优化。</li>
+              <li>SSE 与 WebSocket 要从连接模型、双向能力、重连、心跳、降级、消息协议和适用场景比较。</li>
+              <li>Canvas / 无限画布应准备坐标系、缩放平移、图层、脏矩形、虚拟渲染、事件命中测试和性能优化。</li>
+            </ul>
+          </article>
+
+          <article class="topic">
+            <h3>五、后端、数据库与高并发</h3>
+            <p>
+              这部分覆盖 NestJS、TypeORM / Prisma、事务、缓存一致性、MySQL 慢查询、分库分表、读写分离、队列可靠性、秒杀、支付回调和积分到账。
+            </p>
+            <ul>
+              <li>数据库问题要准备索引设计、执行计划、慢 SQL 抓取、分页优化、批量写入、锁竞争和 IO 异常排查。</li>
+              <li>秒杀场景要讲限流、库存预扣、Redis Lua、消息队列削峰、幂等、事务和最终一致性。</li>
+              <li>队列与任务问题要讲持久化、ACK、重试、幂等键、断点续跑、任务状态机和前端状态感知。</li>
+            </ul>
+          </article>
+
+          <article class="topic">
+            <h3>六、项目推进、交付与职业画像</h3>
+            <p>
+              多家公司会问没有设计稿如何推进、如何从 0 到 1 搭项目、如何拆解 50 万体量项目并一个月交付、如何管理团队进度、如何快速上手业务、职业规划和技术路线选择。
+            </p>
+            <ul>
+              <li>回答要体现方法论：需求澄清、风险拆解、原型先行、里程碑、验收标准、技术预研、排期和复盘。</li>
+              <li>职业规划要和岗位匹配：AI 全栈、应用架构、工程提效、技术负责人或技术加管理路线。</li>
+              <li>“最有挑战的问题”要准备真实案例，用背景、冲突、行动、结果和复盘结构回答。</li>
+            </ul>
+          </article>
+        </section>
+
+        <section id="company">
+          <h2>公司问题分布</h2>
+          <p>
+            按原文记录，问题风格可以大致分为 AI 平台型、全栈架构型、前端基础型、业务交付型四类。
+          </p>
+          <table class="matrix">
+            <thead>
+              <tr>
+                <th>公司</th>
+                <th>主要关注点</th>
+                <th>准备策略</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>ML / JR / PY / HQ / YU</td>
+                <td>AI Agent、RAG、向量检索、多智能体、模型选型、上下文治理、AI 工程化。</td>
+                <td>准备一套完整 AI 系统架构图和落地案例，重点讲数据流、失败处理、成本和效果指标。</td>
+              </tr>
+              <tr>
+                <td>KJ / YC / HJ</td>
+                <td>系统架构、Docker / K8S、项目搭建、AI 工作流、并发、限流、缓存、交付管理。</td>
+                <td>用“从需求到上线”的视角回答，强调模块拆分、部署方案、风险控制和团队协作。</td>
+              </tr>
+              <tr>
+                <td>FN / SH</td>
+                <td>Vue / React、CSS3、Canvas、WebSocket、浏览器缓存、兼容性和前端工程基础。</td>
+                <td>补齐基础八股，但要结合项目经验说明真实使用场景和线上问题处理。</td>
+              </tr>
+              <tr>
+                <td>TK</td>
+                <td>企微 H5 登录、多域名、埋点、用户标签、MySQL IO、同步任务和大表优化。</td>
+                <td>准备业务系统落地细节，特别是身份体系、数据同步链路、监控和数据库排查流程。</td>
+              </tr>
+              <tr>
+                <td>XZ</td>
+                <td>AI 开发工作流、MCP / Skill、需求处理方式、职业规划和深刻项目经历。</td>
+                <td>把个人 AI 工作流产品化表达，说明如何规划、编码、测试、复盘和沉淀规范。</td>
+              </tr>
+            </tbody>
+          </table>
+          <ol class="company-list">
+            <li><strong>AI 深挖型：</strong>会不断追问“为什么选这个技术”和“效果如何验证”。</li>
+            <li><strong>架构综合型：</strong>更重视从 0 到 1 的系统拆分、数据流、部署和稳定性。</li>
+            <li><strong>前端基础型：</strong>会从框架差异、动画、实时通信和兼容性切入。</li>
+            <li><strong>交付管理型：</strong>关注无设计稿、需求不完整、周期很短时怎么推进。</li>
+          </ol>
+        </section>
+
+        <section id="prepare">
+          <h2>准备重点</h2>
+          <div class="callout blue">
+            <h3>必须准备的 5 张图</h3>
+            <ul>
+              <li>AI 系统整体架构图：前端、网关、业务服务、Agent 编排、模型、工具、知识库、监控。</li>
+              <li>RAG 数据流图：文档入库、切分、向量化、召回、重排、生成、引用。</li>
+              <li>Agent 执行闭环图：任务理解、计划、工具调用、观察、重试、输出。</li>
+              <li>实时任务状态图：SSE / WebSocket、任务队列、任务状态机、断点续跑。</li>
+              <li>AI 辅助开发流程图：需求、原型、PRD、编码、测试、Review、发布。</li>
+            </ul>
+          </div>
+
+          <div class="callout green">
+            <h3>必须量化的 5 类数据</h3>
+            <ul>
+              <li>系统规模：用户量、日活、请求量、知识库数据量、向量数量。</li>
+              <li>AI 消耗：Token 使用量、平均单次成本、模型调用次数、缓存命中率。</li>
+              <li>效果指标：召回准确率、回答满意度、人工审核通过率、问题解决率。</li>
+              <li>性能指标：接口耗时、检索耗时、任务处理时间、并发能力。</li>
+              <li>业务收益：交付周期缩短比例、人工节省、成本下降、缺陷减少。</li>
+            </ul>
+          </div>
+
+          <div class="callout yellow">
+            <h3>最容易被追问的薄弱点</h3>
+            <ul>
+              <li>只说“用了 LangChain”，但讲不清为什么不用自研编排或为什么需要 LangGraph。</li>
+              <li>只说“做了 RAG”，但讲不清分块、召回、重排、评测和准确性保障。</li>
+              <li>只说“AI 提效明显”，但没有真实数据或对比口径。</li>
+              <li>只说“用了队列 / 缓存”，但不能解释任务丢失、重复执行、幂等和一致性。</li>
+              <li>只会前端实现细节，无法把 AI 产品落地、部署、监控、成本串起来。</li>
+            </ul>
+          </div>
+        </section>
+
+        <section id="answers">
+          <h2>高频题答题框架</h2>
+
+          <h3>1. “介绍一下你的 AI 项目架构”</h3>
+          <p>
+            建议按“业务目标 → 用户入口 → 后端服务 → Agent 编排 → 模型与工具 → 知识库 → 观测与成本”来讲。不要一上来堆技术名词，先说明这个系统解决什么问题，再说明为什么这样分层。
+          </p>
+
+          <h3>2. “为什么需要多 Agent？”</h3>
+          <p>
+            可以回答：单 Agent 适合短链路和明确任务，多 Agent 适合复杂任务拆分、角色隔离、并行处理、上下文隔离、失败降级和更清晰的可观测性。关键是补一句：不是为了“显得高级”，而是在任务复杂度、工具数量和上下文长度超过单 Agent 易维护边界后才引入。
+          </p>
+
+          <h3>3. “RAG 如何保证准确性？”</h3>
+          <p>
+            从数据源可信、切分策略、元数据过滤、混合检索、Re-rank、引用溯源、人工评测集、线上反馈闭环几个层次回答。政策文件类场景尤其要强调版本、时效、来源和引用位置。
+          </p>
+
+          <h3>4. “AI 成本怎么优化？”</h3>
+          <p>
+            建议分四层：减少调用、减少 Token、选择更合适的模型、提升缓存和复用。具体可以说意图路由、小模型预判、上下文压缩、摘要缓存、Embedding 缓存、工具结果缓存、模型分级和批处理。
+          </p>
+
+          <h3>5. “SSE 断线续传怎么做？”</h3>
+          <p>
+            重点是服务端持久化任务状态和消息序号，客户端重连时带上会话 ID、任务 ID 或 Last-Event-ID，服务端从上次确认的位置继续推送。窗口关闭太久则转为查询任务最终状态，避免无限保留流上下文。
+          </p>
+
+          <h3>6. “没有设计稿怎么推进页面？”</h3>
+          <p>
+            回答要体现主动性：先澄清目标用户和核心流程，快速输出低保真原型，拉业务确认信息架构和字段，再用 AI 生成多版 UI 方案，最后沉淀组件规范、交互状态和验收清单。
+          </p>
+        </section>
+
+        <section id="review">
+          <h2>复习路线</h2>
+          <ol>
+            <li><strong>第 1 阶段：补 AI 系统主线。</strong>整理一个自己项目的 AI 架构故事，覆盖 Agent、RAG、模型选型、工具调用、上下文、成本和效果。</li>
+            <li><strong>第 2 阶段：补全栈稳定性。</strong>复习事务、缓存一致性、消息队列、幂等、限流、秒杀、支付、K8S、任务恢复和监控。</li>
+            <li><strong>第 3 阶段：补前端基础。</strong>Vue2 / Vue3、React、Canvas、CSS 动画、兼容、HTTP 缓存、SSE / WebSocket 要能结合项目讲。</li>
+            <li><strong>第 4 阶段：准备项目案例。</strong>至少准备 3 个故事：AI 落地、复杂问题排查、项目推进或交付风险处理。</li>
+            <li><strong>第 5 阶段：准备量化数据。</strong>把用户量、调用量、Token、成本、性能、效率提升整理成可复述的数字。</li>
+          </ol>
+
+          <div class="callout red">
+            <h3>面试表达建议</h3>
+            <p>
+              回答时尽量避免“了解过、用过、研究过”这种停留在表面的表述。更有说服力的表达是：当时的业务问题是什么、为什么选择这个方案、实现时遇到什么坑、如何验证效果、最终数据如何、如果重做会怎么改。
+            </p>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <p class="footer">由面试原始问题整理生成，可作为 AI 全栈 / Agent 岗位复习提纲。</p>
+  </div>
+</body>
+</html>
